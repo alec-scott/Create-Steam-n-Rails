@@ -26,6 +26,15 @@ sourceSets {
         resources.srcDir 'src/generated/resources'
         java {
             srcDir layout.buildDirectory.dir('generated/sources/buildInfo')
+            // Datagen is stubbed (the committed src/generated/resources are used); keep only what registration calls.
+            def keptDatagen = ['BuilderTransformers.java', 'fabric/BuilderTransformersImpl.java',
+                               'CRTagGen.java', 'fabric/CRTagGenImpl.java']
+            exclude { el ->
+                def p = el.relativePath.pathString
+                !el.directory && p.startsWith('com/railwayteam/railways/base/data/') &&
+                        !(p.substring('com/railwayteam/railways/base/data/'.length()) in keptDatagen)
+            }
+            exclude 'com/railwayteam/railways/fabric/RailwaysDataFabric.java'
             // Compat for mods with no 26.1 Fabric build checked yet; see PORTING-26.1.md.
             exclude 'com/railwayteam/railways/compat/emi/**'
             exclude 'com/railwayteam/railways/compat/tweakeroo/**'

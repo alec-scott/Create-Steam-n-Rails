@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.custom_tracks.casing;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.mixin_interfaces.IHasTrackCasing;
 import com.railwayteam.railways.multiloader.C2SPacket;
@@ -79,7 +81,7 @@ public class SlabUseOnCurvePacket implements C2SPacket {
     }
 
     private InteractionResult useOn(ServerPlayer player, InteractionHand hand, Level world, IHasTrackCasing casingAble) {
-        if (world.isClientSide) return InteractionResult.FAIL;
+        if (world.isClientSide()) return InteractionResult.FAIL;
         ItemStack handStack = player.getItemInHand(hand);
         Block newBlock;
         if (handStack.getItem() instanceof BlockItem blockItem && CasingChecker.isValid(newBlock = blockItem.getBlock())) {
@@ -123,7 +125,7 @@ public class SlabUseOnCurvePacket implements C2SPacket {
         BezierConnection bezierConnection = te.getConnections()
             .get(targetPos);
 
-        if (bezierConnection.getMaterial().trackType == CRTrackMaterials.CRTrackType.MONORAIL) {
+        if (TrackMaterialData.of(bezierConnection.getMaterial()).trackType == CRTrackMaterials.CRTrackType.MONORAIL) {
             Railways.LOGGER.warn(player.getScoreboardName() + "tried to slab a monorail track");
             return;
         }

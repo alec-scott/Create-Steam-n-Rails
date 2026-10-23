@@ -189,7 +189,7 @@ public abstract class MixinCarriageContraptionEntity extends OrientedContraption
     @Inject(method = "tickContraption", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/content/trains/entity/CarriageContraptionEntity;tickActors()V"))
     private void setupBufferDistanceData(CallbackInfo ci) {
         ICarriageBufferDistanceTracker distanceTracker = (ICarriageBufferDistanceTracker) carriage;
-        if (level.isClientSide) return;
+        if (level.isClientSide()) return;
 
         if (distanceTracker.railways$getLeadingDistance() != null && distanceTracker.railways$getTrailingDistance() != null) return;
 

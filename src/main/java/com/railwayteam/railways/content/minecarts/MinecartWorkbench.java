@@ -64,7 +64,7 @@ public class MinecartWorkbench extends MinecartBlock implements MenuProvider {
     InteractionResult ret = super.interact(player, hand);
     if (ret.consumesAction()) return ret;
     player.openMenu(this);
-    if (!player.level.isClientSide) {
+    if (!player.level.isClientSide()) {
       this.gameEvent(GameEvent.CONTAINER_OPEN, player);
       PiglinAi.angerNearbyPiglins(player, true);
       return InteractionResult.CONSUME;

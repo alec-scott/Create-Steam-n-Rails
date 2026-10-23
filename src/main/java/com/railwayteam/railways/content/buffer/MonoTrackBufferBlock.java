@@ -20,9 +20,8 @@ package com.railwayteam.railways.content.buffer;
 
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.content.custom_bogeys.special.monobogey.MonoBogeyBlock;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
@@ -32,11 +31,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Locale;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
 public class MonoTrackBufferBlock extends WoodVariantTrackBufferBlock {
     public static final EnumProperty<Style> STYLE = EnumProperty.create("style", Style.class);
     public static final BooleanProperty UPSIDE_DOWN = MonoBogeyBlock.UPSIDE_DOWN;
@@ -76,7 +72,7 @@ public class MonoTrackBufferBlock extends WoodVariantTrackBufferBlock {
             this.model = model;
         }
 
-        public ResourceLocation getModel() {
+        public Identifier getModel() {
             return Railways.asResource("block/buffer/" + model);
         }
 

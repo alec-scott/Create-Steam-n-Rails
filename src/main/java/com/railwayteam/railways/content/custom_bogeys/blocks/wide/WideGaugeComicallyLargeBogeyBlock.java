@@ -19,14 +19,14 @@
 package com.railwayteam.railways.content.custom_bogeys.blocks.wide;
 
 import com.railwayteam.railways.registry.CRBogeyStyles;
-import com.simibubi.create.content.trains.bogey.BogeySizes;
+import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import com.zurrtum.create.content.trains.bogey.BogeySize;
 import com.zurrtum.create.content.trains.bogey.BogeyStyle;
 import net.minecraft.world.phys.Vec3;
 
 public class WideGaugeComicallyLargeBogeyBlock extends WideGaugeBogeyBlock {
     public WideGaugeComicallyLargeBogeyBlock(Properties props) {
-        this(props, CRBogeyStyles.WIDE_COMICALLY_LARGE, BogeySizes.LARGE);
+        this(props, CRBogeyStyles.WIDE_COMICALLY_LARGE, AllBogeySizes.LARGE);
     }
 
     protected WideGaugeComicallyLargeBogeyBlock(Properties props, BogeyStyle style, BogeySize size) {

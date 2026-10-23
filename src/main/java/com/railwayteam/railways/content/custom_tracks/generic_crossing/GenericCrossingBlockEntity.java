@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.custom_tracks.generic_crossing;
 
+import com.zurrtum.create.AllTrackMaterials;
+
 import com.railwayteam.railways.content.custom_tracks.generic_crossing.TrackShapeLookup.GenericCrossingData;
 import com.railwayteam.railways.mixin_interfaces.IGenericCrossingTrackBE;
 import com.zurrtum.create.content.trains.track.TrackMaterial;
@@ -50,15 +52,15 @@ public class GenericCrossingBlockEntity extends SmartBlockEntity implements IMer
     @NotNull
     public TrackMaterial getPrimary() {
         if (materials == null)
-            return TrackMaterial.ANDESITE;
-        return materials.getFirst() == null ? TrackMaterial.ANDESITE : materials.getFirst();
+            return AllTrackMaterials.ANDESITE;
+        return materials.getFirst() == null ? AllTrackMaterials.ANDESITE : materials.getFirst();
     }
 
     @NotNull
     public TrackMaterial getSecondary() {
         if (materials == null)
-            return TrackMaterial.ANDESITE;
-        return materials.getSecond() == null ? TrackMaterial.ANDESITE : materials.getSecond();
+            return AllTrackMaterials.ANDESITE;
+        return materials.getSecond() == null ? AllTrackMaterials.ANDESITE : materials.getSecond();
     }
 
     @Override
@@ -117,7 +119,7 @@ public class GenericCrossingBlockEntity extends SmartBlockEntity implements IMer
     }
 
     public void initFrom(GenericCrossingData crossingData) {
-        if (level.isClientSide) return;
+        if (level.isClientSide()) return;
         boolean flip = crossingData.merged().getSecond();
         TrackMaterial primary = flip ? crossingData.overlayMaterial() : crossingData.existingMaterial();
         TrackMaterial secondary = flip ? crossingData.existingMaterial() : crossingData.overlayMaterial();

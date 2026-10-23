@@ -20,7 +20,6 @@ package com.railwayteam.railways.content.palettes.painting;
 
 import com.railwayteam.railways.content.palettes.PalettesColor;
 import com.railwayteam.railways.registry.CRTags;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -34,10 +33,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public class PaintBrushItem extends Item implements Vanishable {
     public PaintBrushItem(Properties properties) {
         super(properties);
@@ -69,7 +65,7 @@ public class PaintBrushItem extends Item implements Vanishable {
         if (target == null) return InteractionResult.PASS;
         if (target.getColor() == pitcherColor) return InteractionResult.PASS;
 
-        if (level.isClientSide) return InteractionResult.SUCCESS;
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         if (!target.repaint(pitcherColor)) return InteractionResult.FAIL;
 

@@ -200,7 +200,7 @@ public abstract class VentBlock extends CopycatBlock implements IWrenchable {
     }
 
     public void teleportConductor(@NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity, @Nullable Direction direction) {
-        if (level.isClientSide)
+        if (level.isClientSide())
             return;
         if (entity instanceof ConductorEntity conductor) {// && conductor.isPossessed()) {
             if (direction != null || conductor.ventCooldown <= 0)

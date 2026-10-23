@@ -23,10 +23,9 @@ import com.railwayteam.railways.content.buffer.BlockStateBlockItemGroup;
 import com.railwayteam.railways.registry.CRBlocks;
 import com.railwayteam.railways.registry.CRShapes;
 import com.zurrtum.create.catnip.math.VoxelShaper;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -36,11 +35,8 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Locale;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
 public class LinkPinBlock extends AbstractDyeableSingleBufferBlock implements BlockStateBlockItemGroup.GroupedBlock {
     public static final EnumProperty<Style> STYLE = EnumProperty.create("style", Style.class);
 
@@ -84,13 +80,13 @@ public class LinkPinBlock extends AbstractDyeableSingleBufferBlock implements Bl
             this.langName = langName;
         }
 
-        public ResourceLocation getModel() {
+        public Identifier getModel() {
             return Railways.asResource("block/buffer/single_deco/" + model);
         }
 
 
         @Override
-        public ResourceLocation getModel(Void context) {
+        public Identifier getModel(Void context) {
             return getModel();
         }
 

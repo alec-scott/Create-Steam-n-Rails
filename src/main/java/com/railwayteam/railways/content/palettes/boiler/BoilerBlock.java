@@ -33,7 +33,6 @@ import com.zurrtum.create.catnip.placement.PlacementHelpers;
 import com.zurrtum.create.catnip.placement.PlacementOffset;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -245,7 +244,6 @@ public class BoilerBlock extends Block implements IWrenchable, IHasCustomOutline
     }
 
     // Boilers can follow shaft placement, it's pretty much 1:1 apart from boilers being Horizontal only
-    @MethodsReturnNonnullByDefault
     private static class PlacementHelper extends PoleHelper<Direction.Axis> {
         private PlacementHelper() {
             super(state -> state.getBlock() instanceof BoilerBlock,

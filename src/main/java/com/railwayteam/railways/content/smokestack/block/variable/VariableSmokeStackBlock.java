@@ -26,7 +26,6 @@ import com.railwayteam.railways.content.smokestack.block.StyledSmokeStackBlock;
 import com.railwayteam.railways.content.smokestack.block.be.SmokeStackBlockEntity;
 import com.railwayteam.railways.util.ShapeWrapper;
 import com.zurrtum.create.content.equipment.wrench.IWrenchable;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -54,12 +53,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.EnumMap;
 import java.util.function.Supplier;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public non-sealed class VariableSmokeStackBlock extends StyledSmokeStackBlock implements VariableStack {
     public static final EnumProperty<VariableStackPart> PART = EnumProperty.create("part", VariableStackPart.class);
     public static final EnumProperty<VariableStackPart> PART_NO_HALF = EnumProperty.create("part", VariableStackPart.class, VariableStackPart::isFullHeight);

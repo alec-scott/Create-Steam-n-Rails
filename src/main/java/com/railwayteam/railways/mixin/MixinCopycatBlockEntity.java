@@ -41,7 +41,7 @@ public abstract class MixinCopycatBlockEntity extends SmartBlockEntity implement
     public void railways$setMaterialSimple(BlockState material) {
         this.material = material;
 
-        if (level == null || !level.isClientSide) {
+        if (level == null || !level.isClientSide()) {
             notifyUpdate();
             return;
         }

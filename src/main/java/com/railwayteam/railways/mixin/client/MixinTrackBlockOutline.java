@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin.client;
 
+import com.zurrtum.create.AllTrackMaterials;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.railwayteam.railways.content.custom_tracks.generic_crossing.GenericCrossingBlock;
@@ -88,7 +90,7 @@ public abstract class MixinTrackBlockOutline {
             )
     )
     private static BlockState railways$grabMonorailState(BlockState state) {
-        railways$walkingMaterial = state.getBlock() instanceof TrackBlock trackBlock ? trackBlock.getMaterial() : TrackMaterial.ANDESITE;
+        railways$walkingMaterial = state.getBlock() instanceof TrackBlock trackBlock ? trackBlock.getMaterial() : AllTrackMaterials.ANDESITE;
         return state;
     }
 

@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.compat.tracks;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.railwayteam.railways.ModSetup;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.compat.Mods;
@@ -38,7 +40,7 @@ import com.zurrtum.create.content.trains.track.TrackBlock;
 import com.zurrtum.create.content.trains.track.TrackMaterial;
 import com.railwayteam.railways.port.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 
@@ -51,7 +53,7 @@ import static com.railwayteam.railways.Railways.registrate;
 import static com.railwayteam.railways.compat.tracks.TrackCompatUtils.buildCompatModels;
 import static com.railwayteam.railways.compat.tracks.TrackCompatUtils.makeTrack;
 import static com.railwayteam.railways.registry.CRItems.ITEM_INCOMPLETE_TRACK;
-import static com.simibubi.create.content.trains.track.TrackMaterialFactory.make;
+import static com.railwayteam.railways.port.create.track.TrackMaterialFactory.make;
 
 public class GenericTrackCompat {
     private static final Map<String, GenericTrackCompat> ALL = new HashMap<>();
@@ -108,9 +110,9 @@ public class GenericTrackCompat {
             NonNullSupplier<TrackBlock> standardBlock = makeTrack(standardMaterial);
             BLOCKS.put(name, standardBlock);
 
-            ITEM_INCOMPLETE_TRACK.put(standardMaterial, registrate().item("track_incomplete_" + modid + "_" + standardMaterial.resourceName(), SequencedAssemblyItem::new)
-                .model((c, p) -> p.generated(c, asResource("item/track_incomplete/track_incomplete_" + standardMaterial.resourceName())))
-                .lang("Incomplete " + standardMaterial.langName + " Track")
+            ITEM_INCOMPLETE_TRACK.put(standardMaterial, registrate().item("track_incomplete_" + modid + "_" + TrackMaterialData.of(standardMaterial).resourceName(), SequencedAssemblyItem::new)
+                .model((c, p) -> p.generated(c, asResource("item/track_incomplete/track_incomplete_" + TrackMaterialData.of(standardMaterial).resourceName())))
+                .lang("Incomplete " + TrackMaterialData.of(standardMaterial).langName + " Track")
                 .register());
 
             // wide gauge
@@ -127,9 +129,9 @@ public class GenericTrackCompat {
             CRBlocks.WIDE_GAUGE_TRACKS.put(wideMaterial, wideBlock);
             BLOCKS.put(name+"_wide", wideBlock);
 
-            ITEM_INCOMPLETE_TRACK.put(wideMaterial, registrate().item("track_incomplete_" + modid + "_" + wideMaterial.resourceName(), SequencedAssemblyItem::new)
-                .model((c, p) -> p.generated(c, asResource("item/track_incomplete/track_incomplete_" + wideMaterial.resourceName())))
-                .lang("Incomplete " + wideMaterial.langName + " Track")
+            ITEM_INCOMPLETE_TRACK.put(wideMaterial, registrate().item("track_incomplete_" + modid + "_" + TrackMaterialData.of(wideMaterial).resourceName(), SequencedAssemblyItem::new)
+                .model((c, p) -> p.generated(c, asResource("item/track_incomplete/track_incomplete_" + TrackMaterialData.of(wideMaterial).resourceName())))
+                .lang("Incomplete " + TrackMaterialData.of(wideMaterial).langName + " Track")
                 .register());
 
             // narrow gauge
@@ -146,9 +148,9 @@ public class GenericTrackCompat {
             CRBlocks.NARROW_GAUGE_TRACKS.put(narrowMaterial, narrowBlock);
             BLOCKS.put(name+"_narrow", narrowBlock);
 
-            ITEM_INCOMPLETE_TRACK.put(narrowMaterial, registrate().item("track_incomplete_" + modid + "_" + narrowMaterial.resourceName(), SequencedAssemblyItem::new)
-                .model((c, p) -> p.generated(c, asResource("item/track_incomplete/track_incomplete_" + narrowMaterial.resourceName())))
-                .lang("Incomplete " + narrowMaterial.langName + " Track")
+            ITEM_INCOMPLETE_TRACK.put(narrowMaterial, registrate().item("track_incomplete_" + modid + "_" + TrackMaterialData.of(narrowMaterial).resourceName(), SequencedAssemblyItem::new)
+                .model((c, p) -> p.generated(c, asResource("item/track_incomplete/track_incomplete_" + TrackMaterialData.of(narrowMaterial).resourceName())))
+                .lang("Incomplete " + TrackMaterialData.of(narrowMaterial).langName + " Track")
                 .register());
         }
     }
@@ -157,11 +159,11 @@ public class GenericTrackCompat {
         return TextUtils.titleCaseConversion(name.replace('_', ' '));
     }
 
-    protected ResourceLocation asResource(String path) {
-        return new ResourceLocation(modid, path);
+    protected Identifier asResource(String path) {
+        return Identifier.fromNamespaceAndPath(modid, path);
     }
 
-    protected ResourceLocation getSlabLocation(String name) {
+    protected Identifier getSlabLocation(String name) {
         return asResource(name+"_slab");
     }
 
@@ -177,22 +179,22 @@ public class GenericTrackCompat {
     }
 
     private TrackMaterial wideVariant(TrackMaterial material) {
-        String path = material.id.getPath() + "_wide";
+        String path = material.getId().getPath() + "_wide";
         return buildCompatModels(this, make(asResource(path))
-            .lang("Wide " + material.langName)
+            .lang("Wide " + TrackMaterialData.of(material).langName)
             .trackType(CRTrackType.WIDE_GAUGE)
             .block(() -> CRBlocks.WIDE_GAUGE_TRACKS.get(CRTrackMaterials.WIDE_GAUGE.get(material)))
-            .particle(material.particle)
+            .particle(TrackMaterialData.of(material).particle)
             .noRecipeGen());
     }
 
     private TrackMaterial narrowVariant(TrackMaterial material) {
-        String path = material.id.getPath() + "_narrow";
+        String path = material.getId().getPath() + "_narrow";
         return buildCompatModels(this, make(asResource(path))
-            .lang("Narrow " + material.langName)
+            .lang("Narrow " + TrackMaterialData.of(material).langName)
             .trackType(CRTrackType.NARROW_GAUGE)
             .block(() -> CRBlocks.NARROW_GAUGE_TRACKS.get(CRTrackMaterials.NARROW_GAUGE.get(material)))
-            .particle(material.particle)
+            .particle(TrackMaterialData.of(material).particle)
             .noRecipeGen());
     }
 }

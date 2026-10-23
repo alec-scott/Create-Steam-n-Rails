@@ -21,12 +21,12 @@ package com.railwayteam.railways.util.packet;
 import com.railwayteam.railways.content.bogey_menu.handler.BogeyMenuHandlerServer;
 import com.railwayteam.railways.multiloader.C2SPacket;
 import com.zurrtum.create.AllBogeyStyles;
-import com.simibubi.create.content.trains.bogey.BogeySizes;
+import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import com.zurrtum.create.content.trains.bogey.BogeySize;
 import com.zurrtum.create.content.trains.bogey.BogeyStyle;
 import com.zurrtum.create.catnip.data.Pair;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,11 +46,11 @@ public class BogeyStyleSelectionPacket implements C2SPacket {
     }
 
     public BogeyStyleSelectionPacket(FriendlyByteBuf buf) {
-        ResourceLocation loc = buf.readResourceLocation();
+        Identifier loc = buf.readIdentifier();
         style = AllBogeyStyles.BOGEY_STYLES.getOrDefault(loc, AllBogeyStyles.STANDARD);
         if (buf.readBoolean()) {
-            ResourceLocation sizeLoc = buf.readResourceLocation();
-            size = BogeySizes.allSortedIncreasing().stream()
+            Identifier sizeLoc = buf.readIdentifier();
+            size = AllBogeySizes.allSortedIncreasing().stream()
                     .filter((s) -> s.id().equals(sizeLoc))
                     .findFirst().orElse(null);
         } else {
@@ -60,10 +60,10 @@ public class BogeyStyleSelectionPacket implements C2SPacket {
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeResourceLocation(style.id);
+        buffer.writeIdentifier(style.id);
         buffer.writeBoolean(size != null);
         if (size != null)
-            buffer.writeResourceLocation(size.id());
+            buffer.writeIdentifier(size.id());
     }
 
     @Override

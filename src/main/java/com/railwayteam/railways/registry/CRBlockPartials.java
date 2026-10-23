@@ -21,16 +21,16 @@ package com.railwayteam.railways.registry;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.registry.CRPalettes.PalettesColorList;
 import com.zurrtum.create.Create;
-import com.zurrtum.create.content.trains.track.TrackMaterial.TrackType;
+import com.railwayteam.railways.port.create.track.TrackType;
 import com.zurrtum.create.content.trains.track.TrackShape;
 import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
 import com.zurrtum.create.catnip.data.Couple;
 import com.zurrtum.create.client.catnip.lang.Lang;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -47,9 +47,9 @@ public class CRBlockPartials {
     public static final Map<DyeColor, PartialModel> CONDUCTOR_WHISTLE_FLAGS = new EnumMap<>(DyeColor.class);
     public static final Map<String, PartialModel> CUSTOM_CONDUCTOR_CAPS = new HashMap<>();
     public static final Map<String, PartialModel> CUSTOM_CONDUCTOR_ONLY_CAPS = new HashMap<>();
-    public static final Map<String, ResourceLocation> CUSTOM_CONDUCTOR_SKINS = new HashMap<>();
+    public static final Map<String, Identifier> CUSTOM_CONDUCTOR_SKINS = new HashMap<>();
     public static final Set<String> NO_TILT_CAPS = new HashSet<>();
-    public static final Map<String, ResourceLocation> CUSTOM_CONDUCTOR_SKINS_FOR_NAME = new HashMap<>(); // for if a conductor is renamed, rather than the cap
+    public static final Map<String, Identifier> CUSTOM_CONDUCTOR_SKINS_FOR_NAME = new HashMap<>(); // for if a conductor is renamed, rather than the cap
 
     public static void registerCustomCap(String itemName, String modelLoc) {
         CUSTOM_CONDUCTOR_CAPS.put(itemName, PartialModel.of(Railways.asResource("item/dev_caps/"+modelLoc)));

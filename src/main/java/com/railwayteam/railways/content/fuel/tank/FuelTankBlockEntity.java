@@ -49,7 +49,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -96,7 +96,7 @@ public class FuelTankBlockEntity extends SmartBlockEntity implements IHaveGoggle
 
     protected void updateConnectivity() {
         updateConnectivity = false;
-        if (level != null && level.isClientSide)
+        if (level != null && level.isClientSide())
             return;
         if (!isController())
             return;
@@ -144,7 +144,7 @@ public class FuelTankBlockEntity extends SmartBlockEntity implements IHaveGoggle
     public void initialize() {
         super.initialize();
         sendData();
-        if (level != null && level.isClientSide)
+        if (level != null && level.isClientSide())
             invalidateRenderBoundingBox();
     }
 
@@ -182,7 +182,7 @@ public class FuelTankBlockEntity extends SmartBlockEntity implements IHaveGoggle
             }
         }
 
-        if (level != null && !level.isClientSide) {
+        if (level != null && !level.isClientSide()) {
             setChanged();
             sendData();
         }
@@ -196,7 +196,7 @@ public class FuelTankBlockEntity extends SmartBlockEntity implements IHaveGoggle
     }
 
     protected void setLuminosity(int luminosity) {
-        if (level != null && level.isClientSide)
+        if (level != null && level.isClientSide())
             return;
         if (this.luminosity == luminosity)
             return;
@@ -205,7 +205,7 @@ public class FuelTankBlockEntity extends SmartBlockEntity implements IHaveGoggle
     }
 
     protected void updateStateLuminosity() {
-        if (level != null && level.isClientSide)
+        if (level != null && level.isClientSide())
             return;
         int actualLuminosity = luminosity;
         FuelTankBlockEntity controllerBE = getControllerBE();
@@ -240,7 +240,7 @@ public class FuelTankBlockEntity extends SmartBlockEntity implements IHaveGoggle
     }
 
     public void removeController(boolean keepFluids) {
-        if (level != null && level.isClientSide)
+        if (level != null && level.isClientSide())
             return;
         updateConnectivity = true;
         if (!keepFluids)
@@ -329,7 +329,7 @@ public class FuelTankBlockEntity extends SmartBlockEntity implements IHaveGoggle
 
     @Override
     public void setController(BlockPos controller) {
-        if (level != null && level.isClientSide && !isVirtual())
+        if (level != null && level.isClientSide() && !isVirtual())
             return;
         if (controller.equals(this.controller))
             return;

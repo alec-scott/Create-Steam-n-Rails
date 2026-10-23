@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin.client;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.content.custom_tracks.casing.CasingRenderUtils;
@@ -26,7 +28,7 @@ import com.railwayteam.railways.registry.CRBlockPartials;
 import com.zurrtum.create.content.trains.track.BezierConnection;
 import com.zurrtum.create.content.trains.track.TrackBlock;
 import com.zurrtum.create.content.trains.track.TrackBlockEntity;
-import com.zurrtum.create.content.trains.track.TrackMaterial.TrackType;
+import com.railwayteam.railways.port.create.track.TrackType;
 import com.zurrtum.create.content.trains.track.TrackShape;
 import com.zurrtum.create.content.trains.track.TrackShape;
 import com.zurrtum.create.client.content.trains.track.TrackVisual;
@@ -142,7 +144,7 @@ public abstract class MixinTrackVisual extends AbstractVisual implements BlockEn
                 }
                 TrackType trackType = null;
                 if (state.getBlock() instanceof TrackBlock trackBlock)
-                    trackType = trackBlock.getMaterial().trackType;
+                    trackType = TrackMaterialData.of(trackBlock.getMaterial()).trackType;
 
                 CRBlockPartials.TrackCasingSpec spec = CRBlockPartials.TRACK_CASINGS.get(shape);
                 if (((IHasTrackCasing) this.blockEntity).railways$isAlternate())
@@ -207,7 +209,7 @@ public abstract class MixinTrackVisual extends AbstractVisual implements BlockEn
                             BlockPos relativePos = segments.lightPosition[i].offset(this.pos);
                             casingData.add(Pair.of(casingInstance, relativePos));
 
-                            TrackType trackType = bc.getMaterial().trackType;
+                            TrackType trackType = TrackMaterialData.of(bc.getMaterial()).trackType;
                             if (trackType == WIDE_GAUGE) {
                                 for (boolean first : Iterate.trueAndFalse) {
                                     for (boolean inner : Iterate.trueAndFalse) {

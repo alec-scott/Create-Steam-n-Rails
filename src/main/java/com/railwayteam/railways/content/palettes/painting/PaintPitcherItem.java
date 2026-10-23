@@ -25,7 +25,6 @@ import com.railwayteam.railways.registry.CRAdvancements;
 import com.railwayteam.railways.registry.CRItems;
 import com.railwayteam.railways.registry.CRTags;
 import com.railwayteam.railways.util.ItemUtils;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.Tag;
@@ -50,15 +49,12 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.railwayteam.railways.util.ItemUtils.copyStackData;
 import static com.railwayteam.railways.util.ItemUtils.oppositeHand;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public abstract class PaintPitcherItem extends Item {
     public static final int MAX_LEVELS = 32;
     public static final long FLUID_PER_LEVEL = FluidUnits.bucket() / 8;
@@ -98,7 +94,7 @@ public abstract class PaintPitcherItem extends Item {
     }
 
     public static void usePaint(Player player, InteractionHand hand) {
-        if (player.level.isClientSide) return;
+        if (player.level.isClientSide()) return;
         if (player.getAbilities().instabuild) return;
 
         ItemStack stack = player.getItemInHand(hand);
@@ -186,7 +182,7 @@ public abstract class PaintPitcherItem extends Item {
         if (livingEntity instanceof ServerPlayer serverPlayer)
             CriteriaTriggers.CONSUME_ITEM.trigger(serverPlayer, stack);
 
-        if (!level.isClientSide && color != null) {
+        if (!level.isClientSide() && color != null) {
             int levels = getLevels(stack);
             livingEntity.addEffect(new MobEffectInstance(
                 MobEffects.POISON, levels * 20, 0,

@@ -20,12 +20,12 @@ package com.railwayteam.railways.content.custom_bogeys.blocks.standard;
 
 import com.railwayteam.railways.content.custom_bogeys.blocks.base.CRBogeyBlock;
 import com.railwayteam.railways.registry.CRBogeyStyles;
-import com.simibubi.create.content.trains.bogey.BogeySizes;
+import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import net.minecraft.world.phys.Vec3;
 
 public class TripleAxleBogeyBlock extends CRBogeyBlock {
     public TripleAxleBogeyBlock(Properties props) {
-        super(props, CRBogeyStyles.HEAVYWEIGHT, BogeySizes.SMALL);
+        super(props, CRBogeyStyles.HEAVYWEIGHT, AllBogeySizes.SMALL);
     }
 
     @Override

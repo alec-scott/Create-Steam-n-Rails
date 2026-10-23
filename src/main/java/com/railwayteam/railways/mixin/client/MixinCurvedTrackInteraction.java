@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin.client;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.railwayteam.railways.content.custom_tracks.casing.CasingChecker;
 import com.railwayteam.railways.content.custom_tracks.casing.SlabUseOnCurvePacket;
 import com.railwayteam.railways.content.handcar.HandcarItem;
@@ -75,7 +77,7 @@ public abstract class MixinCurvedTrackInteraction {
         }
 
         // allow encasing if no connection or not monorail
-        if (connection == null || connection.getMaterial().trackType != CRTrackMaterials.CRTrackType.MONORAIL) {
+        if (connection == null || TrackMaterialData.of(connection.getMaterial()).trackType != CRTrackMaterials.CRTrackType.MONORAIL) {
             // if non-empty, must be a valid slab
             if (!held.isEmpty()) {
                 if (!(held.getItem() instanceof BlockItem block))

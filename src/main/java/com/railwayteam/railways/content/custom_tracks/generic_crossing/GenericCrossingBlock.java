@@ -43,7 +43,6 @@ import com.zurrtum.create.catnip.data.Iterate;
 import com.zurrtum.create.catnip.math.VecHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.AxisDirection;
@@ -74,7 +73,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.ticks.LevelTickAccess;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -88,8 +86,6 @@ import static com.zurrtum.create.AllShapes.TRACK_DIAG;
 import static com.zurrtum.create.AllShapes.TRACK_ORTHO;
 import static com.zurrtum.create.AllShapes.TRACK_ORTHO_LONG;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
 public class GenericCrossingBlock extends Block implements IBE<GenericCrossingBlockEntity>, ITrackBlock, IWrenchable, SpecialBlockItemRequirement, ProperWaterloggedBlock {
 
     public static final EnumProperty<TrackShape> SHAPE = TrackBlock.SHAPE;
@@ -266,7 +262,7 @@ public class GenericCrossingBlock extends Block implements IBE<GenericCrossingBl
     public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {
         if (pOldState.getBlock() == this)
             return;
-        if (pLevel.isClientSide)
+        if (pLevel.isClientSide())
             return;
         LevelTickAccess<Block> blockTicks = pLevel.getBlockTicks();
         if (!blockTicks.hasScheduledTick(pPos, this))
@@ -314,7 +310,7 @@ public class GenericCrossingBlock extends Block implements IBE<GenericCrossingBl
     public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
         Player player = context.getPlayer();
         Level level = context.getLevel();
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             BlockEntity blockEntity = level.getBlockEntity(context.getClickedPos());
             if (blockEntity instanceof GenericCrossingBlockEntity crossingBE) {
                 crossingBE.cancelDrops = true;

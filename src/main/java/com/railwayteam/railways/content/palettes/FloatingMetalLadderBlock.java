@@ -19,15 +19,11 @@
 package com.railwayteam.railways.content.palettes;
 
 import com.zurrtum.create.content.decoration.MetalLadderBlock;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public class FloatingMetalLadderBlock extends MetalLadderBlock {
     public FloatingMetalLadderBlock(Properties properties) {
         super(properties);

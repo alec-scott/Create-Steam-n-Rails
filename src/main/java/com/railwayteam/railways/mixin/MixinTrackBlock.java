@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.railwayteam.railways.content.bogey_menu.handler.BogeyMenuHandlerServer;
 import com.railwayteam.railways.content.custom_tracks.CustomTrackBlock;
 import com.railwayteam.railways.content.custom_tracks.casing.CasingCollisionUtils;
@@ -26,12 +28,12 @@ import com.railwayteam.railways.content.roller_extensions.TrackReplacePaver;
 import com.railwayteam.railways.registry.CRBogeyStyles;
 import com.railwayteam.railways.registry.CRShapes;
 import com.zurrtum.create.AllBogeyStyles;
-import com.simibubi.create.content.trains.bogey.BogeySizes;
+import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import com.zurrtum.create.content.trains.bogey.BogeySize;
 import com.zurrtum.create.content.trains.bogey.BogeyStyle;
 import com.zurrtum.create.content.trains.track.TrackBlock;
 import com.zurrtum.create.content.trains.track.TrackBlockEntity;
-import com.zurrtum.create.content.trains.track.TrackMaterial.TrackType;
+import com.railwayteam.railways.port.create.track.TrackType;
 import com.zurrtum.create.content.trains.track.TrackShape;
 import com.zurrtum.create.catnip.data.Pair;
 import net.minecraft.core.BlockPos;
@@ -76,7 +78,7 @@ public class MixinTrackBlock {
     Pair<BogeyStyle, BogeySize> styleData = BogeyMenuHandlerServer.getStyle(BogeyMenuHandlerServer.getCurrentPlayer());
     BogeyStyle style = styleData.getFirst();
 
-    TrackType trackType = ((TrackBlock) (Object) this).getMaterial().trackType;
+    TrackType trackType = TrackMaterialData.of(((TrackBlock) (Object) this).getMaterial()).trackType;
 
     Optional<BogeyStyle> mappedStyleOptional = CRBogeyStyles.getMapped(style, trackType, true);
     if (mappedStyleOptional.isPresent())
@@ -86,8 +88,8 @@ public class MixinTrackBlock {
     if (style == AllBogeyStyles.STANDARD)
       return;
 
-    BogeySize size = selectedSize != null ? selectedSize : BogeySizes.allSortedIncreasing().get(0);
-    int escape = BogeySizes.allSortedIncreasing().size();
+    BogeySize size = selectedSize != null ? selectedSize : AllBogeySizes.allSortedIncreasing().get(0);
+    int escape = AllBogeySizes.allSortedIncreasing().size();
     while (!style.validSizes().contains(size)) {
       if (escape < 0)
         return;

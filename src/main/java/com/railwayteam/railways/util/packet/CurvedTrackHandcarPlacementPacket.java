@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.util.packet;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
+import com.railwayteam.railways.port.create.track.TrackType;
+
 import com.railwayteam.railways.content.handcar.HandcarItem;
 import com.railwayteam.railways.multiloader.C2SPacket;
 import com.railwayteam.railways.registry.CRTrackMaterials;
@@ -87,13 +91,13 @@ public class CurvedTrackHandcarPlacementPacket implements C2SPacket {
             });
 
         BezierConnection bc = be.getConnections().get(targetPos);
-        TrackMaterial.TrackType trackType = bc.getMaterial().trackType;
-        if (!(trackType == TrackMaterial.TrackType.STANDARD || trackType == CRTrackMaterials.CRTrackType.UNIVERSAL))
+        TrackType trackType = TrackMaterialData.of(bc.getMaterial()).trackType;
+        if (!(trackType == TrackType.STANDARD || trackType == CRTrackMaterials.CRTrackType.UNIVERSAL))
             return;
 
         if (result.getValue().feedback != null) {
-            player.displayClientMessage(CreateLang.translateDirect(result.getValue().feedback)
-                .withStyle(ChatFormatting.RED), true);
+            player.sendOverlayMessage(CreateLang.translateDirect(result.getValue().feedback)
+                .withStyle(ChatFormatting.RED));
             AllSoundEvents.DENY.play(player.level, null, pos, .5f, 1);
             return;
         }

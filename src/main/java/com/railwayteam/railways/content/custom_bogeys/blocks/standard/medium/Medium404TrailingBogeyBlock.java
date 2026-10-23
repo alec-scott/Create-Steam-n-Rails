@@ -20,12 +20,12 @@ package com.railwayteam.railways.content.custom_bogeys.blocks.standard.medium;
 
 import com.railwayteam.railways.content.custom_bogeys.blocks.base.CRBogeyBlock;
 import com.railwayteam.railways.registry.CRBogeyStyles;
-import com.simibubi.create.content.trains.bogey.BogeySizes;
+import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import net.minecraft.world.phys.Vec3;
 
 public class Medium404TrailingBogeyBlock extends CRBogeyBlock {
     public Medium404TrailingBogeyBlock(Properties props) {
-        super(props, CRBogeyStyles.MEDIUM_4_0_4_TRAILING, BogeySizes.SMALL);
+        super(props, CRBogeyStyles.MEDIUM_4_0_4_TRAILING, AllBogeySizes.SMALL);
     }
 
     @Override

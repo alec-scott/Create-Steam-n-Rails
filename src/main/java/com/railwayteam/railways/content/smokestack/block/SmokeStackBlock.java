@@ -24,7 +24,6 @@ import com.railwayteam.railways.content.smokestack.block.be.SmokeStackBlockEntit
 import com.railwayteam.railways.registry.CRBlockEntities;
 import com.railwayteam.railways.util.ShapeWrapper;
 import com.zurrtum.create.foundation.block.IBE;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.ItemTags;
@@ -47,10 +46,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public class SmokeStackBlock extends AbstractSmokeStackBlock<SmokeStackBlockEntity> {
     public final SmokeEmissionParams emissionParams;
     public final RotationType rotationType;
@@ -117,21 +113,21 @@ public class SmokeStackBlock extends AbstractSmokeStackBlock<SmokeStackBlockEnti
             if (!pPlayer.isCreative()) {
                 pPlayer.getItemInHand(pHand).shrink(1);
             }
-            return InteractionResult.sidedSuccess(pLevel.isClientSide);
+            return InteractionResult.sidedSuccess(pLevel.isClientSide());
         }
         if (pPlayer.getItemInHand(pHand).is(ItemTags.SOUL_FIRE_BASE_BLOCKS)) {
             withBlockEntityDo(pLevel, pPos, te -> te.setSoul(true));
             if (!pPlayer.isCreative()) {
                 pPlayer.getItemInHand(pHand).shrink(1);
             }
-            return InteractionResult.sidedSuccess(pLevel.isClientSide);
+            return InteractionResult.sidedSuccess(pLevel.isClientSide());
         }
         if (pPlayer.isShiftKeyDown()) {
             withBlockEntityDo(pLevel, pPos, te -> {
                 te.setSoul(false);
                 te.setColor(null);
             });
-            return InteractionResult.sidedSuccess(pLevel.isClientSide);
+            return InteractionResult.sidedSuccess(pLevel.isClientSide());
         }
         return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
     }

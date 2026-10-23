@@ -23,7 +23,7 @@ import com.railwayteam.railways.registry.CRPonderTags;
 import com.zurrtum.create.client.ponder.api.registration.PonderPlugin;
 import com.zurrtum.create.client.ponder.api.registration.PonderSceneRegistrationHelper;
 import com.zurrtum.create.client.ponder.api.registration.PonderTagRegistrationHelper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 public class CRPonderPlugin implements PonderPlugin {
@@ -33,12 +33,12 @@ public class CRPonderPlugin implements PonderPlugin {
     }
 
     @Override
-    public void registerScenes(@NotNull PonderSceneRegistrationHelper<ResourceLocation> helper) {
+    public void registerScenes(@NotNull PonderSceneRegistrationHelper<Identifier> helper) {
         CRPonderIndex.register(helper);
     }
 
     @Override
-    public void registerTags(PonderTagRegistrationHelper<ResourceLocation> helper) {
+    public void registerTags(PonderTagRegistrationHelper<Identifier> helper) {
         CRPonderTags.register(helper);
     }
 }

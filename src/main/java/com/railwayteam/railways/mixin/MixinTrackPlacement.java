@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
@@ -56,11 +58,11 @@ public class MixinTrackPlacement {
     })
     private static double modifiedCurvesForGauges(double value, Level level, Player player, BlockPos pos2, BlockState state2, ItemStack stack) {
         // Wide Gauge
-        if (TrackMaterial.fromItem(stack.getItem()).trackType == CRTrackMaterials.CRTrackType.WIDE_GAUGE)
+        if (TrackMaterialData.of(TrackMaterial.fromItem(stack.getItem())).trackType == CRTrackMaterials.CRTrackType.WIDE_GAUGE)
             return value * 2;
         // Narrow Gauge and Phantom Tracks
-        else if (TrackMaterial.fromItem(stack.getItem()).trackType == CRTrackMaterials.CRTrackType.NARROW_GAUGE ||
-                TrackMaterial.fromItem(stack.getItem()).trackType == CRTrackMaterials.CRTrackType.UNIVERSAL)
+        else if (TrackMaterialData.of(TrackMaterial.fromItem(stack.getItem())).trackType == CRTrackMaterials.CRTrackType.NARROW_GAUGE ||
+                TrackMaterialData.of(TrackMaterial.fromItem(stack.getItem())).trackType == CRTrackMaterials.CRTrackType.UNIVERSAL)
             return value * 0.5;
 
         return value;

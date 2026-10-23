@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.mixin.client;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
+import com.railwayteam.railways.port.create.track.TrackType;
+
 import com.zurrtum.create.client.flywheel.lib.transform.TransformStack;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -48,7 +52,7 @@ public class MixinStationRenderer {
             && be.getLevel().getBlockEntity(currentPos) instanceof IHasTrackCasing casing && casing.railways$getTrackCasing() != null) {
             TrackShape shape = trackState.getValue(TrackBlock.SHAPE);
             CRBlockPartials.TrackCasingSpec spec = CRBlockPartials.TRACK_CASINGS.get(shape);
-            TrackMaterial.TrackType trackType = trackBlock.getMaterial().trackType;
+            TrackType trackType = TrackMaterialData.of(trackBlock.getMaterial()).trackType;
             if (spec != null)
                 TransformStack.of(ms)
                     .translate(

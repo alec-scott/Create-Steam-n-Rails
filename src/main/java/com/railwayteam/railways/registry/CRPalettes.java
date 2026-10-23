@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.registry;
 
+import com.zurrtum.create.AllItemTags;
+
+import com.zurrtum.create.AllBlockTags;
+
 import com.railwayteam.railways.ModSetup;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.base.EnumFilledList;
@@ -39,7 +43,6 @@ import com.railwayteam.railways.content.palettes.smokebox.PalettesSmokeboxBlock;
 import com.railwayteam.railways.content.palettes.trapdoors.PalettesTrapDoorBlock;
 import com.railwayteam.railways.util.BlockStateUtils;
 import com.railwayteam.railways.util.TextUtils;
-import com.simibubi.create.AllTags;
 import com.zurrtum.create.content.contraptions.behaviour.TrapdoorMovingInteraction;
 import com.zurrtum.create.content.decoration.MetalLadderBlock;
 import com.zurrtum.create.content.decoration.slidingDoor.SlidingDoorMovementBehaviour;
@@ -543,7 +546,7 @@ public class CRPalettes {
     @SuppressWarnings("unchecked")
     private static final TagKey<Block>[] NO_TAGS = (TagKey<Block>[]) new TagKey[0];
     @SuppressWarnings("unchecked")
-    private static final TagKey<Block>[] NO_DOUBLE_DOOR_TAGS = (TagKey<Block>[]) new TagKey[]{AllTags.AllBlockTags.NON_DOUBLE_DOOR.tag};
+    private static final TagKey<Block>[] NO_DOUBLE_DOOR_TAGS = (TagKey<Block>[]) new TagKey[]{AllBlockTags.NON_DOUBLE_DOOR};
 
     @SafeVarargs
     private static BlockEntry<?> hingedLocometalDoor(TransformerProvider transformer, PalettesColor color, String colorString, String colorName, TagKey<Item>... tags) {
@@ -558,7 +561,7 @@ public class CRPalettes {
     @SafeVarargs
     private static BlockEntry<?> slidingLocometalDoor(TransformerProvider transformer, PalettesColor color, String colorString, String colorName, TagKey<Item>... tags) {
         TagKey<Item>[] slidingTags = Arrays.copyOf(tags, tags.length + 1);
-        slidingTags[tags.length] = AllTags.AllItemTags.CONTRAPTION_CONTROLLED.tag;
+        slidingTags[tags.length] = AllItemTags.CONTRAPTION_CONTROLLED;
         return REGISTRATE.block(joinUnderscore(colorString, "sliding_locometal_door"), PalettesSlidingDoorBlock.create(false, color))
             .transform(transformer.get())
             .transform(BuilderTransformers.locometalDoor(color, "sliding", slidingTags, NO_DOUBLE_DOOR_TAGS))
@@ -571,7 +574,7 @@ public class CRPalettes {
     @SafeVarargs
     private static BlockEntry<?> foldingLocometalDoor(TransformerProvider transformer, PalettesColor color, String colorString, String colorName, TagKey<Item>... tags) {
         TagKey<Item>[] foldingTags = Arrays.copyOf(tags, tags.length + 1);
-        foldingTags[tags.length] = AllTags.AllItemTags.CONTRAPTION_CONTROLLED.tag;
+        foldingTags[tags.length] = AllItemTags.CONTRAPTION_CONTROLLED;
         return REGISTRATE.block(joinUnderscore(colorString, "folding_locometal_door"), PalettesSlidingDoorBlock.create(true, color))
             .transform(transformer.get())
             .transform(BuilderTransformers.locometalDoor(color, "folding", foldingTags, NO_DOUBLE_DOOR_TAGS))
@@ -609,7 +612,7 @@ public class CRPalettes {
                 .lang(joinSpace(colorName, type.getLangName(), "Locometal Window"))
                 .addLayer(() -> RenderType::cutoutMipped)
                 .tag(BlockTags.IMPERMEABLE)
-                .removeTag(ProviderType.BLOCK_TAGS, AllTags.AllBlockTags.WRENCH_PICKUP.tag)
+                .removeTag(ProviderType.BLOCK_TAGS, AllBlockTags.WRENCH_PICKUP)
                 .loot(RegistrateBlockLootTables::dropWhenSilkTouch)
                 .onRegister(connectedTextures(() -> new PalettesPillarCTBehaviour(CRSpriteShifts.WINDOWS.get(type).get(color))))
                 .item()

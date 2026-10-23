@@ -108,7 +108,7 @@ public abstract class TrackCouplerBlock extends Block implements IBE<TrackCouple
 	@Override
 	public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos,
 								boolean pIsMoving) {
-		if (pLevel.isClientSide)
+		if (pLevel.isClientSide())
 			return;
 		boolean powered = pState.getValue(POWERED);
 		if (powered == pLevel.hasNeighborSignal(pPos))
@@ -129,14 +129,14 @@ public abstract class TrackCouplerBlock extends Block implements IBE<TrackCouple
 	@Override
 	public InteractionResult onWrenched(BlockState state, UseOnContext context) {
 		Level level = context.getLevel();
-		if (level.isClientSide)
+		if (level.isClientSide())
 			return InteractionResult.SUCCESS;
 		BlockPos pos = context.getClickedPos();
 		BlockState newState = state.cycle(MODE);
 		level.setBlock(pos, newState, 3);
 		Player player = context.getPlayer();
 		if (player != null)
-			player.displayClientMessage(newState.getValue(MODE).getTranslatedName(), true);
+			player.sendOverlayMessage(newState.getValue(MODE).getTranslatedName());
 		return InteractionResult.SUCCESS;
 	}
 }

@@ -166,7 +166,7 @@ public class SmokeStackMovementBehaviour implements MovementBehaviour {
     @Override
     public void tick(MovementContext context) {
         if (context.world == null ||
-            !context.world.isClientSide ||
+            !context.world.isClientSide() ||
             context.position == null ||
             !context.state.getValue(SmokeStackBlock.ENABLED)
         ) return;

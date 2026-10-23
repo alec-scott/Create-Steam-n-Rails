@@ -33,10 +33,10 @@ import com.zurrtum.create.Create;
 import com.zurrtum.create.content.trains.entity.Train;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.UUID;
@@ -57,15 +57,15 @@ public class ShadowRealmCommand {
     private static ArgumentBuilder<CommandSourceStack, ?> banish() {
         return literal("banish")
             .then(argument("train", UuidArgument.uuid())
-                .then(argument("key", ResourceLocationArgument.id())
+                .then(argument("key", IdentifierArgument.id())
                     .executes(ctx -> $banish(
                         ctx.getSource(),
                         UuidArgument.getUuid(ctx, "train"),
-                        ResourceLocationArgument.getId(ctx, "key")
+                        IdentifierArgument.getId(ctx, "key")
                     ))));
     }
 
-    private static int $banish(CommandSourceStack source, UUID trainId, ResourceLocation shadowKey) throws CommandSyntaxException {
+    private static int $banish(CommandSourceStack source, UUID trainId, Identifier shadowKey) throws CommandSyntaxException {
         Train train = Create.RAILWAYS.trains.get(trainId);
         if (train == null) {
             source.sendFailure(Component.literal("No Train with id " + trainId.toString()
@@ -89,15 +89,15 @@ public class ShadowRealmCommand {
 
     private static ArgumentBuilder<CommandSourceStack, ?> restore() {
         return literal("restore")
-            .then(argument("key", ResourceLocationArgument.id())
+            .then(argument("key", IdentifierArgument.id())
                 .suggests(ShadowRealmCommand::suggestKeys)
                 .executes(ctx -> $restore(
                     ctx.getSource(),
-                    ResourceLocationArgument.getId(ctx, "key")
+                    IdentifierArgument.getId(ctx, "key")
                 )));
     }
 
-    private static int $restore(CommandSourceStack source, ResourceLocation shadowKey) throws CommandSyntaxException {
+    private static int $restore(CommandSourceStack source, Identifier shadowKey) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
 
         var savedData = ((AccessorGlobalRailwayManager) Create.RAILWAYS).railways$getSavedData();
@@ -121,15 +121,15 @@ public class ShadowRealmCommand {
     
     private static ArgumentBuilder<CommandSourceStack, ?> kill() {
         return literal("kill")
-            .then(argument("key", ResourceLocationArgument.id())
+            .then(argument("key", IdentifierArgument.id())
                 .suggests(ShadowRealmCommand::suggestKeys)
                 .executes(ctx -> $kill(
                     ctx.getSource(),
-                    ResourceLocationArgument.getId(ctx, "key")
+                    IdentifierArgument.getId(ctx, "key")
                 )));
     }
 
-    private static int $kill(CommandSourceStack source, ResourceLocation shadowKey) {
+    private static int $kill(CommandSourceStack source, Identifier shadowKey) {
         var savedData = ((AccessorGlobalRailwayManager) Create.RAILWAYS).railways$getSavedData();
         UUID trainId = ((RailwaySavedDataDuck) savedData).railways$getShadowKeys().get(shadowKey);
         if (trainId == null) {

@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.util;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.content.custom_tracks.phantom.PhantomSpriteManager;
 import com.railwayteam.railways.mixin_interfaces.IHasTrackCasing;
@@ -33,7 +35,7 @@ import com.zurrtum.create.infrastructure.component.BezierTrackPointLocation;
 import com.zurrtum.create.content.trains.track.ITrackBlock;
 import com.zurrtum.create.content.trains.track.TrackBlock;
 import com.zurrtum.create.content.trains.track.TrackBlockEntity;
-import com.zurrtum.create.content.trains.track.TrackMaterial.TrackType;
+import com.railwayteam.railways.port.create.track.TrackType;
 import com.zurrtum.create.client.content.trains.track.TrackRenderer;
 import com.zurrtum.create.content.trains.track.TrackShape;
 import com.zurrtum.create.content.trains.track.TrackTargetingBehaviour;
@@ -142,7 +144,7 @@ public class CustomTrackOverlayRendering {
                 msr.translate(0, -4 / 16f, 0);
                 // Translate more for slabs or monorails
                 IHasTrackCasing casingBc = (IHasTrackCasing) bc;
-                if (bc.getMaterial().trackType == CRTrackMaterials.CRTrackType.MONORAIL) {
+                if (TrackMaterialData.of(bc.getMaterial()).trackType == CRTrackMaterials.CRTrackType.MONORAIL) {
                     msr.translate(0, 14/16f, 0);
                 } else if (casingBc.railways$getTrackCasing() != null) {
                     // Don't shift up if the curve is a slope and the casing is under the track, rather than in it
@@ -169,14 +171,14 @@ public class CustomTrackOverlayRendering {
             return null;
 
         //Shift for casings and monorails
-        if (bezierPoint == null && state.getBlock() instanceof TrackBlock trackBlock && trackBlock.getMaterial().trackType == CRTrackMaterials.CRTrackType.MONORAIL) {
+        if (bezierPoint == null && state.getBlock() instanceof TrackBlock trackBlock && TrackMaterialData.of(trackBlock.getMaterial()).trackType == CRTrackMaterials.CRTrackType.MONORAIL) {
             msr.translate(0, 14/16f, 0);
         } else if (bezierPoint == null && world.getBlockEntity(pos) instanceof TrackBlockEntity trackTE && state.getBlock() instanceof TrackBlock trackBlock) {
             IHasTrackCasing casingTE = (IHasTrackCasing) trackTE;
             TrackShape shape = state.getValue(TrackBlock.SHAPE);
             if (casingTE.railways$getTrackCasing() != null) {
                 TrackCasingSpec spec = CRBlockPartials.TRACK_CASINGS.get(shape);
-                TrackType trackType = trackBlock.getMaterial().trackType;
+                TrackType trackType = TrackMaterialData.of(trackBlock.getMaterial()).trackType;
                 if (spec != null)
                     msr.translate(
                         spec.getXShift(trackType),

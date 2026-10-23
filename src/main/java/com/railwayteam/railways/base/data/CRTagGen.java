@@ -28,7 +28,7 @@ import com.zurrtum.create.AllItems;
 import com.railwayteam.railways.port.create.foundation.data.TagGen;
 import com.railwayteam.railways.port.registrate.providers.RegistrateTagsProvider;
 import net.minecraft.data.tags.TagsProvider.TagAppender;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -45,10 +45,10 @@ import java.util.Map;
  * Based on {@link TagGen}
  */
 public class CRTagGen {
-	private static final Map<TagKey<Block>, List<ResourceLocation>> OPTIONAL_TAGS = new HashMap<>();
+	private static final Map<TagKey<Block>, List<Identifier>> OPTIONAL_TAGS = new HashMap<>();
 
 	@SafeVarargs
-	public static void addOptionalTag(ResourceLocation id, TagKey<Block>... tags) {
+	public static void addOptionalTag(Identifier id, TagKey<Block>... tags) {
 		for (TagKey<Block> tag : tags) {
 			OPTIONAL_TAGS.computeIfAbsent(tag, (e) -> new ArrayList<>()).add(id);
 		}
@@ -73,7 +73,7 @@ public class CRTagGen {
 		}
 		for (TagKey<Block> tag : OPTIONAL_TAGS.keySet()) {
 			var appender = tagAppender(prov, tag);
-			for (ResourceLocation loc : OPTIONAL_TAGS.get(tag))
+			for (Identifier loc : OPTIONAL_TAGS.get(tag))
 				appender.addOptional(loc);
 		}
 	}

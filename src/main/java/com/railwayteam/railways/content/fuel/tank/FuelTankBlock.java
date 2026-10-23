@@ -152,7 +152,7 @@ public class FuelTankBlock extends Block implements IWrenchable, IBE<FuelTankBlo
     public @NotNull InteractionResult use(@NotNull BlockState state, Level world, @NotNull BlockPos pos, Player player,
                                           @NotNull InteractionHand hand, @NotNull BlockHitResult ray) {
         ItemStack heldItem = player.getItemInHand(hand);
-        boolean onClient = world.isClientSide;
+        boolean onClient = world.isClientSide();
 
         if (heldItem.isEmpty())
             return InteractionResult.PASS;

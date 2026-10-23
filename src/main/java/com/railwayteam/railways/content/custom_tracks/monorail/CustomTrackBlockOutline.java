@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.custom_tracks.monorail;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.google.common.collect.ImmutableMap;
 import com.railwayteam.railways.mixin.client.AccessorTrackBlockOutline;
 import com.railwayteam.railways.registry.CRShapes;
@@ -80,7 +82,7 @@ public class CustomTrackBlockOutline {
 			}
             return TRACK_TO_MONORAIL.getOrDefault(trackShape, trackShape);
         }
-		if (material.trackType == CRTrackMaterials.CRTrackType.NARROW_GAUGE)
+		if (TrackMaterialData.of(material).trackType == CRTrackMaterials.CRTrackType.NARROW_GAUGE)
 			return TRACK_TO_NARROW.getOrDefault(trackShape, trackShape);
 		return trackShape;
 	}

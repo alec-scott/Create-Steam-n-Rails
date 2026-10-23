@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.custom_tracks.casing;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.PoseStack.Pose;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -26,7 +28,7 @@ import com.railwayteam.railways.mixin_interfaces.IHasTrackCasing;
 import com.railwayteam.railways.registry.CRBlockPartials;
 import com.zurrtum.create.content.trains.track.BezierConnection;
 import com.zurrtum.create.content.trains.track.BezierConnection.SegmentAngles;
-import com.zurrtum.create.content.trains.track.TrackMaterial.TrackType;
+import com.railwayteam.railways.port.create.track.TrackType;
 import com.zurrtum.create.client.flywheel.api.instance.InstancerProvider;
 import com.zurrtum.create.client.flywheel.api.material.CardinalLightingMode;
 import com.zurrtum.create.client.flywheel.lib.instance.InstanceTypes;
@@ -122,7 +124,7 @@ public abstract class CasingRenderUtils {
                         .light(light)
                         .renderInto(ms, vb);
 
-                TrackType trackType = bc.getMaterial().trackType;
+                TrackType trackType = TrackMaterialData.of(bc.getMaterial()).trackType;
                 if (trackType == WIDE_GAUGE) {
                     for (boolean first : Iterate.trueAndFalse) {
                         for (boolean inner : Iterate.trueAndFalse) {
@@ -160,9 +162,9 @@ public abstract class CasingRenderUtils {
         List<int[]> takenPositions = new ArrayList<>();
         for (BezierConnection.Segment segment : bc) {
             double factor = 1.3;
-            if (bc.getMaterial().trackType == WIDE_GAUGE)
+            if (TrackMaterialData.of(bc.getMaterial()).trackType == WIDE_GAUGE)
                 factor += 0.5;
-            else if (bc.getMaterial().trackType == NARROW_GAUGE)
+            else if (TrackMaterialData.of(bc.getMaterial()).trackType == NARROW_GAUGE)
                 factor -= 7 / 16.;
             Vec3 pos1 = segment.position.add(segment.normal.scale(factor));
             Vec3 pos2 = segment.position.add(segment.normal.scale(-factor));

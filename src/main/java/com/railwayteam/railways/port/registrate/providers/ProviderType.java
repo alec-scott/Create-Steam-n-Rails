@@ -22,7 +22,6 @@ import net.minecraft.world.level.material.Fluid;
 
 import org.jetbrains.annotations.NotNull;
 
-import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -38,7 +37,6 @@ import java.util.function.Function;
 @FunctionalInterface
 @SuppressWarnings("deprecation")
 @FieldsAreNonnullByDefault
-//@ParametersAreNonnullByDefault
 public interface ProviderType<T extends RegistrateProvider> {
 
     // SERVER DATA

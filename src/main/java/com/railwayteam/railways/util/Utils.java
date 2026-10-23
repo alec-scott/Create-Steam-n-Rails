@@ -39,6 +39,13 @@ public class Utils {
 		return com.railwayteam.railways.util.fabric.UtilsImpl.isDevEnv();
 	}
 
+	/** Create Fly has no {@code CreateBuildInfo}; read the version from the loader. */
+	public static String createVersion() {
+		return net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer("create")
+			.map(c -> c.getMetadata().getVersion().getFriendlyString())
+			.orElse("unknown");
+	}
+
 	public static boolean isEnvVarTrue(String name) {
 		try {
 			String result = System.getenv(name);

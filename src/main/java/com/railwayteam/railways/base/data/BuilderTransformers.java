@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.base.data;
 
+import com.zurrtum.create.AllBlockTags;
+
 import com.railwayteam.railways.content.buffer.BlockStateBlockItemGroup;
 import com.railwayteam.railways.content.buffer.MonoTrackBufferBlock;
 import com.railwayteam.railways.content.buffer.TrackBufferBlock;
@@ -57,7 +59,6 @@ import com.railwayteam.railways.registry.CRPalettes.Wrapping;
 import com.railwayteam.railways.registry.CRTags;
 import com.railwayteam.railways.util.FusedSupplier;
 import com.zurrtum.create.AllBlocks;
-import com.simibubi.create.AllTags;
 import com.zurrtum.create.content.contraptions.behaviour.DoorMovingInteraction;
 import com.zurrtum.create.content.decoration.MetalLadderBlock;
 import com.zurrtum.create.content.kinetics.flywheel.FlywheelBlock;
@@ -70,11 +71,11 @@ import com.railwayteam.railways.port.registrate.providers.RegistrateBlockstatePr
 import com.railwayteam.railways.port.registrate.util.nullness.NonNullBiConsumer;
 import com.railwayteam.railways.port.registrate.util.nullness.NonNullUnaryOperator;
 import com.zurrtum.create.catnip.data.Couple;
-import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.advancements.criterion.StatePropertiesPredicate;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -122,7 +123,7 @@ public class BuilderTransformers {
             .properties(p -> p.sound(SoundType.NETHERITE_BLOCK))
             .properties(BlockBehaviour.Properties::noOcclusion)
             .transform(pickaxeOnly())
-            .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
+            .tag(AllBlockTags.SAFE_NBT)
             .loot((p, l) -> p.dropOther(l, AllBlocks.RAILWAY_CASING.get()));
     }
 
@@ -243,7 +244,7 @@ public class BuilderTransformers {
             )
             .tag(CRTags.AllBlockTags.LOCOMETAL.tag)
             .tag(CRTags.AllBlockTags.LOCOMETAL_BOILERS.tag)
-            .tag(AllTags.AllBlockTags.COPYCAT_DENY.tag)
+            .tag(AllBlockTags.COPYCAT_DENY)
             .transform(pickaxeOnly())
             .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.boiler"))
             .blockstate(BoilerGenerator.create(color, wrapping)::generate);
@@ -323,7 +324,7 @@ public class BuilderTransformers {
         return com.railwayteam.railways.base.data.fabric.BuilderTransformersImpl.copycatHeadstockBars();
     }
 
-    public static <B extends TrackBufferBlock<?>, P> NonNullUnaryOperator<BlockBuilder<B, P>> bufferBlockState(Function<BlockState, ResourceLocation> modelFunc, Function<BlockState, Direction> facingFunc) {
+    public static <B extends TrackBufferBlock<?>, P> NonNullUnaryOperator<BlockBuilder<B, P>> bufferBlockState(Function<BlockState, Identifier> modelFunc, Function<BlockState, Direction> facingFunc) {
         return com.railwayteam.railways.base.data.fabric.BuilderTransformersImpl.bufferBlockState(modelFunc, facingFunc);
     }
 

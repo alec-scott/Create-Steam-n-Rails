@@ -21,8 +21,7 @@ package com.railwayteam.railways.content.handcar;
 import com.railwayteam.railways.content.custom_bogeys.blocks.base.CRBogeyBlock;
 import com.railwayteam.railways.registry.CRBogeyStyles;
 import com.railwayteam.railways.registry.CRShapes;
-import com.simibubi.create.content.trains.bogey.BogeySizes;
-import net.minecraft.MethodsReturnNonnullByDefault;
+import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.RenderShape;
@@ -31,13 +30,10 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public class HandcarBlock extends CRBogeyBlock {
     public HandcarBlock(Properties props) {
-        super(props, CRBogeyStyles.HANDCAR, BogeySizes.SMALL);
+        super(props, CRBogeyStyles.HANDCAR, AllBogeySizes.SMALL);
     }
 
     @Override
@@ -59,6 +55,6 @@ public class HandcarBlock extends CRBogeyBlock {
 
     @Override
     public double getWheelRadius() {
-        return super.getWheelRadius() * 2;
+        return super.wheelRadius() * 2;
     }
 }

@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.mixin;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
+import com.railwayteam.railways.port.create.track.TrackType;
+
 import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
@@ -57,7 +61,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -87,12 +91,12 @@ public abstract class MixinStationBlockEntity extends SmartBlockEntity {
     private void railways$setBogeyData(Player player, InteractionHand hand, ITrackBlock track, BlockState state, BlockPos pos,
                               CallbackInfoReturnable<Boolean> cir, BoundingBox bb, BlockPos up, BlockPos down,
                               int bogeyOffset, ItemStack handItem, boolean upsideDown, BlockPos targetPos) {
-        if (track.getMaterial().trackType == CRTrackMaterials.CRTrackType.MONORAIL)
+        if (TrackMaterialData.of(track.getMaterial()).trackType == CRTrackMaterials.CRTrackType.MONORAIL)
             return;
         Pair<BogeyStyle, BogeySize> styleData = BogeyMenuHandlerServer.getStyle(player.getUUID());
         BogeyStyle style = styleData.getFirst();
 
-        TrackMaterial.TrackType trackType = track.getMaterial().trackType;
+        TrackType trackType = TrackMaterialData.of(track.getMaterial()).trackType;
 
         Optional<BogeyStyle> mappedStyleOptional = CRBogeyStyles.getMapped(style, trackType, true);
         if (mappedStyleOptional.isPresent())

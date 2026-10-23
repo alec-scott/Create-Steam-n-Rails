@@ -19,7 +19,6 @@
 package com.railwayteam.railways.content.smokestack;
 
 import com.railwayteam.railways.util.ShapeWrapper;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -29,15 +28,11 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public interface RotationType {
     BlockState makeDefaultState(BlockState state);
     void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder);
@@ -153,7 +148,7 @@ public interface RotationType {
     };
 
     RotationType FACING = new RotationType() {
-        private static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
+        private static final EnumProperty<Direction> HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
 
         @Override
         public BlockState makeDefaultState(BlockState state) {

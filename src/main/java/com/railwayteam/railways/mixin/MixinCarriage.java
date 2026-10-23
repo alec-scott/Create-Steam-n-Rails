@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -187,7 +189,7 @@ public abstract class MixinCarriage implements ICarriageConductors, ICarriageBuf
         TravellingPoint point = leading ? getLeadingPoint() : getTrailingPoint();
         if (point.edge == null)
             return false;
-        if (point.edge.getTrackMaterial().trackType == CRTrackMaterials.CRTrackType.UNIVERSAL)
+        if (TrackMaterialData.of(point.edge.getTrackMaterial()).trackType == CRTrackMaterials.CRTrackType.UNIVERSAL)
             return false;
         if (CarriageBogeyUtils.getType(bogey).getTrackType(bogey.getStyle()) == CRTrackMaterials.CRTrackType.UNIVERSAL)
             return false;

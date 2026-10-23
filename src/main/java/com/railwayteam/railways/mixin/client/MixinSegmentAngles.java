@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin.client;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -53,9 +55,9 @@ public class MixinSegmentAngles {
 
 	@ModifyExpressionValue(method = "<init>", at = @At(value = "CONSTANT", args = "doubleValue=0.9649999737739563"), remap = false)
 	private static double railways$modifyRailWidth(double original, @Local(argsOnly = true) BezierConnection bc) {
-		if (bc.getMaterial().trackType == CRTrackMaterials.CRTrackType.WIDE_GAUGE) {
+		if (TrackMaterialData.of(bc.getMaterial()).trackType == CRTrackMaterials.CRTrackType.WIDE_GAUGE) {
 			return original + 0.5;
-		} else if (bc.getMaterial().trackType == CRTrackMaterials.CRTrackType.NARROW_GAUGE) {
+		} else if (TrackMaterialData.of(bc.getMaterial()).trackType == CRTrackMaterials.CRTrackType.NARROW_GAUGE) {
 			return original - (7 / 16D);
 		}
 		return original;
@@ -64,7 +66,7 @@ public class MixinSegmentAngles {
 	// we can't use @Inject(cancellable = true) here because we're targeting a constructor
 	@WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/content/trains/track/BezierConnection;iterator()Ljava/util/Iterator;"), remap = false)
 	private Iterator<BezierConnection.Segment> makeMonorailSegments(BezierConnection bc, Operation<Iterator<BezierConnection.Segment>> original) {
-		if (bc.getMaterial().trackType == CRTrackMaterials.CRTrackType.MONORAIL) {
+		if (TrackMaterialData.of(bc.getMaterial()).trackType == CRTrackMaterials.CRTrackType.MONORAIL) {
 			int segmentCount = length - 1;
 			Couple<Vec3> previousOffsets = null;
 

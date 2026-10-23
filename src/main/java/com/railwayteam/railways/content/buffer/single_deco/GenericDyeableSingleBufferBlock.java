@@ -20,17 +20,13 @@ package com.railwayteam.railways.content.buffer.single_deco;
 
 import com.railwayteam.railways.port.registrate.util.nullness.NonNullFunction;
 import com.zurrtum.create.catnip.math.VoxelShaper;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
 public class GenericDyeableSingleBufferBlock extends AbstractDyeableSingleBufferBlock {
     protected final VoxelShaper shaper;
 

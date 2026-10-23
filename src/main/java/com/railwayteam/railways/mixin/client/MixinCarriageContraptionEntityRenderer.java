@@ -18,12 +18,14 @@
 
 package com.railwayteam.railways.mixin.client;
 
+import com.zurrtum.create.content.trains.bogey.BogeySize;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.content.custom_bogeys.renderer.unified.BogeyDisplay;
 import com.railwayteam.railways.content.custom_bogeys.renderer.unified.BogeyDisplayHolder;
-import com.simibubi.create.content.trains.bogey.BogeySizes;
+import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import com.zurrtum.create.content.trains.bogey.BogeyStyle;
 import com.zurrtum.create.content.trains.entity.CarriageContraptionEntity;
 import com.zurrtum.create.client.content.trains.entity.CarriageContraptionEntityRenderer;
@@ -34,8 +36,8 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(CarriageContraptionEntityRenderer.class)
 public class MixinCarriageContraptionEntityRenderer {
-    @WrapOperation(method = "lambda$render$1", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/content/trains/bogey/BogeyStyle;render(Lcom/simibubi/create/content/trains/bogey/BogeySizes$BogeySize;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IIFLnet/minecraft/nbt/CompoundTag;Z)V"))
-    private static void updateEntity(BogeyStyle instance, BogeySizes.BogeySize size, float partialTick,
+    @WrapOperation(method = "lambda$render$1", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/content/trains/bogey/BogeyStyle;render(Lcom/simibubi/create/content/trains/bogey/AllBogeySizes$BogeySize;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IIFLnet/minecraft/nbt/CompoundTag;Z)V"))
+    private static void updateEntity(BogeyStyle instance, BogeySize size, float partialTick,
                                      PoseStack poseStack, MultiBufferSource buffers, int light, int overlay,
                                      float wheelAngle, CompoundTag bogeyData, boolean inContraption,
                                      Operation<Void> original, CarriageContraptionEntity entity) {

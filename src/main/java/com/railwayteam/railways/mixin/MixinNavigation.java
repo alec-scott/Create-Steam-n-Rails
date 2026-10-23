@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -44,7 +46,7 @@ import com.zurrtum.create.content.trains.signal.SignalBoundary;
 import com.zurrtum.create.content.trains.signal.SignalEdgeGroup;
 import com.zurrtum.create.content.trains.signal.TrackEdgePoint;
 import com.zurrtum.create.content.trains.station.GlobalStation;
-import com.zurrtum.create.content.trains.track.TrackMaterial.TrackType;
+import com.railwayteam.railways.port.create.track.TrackType;
 import com.zurrtum.create.catnip.data.Couple;
 import com.zurrtum.create.catnip.data.Iterate;
 import com.zurrtum.create.catnip.data.Pair;
@@ -127,7 +129,7 @@ public abstract class MixinNavigation implements IWaypointableNavigation, IGener
     @ModifyExpressionValue(method = "search(DDZLjava/util/ArrayList;Lcom/zurrtum/create/content/trains/entity/Navigation$StationTest;)V",
         at = @At(value = "INVOKE", target = "Ljava/util/Set;contains(Ljava/lang/Object;)Z"))
     private boolean isNavigationIncompatible(boolean original, @Local Map.Entry<TrackNode, TrackEdge> target) {
-        if (target.getValue().getTrackMaterial().trackType == CRTrackType.UNIVERSAL)
+        if (TrackMaterialData.of(target.getValue().getTrackMaterial()).trackType == CRTrackType.UNIVERSAL)
             return true;
         return original;
     }
@@ -307,7 +309,7 @@ public abstract class MixinNavigation implements IWaypointableNavigation, IGener
                 continue;
 
             for (Map.Entry<TrackNode, TrackEdge> target : validTargets) {
-                if (!(skipValidCheck || validTypes.contains(target.getValue().getTrackMaterial().trackType) || target.getValue().getTrackMaterial().trackType == CRTrackType.UNIVERSAL))
+                if (!(skipValidCheck || validTypes.contains(TrackMaterialData.of(target.getValue().getTrackMaterial()).trackType) || TrackMaterialData.of(target.getValue().getTrackMaterial()).trackType == CRTrackType.UNIVERSAL))
                     continue;
                 TrackNode newNode = target.getKey();
                 TrackEdge newEdge = target.getValue();

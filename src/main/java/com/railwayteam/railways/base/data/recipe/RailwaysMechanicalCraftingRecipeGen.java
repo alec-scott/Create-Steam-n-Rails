@@ -26,7 +26,7 @@ import com.simibubi.create.api.data.recipe.MechanicalCraftingRecipeBuilder;
 import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import org.jetbrains.annotations.NotNull;
@@ -123,11 +123,11 @@ public abstract class RailwaysMechanicalCraftingRecipeGen extends RailwaysRecipe
             return this;
         }
 
-        private static ResourceLocation clean(ResourceLocation loc) {
+        private static Identifier clean(Identifier loc) {
             String path = loc.getPath();
             while (path.contains("//"))
                 path = path.replaceAll("//", "/");
-            return new ResourceLocation(loc.getNamespace(), path);
+            return Identifier.fromNamespaceAndPath(loc.getNamespace(), path);
         }
 
 
@@ -136,7 +136,7 @@ public abstract class RailwaysMechanicalCraftingRecipeGen extends RailwaysRecipe
             return register(consumer -> {
                 MechanicalCraftingRecipeBuilder b =
                     builder.apply(MechanicalCraftingRecipeBuilder.shapedRecipe(result.get(), amount));
-                ResourceLocation location = clean(Railways.asResource("mechanical_crafting/" + CatnipServices.REGISTRIES.getKeyOrThrow(result.get()
+                Identifier location = clean(Railways.asResource("mechanical_crafting/" + CatnipServices.REGISTRIES.getKeyOrThrow(result.get()
                         .asItem())
                     .getPath() + suffix));
                 if (addToEmiDefaults) {

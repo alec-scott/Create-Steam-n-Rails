@@ -76,7 +76,7 @@ public abstract class MixinNixieTubeBlockEntity extends SmartBlockEntity impleme
         cachedSignalTE = new WeakReference<>(signalBE);
         signalState = state;
         overrideLastingTicks = ticks;
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             CRPackets.PACKETS.sendTo(PlayerSelection.tracking(this),
                 new OverridableSignalPacket(getBlockPos(),signalBE == null ? null : signalBE.getBlockPos(),
                     state, ticks, distantSignal));

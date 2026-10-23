@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.bogey_menu.handler;
 
+import com.railwayteam.railways.port.create.track.TrackType;
+
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.api.bogeymenu.v0.entry.BogeyEntry;
 import com.railwayteam.railways.registry.CRBogeyStyles;
@@ -34,7 +36,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -122,7 +124,7 @@ public class BogeyMenuHandlerClient {
                 favorites.clear();
                 for (Tag favoriteTag : favoritesList) {
                     if (favoriteTag instanceof StringTag stringTag) {
-                        ResourceLocation loc = ResourceLocation.tryParse(stringTag.getAsString());
+                        Identifier loc = Identifier.tryParse(stringTag.getAsString());
                         if (loc == null)
                             continue;
                         if (AllBogeyStyles.BOGEY_STYLES.containsKey(loc)) {
@@ -180,12 +182,12 @@ public class BogeyMenuHandlerClient {
     public static Indicator.State[] getTrackCompat(BogeyEntry bogeyEntry) {
         return CACHED_COMPATS.computeIfAbsent(bogeyEntry, (k) -> new Indicator.State[] {
                 styleFits(bogeyEntry, CRTrackMaterials.CRTrackType.NARROW_GAUGE),
-                styleFits(bogeyEntry, TrackMaterial.TrackType.STANDARD),
+                styleFits(bogeyEntry, TrackType.STANDARD),
                 styleFits(bogeyEntry, CRTrackMaterials.CRTrackType.WIDE_GAUGE)
         });
     }
 
-    private static Indicator.State styleFits(BogeyEntry bogeyEntry, TrackMaterial.TrackType trackType) {
+    private static Indicator.State styleFits(BogeyEntry bogeyEntry, TrackType trackType) {
         if (CRBogeyStyles.styleFitsTrack(bogeyEntry.bogeyStyle(), trackType))
             return Indicator.State.GREEN;
 

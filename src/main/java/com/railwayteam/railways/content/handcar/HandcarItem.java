@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.handcar;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.mixin_interfaces.IDeployAnywayBlockItem;
 import com.railwayteam.railways.mixin_interfaces.IHandcarTrain;
@@ -45,7 +47,7 @@ import com.zurrtum.create.infrastructure.component.BezierTrackPointLocation;
 import com.zurrtum.create.content.trains.track.ITrackBlock;
 import com.zurrtum.create.content.trains.track.TrackBlockEntity;
 import com.zurrtum.create.client.content.trains.track.TrackBlockOutline;
-import com.zurrtum.create.content.trains.track.TrackMaterial.TrackType;
+import com.railwayteam.railways.port.create.track.TrackType;
 import com.zurrtum.create.content.trains.track.TrackTargetingBlockItem.OverlapResult;
 import com.zurrtum.create.client.foundation.utility.CreateLang;
 import com.zurrtum.create.catnip.data.Couple;
@@ -102,10 +104,10 @@ public class HandcarItem extends BlockItem implements IDeployAnywayBlockItem {
             return InteractionResult.FAIL;
 
         if (state.getBlock() instanceof ITrackBlock track) {
-            TrackType trackType = track.getMaterial().trackType;
+            TrackType trackType = TrackMaterialData.of(track.getMaterial()).trackType;
             if (!(trackType == TrackType.STANDARD || trackType == CRTrackType.UNIVERSAL))
                 return InteractionResult.FAIL;
-            if (level.isClientSide)
+            if (level.isClientSide())
                 return InteractionResult.SUCCESS;
 
             Vec3 lookAngle = player.getLookAngle();
@@ -120,8 +122,8 @@ public class HandcarItem extends BlockItem implements IDeployAnywayBlockItem {
             });
 
             if (result.getValue().feedback != null) {
-                player.displayClientMessage(CreateLang.translateDirect(result.getValue().feedback)
-                    .withStyle(ChatFormatting.RED), true);
+                player.sendOverlayMessage(CreateLang.translateDirect(result.getValue().feedback)
+                    .withStyle(ChatFormatting.RED));
                 AllSoundEvents.DENY.play(level, null, pos, .5f, 1);
                 return InteractionResult.FAIL;
             }
@@ -188,7 +190,7 @@ public class HandcarItem extends BlockItem implements IDeployAnywayBlockItem {
 
         BezierConnection bc = be.getConnections().get(loc.curveTarget());
 
-        TrackType trackType = bc.getMaterial().trackType;
+        TrackType trackType = TrackMaterialData.of(bc.getMaterial()).trackType;
         if (!(trackType == TrackType.STANDARD || trackType == CRTrackType.UNIVERSAL))
             return false;
 

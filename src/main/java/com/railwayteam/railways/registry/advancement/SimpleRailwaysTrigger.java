@@ -19,19 +19,15 @@
 package com.railwayteam.railways.registry.advancement;
 
 import com.google.gson.JsonObject;
-import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.DeserializationContext;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.DeserializationContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
+import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public class SimpleRailwaysTrigger extends CriterionTriggerBase<SimpleRailwaysTrigger.Instance> {
 
 	public SimpleRailwaysTrigger(String id) {
@@ -53,7 +49,7 @@ public class SimpleRailwaysTrigger extends CriterionTriggerBase<SimpleRailwaysTr
 
 	public static class Instance extends CriterionTriggerBase.Instance {
 
-		public Instance(ResourceLocation idIn) {
+		public Instance(Identifier idIn) {
 			super(idIn, ContextAwarePredicate.ANY);
 		}
 

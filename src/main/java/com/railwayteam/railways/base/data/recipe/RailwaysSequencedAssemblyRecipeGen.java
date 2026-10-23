@@ -18,11 +18,14 @@
 
 package com.railwayteam.railways.base.data.recipe;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
+import com.zurrtum.create.AllItemTags;
+
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.mixin.AccessorIngredient$TagValue;
 import com.railwayteam.railways.registry.CRItems;
 import com.railwayteam.railways.registry.CRTrackMaterials;
-import com.simibubi.create.AllTags;
 import com.zurrtum.create.content.kinetics.deployer.DeployerApplicationRecipe;
 import com.zurrtum.create.content.kinetics.press.PressingRecipe;
 import com.zurrtum.create.content.kinetics.saw.CuttingRecipe;
@@ -69,11 +72,11 @@ public class RailwaysSequencedAssemblyRecipeGen extends RailwaysRecipeProvider {
             ));
         }
 
-        List<TrackMaterial> trackMaterials = new ArrayList<>(TrackMaterial.allFromMod(Railways.MOD_ID));
+        List<TrackMaterial> trackMaterials = new ArrayList<>(TrackMaterialData.allFromMod(Railways.MOD_ID));
 
         // Add all mod compat tracks
         for (String mod : TRACK_COMPAT_MODS)
-            trackMaterials.addAll(TrackMaterial.allFromMod(mod));
+            trackMaterials.addAll(TrackMaterialData.allFromMod(mod));
 
         for (TrackMaterial material : trackMaterials) {
             if (material.railsIngredient.isEmpty() || material.sleeperIngredient.isEmpty()) {
@@ -83,14 +86,14 @@ public class RailwaysSequencedAssemblyRecipeGen extends RailwaysRecipeProvider {
                         continue;
                     Ingredient sleeperIngredient;
                     if (material == CRTrackMaterials.WIDE_GAUGE_ANDESITE) {
-                        sleeperIngredient = Ingredient.of(AllTags.AllItemTags.SLEEPERS.tag);
+                        sleeperIngredient = Ingredient.of(AllItemTags.SLEEPERS);
                     } else {
                         sleeperIngredient = baseMaterial.sleeperIngredient;
                     }
                     if (sleeperIngredient.isEmpty()) continue;
                     TRACKS.put(material, create(
-                        "track_" + (material.id.getNamespace().equals(Railways.MOD_ID)
-                            ? "" : material.id.getNamespace()+"_") + material.resourceName(),
+                        "track_" + (material.getId().getNamespace().equals(Railways.MOD_ID)
+                            ? "" : material.getId().getNamespace()+"_") + material.resourceName(),
                         b -> b.conditionalMaterial(material).require(baseMaterial.getBlock())
                             .transitionTo(CRItems.ITEM_INCOMPLETE_TRACK.get(material).get())
                             .addOutput(material.getBlock(), 1)
@@ -105,7 +108,7 @@ public class RailwaysSequencedAssemblyRecipeGen extends RailwaysRecipeProvider {
                         continue;
                     Ingredient sleeperIngredient;
                     if (material == CRTrackMaterials.NARROW_GAUGE_ANDESITE) {
-                        sleeperIngredient = Ingredient.of(AllTags.AllItemTags.SLEEPERS.tag);
+                        sleeperIngredient = Ingredient.of(AllItemTags.SLEEPERS);
                     } else {
                         sleeperIngredient = baseMaterial.sleeperIngredient;
                     }
@@ -125,8 +128,8 @@ public class RailwaysSequencedAssemblyRecipeGen extends RailwaysRecipeProvider {
 
                     Ingredient finalRailsIngredient = railsIngredient;
                     TRACKS.put(material, create(
-                        "track_" + (material.id.getNamespace().equals(Railways.MOD_ID)
-                            ? "" : material.id.getNamespace()+"_") + material.resourceName(),
+                        "track_" + (material.getId().getNamespace().equals(Railways.MOD_ID)
+                            ? "" : material.getId().getNamespace()+"_") + material.resourceName(),
                         b -> b.conditionalMaterial(material).require(sleeperIngredient)
                             .transitionTo(CRItems.ITEM_INCOMPLETE_TRACK.get(material).get())
                             .addOutput(material.getBlock(), 1)
@@ -153,8 +156,8 @@ public class RailwaysSequencedAssemblyRecipeGen extends RailwaysRecipeProvider {
             Ingredient finalRailsIngredient = railsIngredient;
 
             TRACKS.put(material, create(
-                "track_" + (material.id.getNamespace().equals(Railways.MOD_ID)
-                    ? "" : material.id.getNamespace()+"_") + material.resourceName(),
+                "track_" + (material.getId().getNamespace().equals(Railways.MOD_ID)
+                    ? "" : material.getId().getNamespace()+"_") + material.resourceName(),
                 b -> b.conditionalMaterial(material).require(material.sleeperIngredient)
                     .transitionTo(CRItems.ITEM_INCOMPLETE_TRACK.get(material).get())
                     .addOutput(material.getBlock(), 1)

@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.custom_bogeys.blocks.base;
 
+import com.railwayteam.railways.port.create.track.TrackType;
+
 import com.railwayteam.railways.content.custom_bogeys.blocks.base.be.CRBogeyBlockEntity;
 import com.railwayteam.railways.registry.CRBlockEntities;
 import com.zurrtum.create.AllBlocks;
@@ -50,8 +52,8 @@ public class CRBogeyBlock extends AbstractBogeyBlock<CRBogeyBlockEntity>
 	}
 
 	@Override
-	public TrackMaterial.TrackType getTrackType(BogeyStyle style) {
-		return TrackMaterial.TrackType.STANDARD;
+	public TrackType getTrackType(BogeyStyle style) {
+		return TrackType.STANDARD;
 	}
 
 	@Override

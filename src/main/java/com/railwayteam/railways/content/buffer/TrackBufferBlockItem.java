@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.buffer;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 
 import com.railwayteam.railways.registry.CRBlocks;
 import com.railwayteam.railways.registry.CRTrackMaterials;
@@ -98,7 +100,7 @@ public class TrackBufferBlockItem extends TrackTargetingBlockItem {
             return InteractionResult.FAIL;
         
         if (state.getBlock() instanceof ITrackBlock track) {
-            if (level.isClientSide)
+            if (level.isClientSide())
                 return InteractionResult.SUCCESS;
             
             Vec3 lookAngle = player.getLookAngle();
@@ -116,14 +118,14 @@ public class TrackBufferBlockItem extends TrackTargetingBlockItem {
             withGraphLocation(level, pos, front, null, type, (overlap, location) -> result.setValue(overlap));
             
             if (result.getValue().feedback != null) {
-                player.displayClientMessage(CreateLang.translateDirect(result.getValue().feedback)
-                        .withStyle(ChatFormatting.RED), true);
+                player.sendOverlayMessage(CreateLang.translateDirect(result.getValue().feedback)
+                        .withStyle(ChatFormatting.RED));
                 AllSoundEvents.DENY.play(level, null, pos, .5f, 1);
                 return InteractionResult.FAIL;
             }
             if (!isOkShape(state)) {
-                player.displayClientMessage(Component.translatable("railways.buffer.invalid_shape")
-                        .withStyle(ChatFormatting.RED), true);
+                player.sendOverlayMessage(Component.translatable("railways.buffer.invalid_shape")
+                        .withStyle(ChatFormatting.RED));
                 AllSoundEvents.DENY.play(level, null, pos, .5f, 1);
                 return InteractionResult.FAIL;
             }
@@ -148,11 +150,11 @@ public class TrackBufferBlockItem extends TrackTargetingBlockItem {
             Direction placeDirection = Direction.UP;
             
             TrackBufferBlock<?> overrideBlock = null;
-            if (track.getMaterial().trackType == CRTrackMaterials.CRTrackType.NARROW_GAUGE) {
+            if (TrackMaterialData.of(track.getMaterial()).trackType == CRTrackMaterials.CRTrackType.NARROW_GAUGE) {
                 overrideBlock = CRBlocks.TRACK_BUFFER_NARROW.get();
-            } else if (track.getMaterial().trackType == CRTrackMaterials.CRTrackType.WIDE_GAUGE) {
+            } else if (TrackMaterialData.of(track.getMaterial()).trackType == CRTrackMaterials.CRTrackType.WIDE_GAUGE) {
                 overrideBlock = CRBlocks.TRACK_BUFFER_WIDE.get();
-            } else if (track.getMaterial().trackType == CRTrackMaterials.CRTrackType.MONORAIL) {
+            } else if (TrackMaterialData.of(track.getMaterial()).trackType == CRTrackMaterials.CRTrackType.MONORAIL) {
                 overrideBlock = CRBlocks.TRACK_BUFFER_MONO.get();
                 placedPos = context.getClickedFace() == Direction.DOWN ? pos.below() : pos.above();
                 placeDirection = context.getClickedFace();
@@ -188,8 +190,8 @@ public class TrackBufferBlockItem extends TrackTargetingBlockItem {
         
         if (player != null) {
             
-            player.displayClientMessage(CreateLang.translateDirect("track_target.invalid")
-                    .withStyle(ChatFormatting.RED), true);
+            player.sendOverlayMessage(CreateLang.translateDirect("track_target.invalid")
+                    .withStyle(ChatFormatting.RED));
             AllSoundEvents.DENY.play(level, player, player.position(), .5f, 1);
             return false;
         }

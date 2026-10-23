@@ -31,7 +31,7 @@ import com.railwayteam.railways.port.registrate.providers.DataGenContext;
 import com.railwayteam.railways.port.registrate.providers.RegistrateBlockstateProvider;
 import com.railwayteam.railways.port.porting_lib.models.generators.ModelFile;
 import com.railwayteam.railways.port.porting_lib.models.generators.BlockModelBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -72,7 +72,7 @@ public class CustomTrackBlockStateGeneratorImpl extends CustomTrackBlockStateGen
                     .texture("particle", template.getTexture(material, TextureKey.PARTICLE));
 
                 if (k.equals("tie") || state.getBlock() instanceof TransparentSegmentTrackBlock) {
-                    model.renderType(new ResourceLocation("cutout_mipped"));
+                    model.renderType(Identifier.parse("cutout_mipped"));
                 }
             }
 

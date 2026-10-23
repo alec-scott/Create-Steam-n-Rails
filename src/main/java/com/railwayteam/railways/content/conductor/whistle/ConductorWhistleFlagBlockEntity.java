@@ -62,7 +62,7 @@ public class ConductorWhistleFlagBlockEntity extends SmartBlockEntity implements
     @Override
     public void lazyTick() {
         super.lazyTick();
-        if (level.isClientSide)
+        if (level.isClientSide())
             return;
 
         if (station.getEdgePoint() == null)

@@ -25,7 +25,6 @@ import com.railwayteam.railways.util.ShapeWrapper;
 import com.zurrtum.create.api.equipment.goggles.IProxyHoveringInformation;
 import com.zurrtum.create.content.equipment.wrench.IWrenchable;
 import com.zurrtum.create.foundation.block.ProperWaterloggedBlock;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -53,12 +52,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.EnumMap;
 import java.util.function.Supplier;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public non-sealed class SmokeStackExtenderBlock extends Block implements ProperWaterloggedBlock, IWrenchable, VariableStack, IProxyHoveringInformation {
     public static final EnumProperty<SmokestackStyle> STYLE = VariableSmokeStackBlock.STYLE;
 

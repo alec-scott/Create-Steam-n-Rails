@@ -98,7 +98,7 @@ public class MountedToolbox extends ToolboxBlockEntity {
 
   @Override
   public void sendData() {
-    if (level == null || level.isClientSide)
+    if (level == null || level.isClientSide())
       return;
     CompoundTag nbt = new CompoundTag();
     this.write(nbt, true);

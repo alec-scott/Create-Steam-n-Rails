@@ -44,7 +44,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -73,7 +73,7 @@ public abstract class MixinStationBlock {
     private void autoWhistle(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit, CallbackInfoReturnable<InteractionResult> cir){
         ItemStack itemInHand = pPlayer.getItemInHand(pHand);
         if (CRBlocks.CONDUCTOR_WHISTLE_FLAG.asStack().getItem().equals(itemInHand.getItem())) {
-            if (!pLevel.isClientSide && pPlayer instanceof DeployerFakePlayer && pLevel.getBlockEntity(pPos) instanceof StationBlockEntity stationBe) {
+            if (!pLevel.isClientSide() && pPlayer instanceof DeployerFakePlayer && pLevel.getBlockEntity(pPos) instanceof StationBlockEntity stationBe) {
                 cir.setReturnValue(InteractionResult.CONSUME);
                 GlobalStation station = stationBe.getStation();
                 if (station != null && station.getPresentTrain() == null) {
@@ -120,7 +120,7 @@ public abstract class MixinStationBlock {
                         if (!scheduleStack.isEmpty()) {
                             for (CompoundTag passengerTag : ((AccessorCarriage) conductorCarriage).getSerialisedPassengers().values()) {
                                 if (passengerTag.contains("PlayerPassenger")) continue;
-                                if (passengerTag.contains("id") && CREntities.CONDUCTOR.getId().equals(new ResourceLocation(passengerTag.getString("id")))) {
+                                if (passengerTag.contains("id") && CREntities.CONDUCTOR.getId().equals(Identifier.parse(passengerTag.getString("id")))) {
                                     // It is a conductor
                                     if (passengerTag.hasUUID("UUID") && passengerTag.getUUID("UUID").equals(conductorId)) {
                                         // It is the targeted conductor
@@ -202,7 +202,7 @@ public abstract class MixinStationBlock {
 
     @Inject(method = "use", at = @At(value = "RETURN", ordinal = 1), cancellable = true, remap = true)
     private void deployersAssemble(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit, CallbackInfoReturnable<InteractionResult> cir) {
-        if (!pLevel.isClientSide && pPlayer instanceof DeployerFakePlayer deployerFakePlayer && pLevel.getBlockEntity(pPos) instanceof StationBlockEntity stationBe) {
+        if (!pLevel.isClientSide() && pPlayer instanceof DeployerFakePlayer deployerFakePlayer && pLevel.getBlockEntity(pPos) instanceof StationBlockEntity stationBe) {
             cir.setReturnValue(InteractionResult.CONSUME);
             GlobalStation station = stationBe.getStation();
             boolean isAssemblyMode = pState.getValue(StationBlock.ASSEMBLING);
@@ -268,7 +268,7 @@ public abstract class MixinStationBlock {
     @Inject(method = "use", at = @At("HEAD"), cancellable = true, remap = true)
     private void deployersNameTag(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit, CallbackInfoReturnable<InteractionResult> cir) {
         ItemStack itemInHand = pPlayer.getItemInHand(pHand);
-        if (!pLevel.isClientSide && pPlayer instanceof DeployerFakePlayer
+        if (!pLevel.isClientSide() && pPlayer instanceof DeployerFakePlayer
             && pLevel.getBlockEntity(pPos) instanceof StationBlockEntity stationBe
             && itemInHand.getItem() instanceof NameTagItem
         ) {

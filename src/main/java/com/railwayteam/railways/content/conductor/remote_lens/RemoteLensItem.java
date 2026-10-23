@@ -66,12 +66,12 @@ public class RemoteLensItem extends Item {
     @Override
     public @NotNull InteractionResult interactLivingEntity(@NotNull ItemStack pStack, @NotNull Player pPlayer,
                                                            @NotNull LivingEntity pInteractionTarget, @NotNull InteractionHand pUsedHand) {
-        if (pPlayer.level.isClientSide)
+        if (pPlayer.level.isClientSide())
             return InteractionResult.CONSUME;
         if (pInteractionTarget instanceof ConductorEntity conductor && conductor.getJob() == ConductorEntity.Job.SPY) {
             CompoundTag stackTag = pStack.getOrCreateTag();
             stackTag.putUUID("SelectedConductor", conductor.getUUID());
-            pPlayer.displayClientMessage(Component.translatable("railways.remote_lens.set"), true);
+            pPlayer.sendOverlayMessage(Component.translatable("railways.remote_lens.set"));
             pStack.setTag(stackTag);
             pPlayer.setItemInHand(pUsedHand, pStack);
             AllSoundEvents.PECULIAR_BELL_USE.play(pPlayer.level, null, conductor.getX(), conductor.getY(), conductor.getZ(), .5f, 1.1f);
@@ -98,7 +98,7 @@ public class RemoteLensItem extends Item {
             if (player.isShiftKeyDown()) {
                 stack.removeTagKey("SelectedConductor");
                 AllSoundEvents.CONTROLLER_CLICK.play(level, null, player.blockPosition(), .5f, 1.1f);
-                player.displayClientMessage(Component.translatable("railways.remote_lens.clear"), true);
+                player.sendOverlayMessage(Component.translatable("railways.remote_lens.clear"));
                 return InteractionResultHolder.success(stack);
             }
             Entity entity = serverLevel.getEntity(conductorId);

@@ -18,15 +18,6 @@
 
 package com.railwayteam.railways;
 
-import com.railwayteam.railways.base.data.CRTagGen;
-import com.railwayteam.railways.base.data.RailwaysHatOffsetGenerator;
-import com.railwayteam.railways.base.data.compat.emi.EmiExcludedTagGen;
-import com.railwayteam.railways.base.data.compat.emi.EmiRecipeDefaultsGen;
-import com.railwayteam.railways.base.data.lang.CRLangGen;
-import com.railwayteam.railways.base.data.recipe.RailwaysMechanicalCraftingRecipeGen;
-import com.railwayteam.railways.base.data.recipe.RailwaysSequencedAssemblyRecipeGen;
-import com.railwayteam.railways.base.data.recipe.RailwaysStandardRecipeGen;
-import com.railwayteam.railways.base.data.recipe.processing.RailwaysProcessingRecipeGen;
 import com.railwayteam.railways.base.registration.MultiRegistryCallback;
 import com.railwayteam.railways.compat.Mods;
 import com.railwayteam.railways.config.CRConfigs;
@@ -36,15 +27,8 @@ import com.railwayteam.railways.registry.CRAdvancements;
 import com.railwayteam.railways.registry.CRCommands;
 import com.railwayteam.railways.registry.CRPackets;
 import com.railwayteam.railways.util.Utils;
-import com.simibubi.create.CreateBuildInfo;
 import com.railwayteam.railways.port.create.foundation.data.CreateRegistrate;
-import com.zurrtum.create.client.foundation.item.ItemDescription;
-import com.zurrtum.create.client.foundation.item.KineticStats;
-import com.zurrtum.create.client.foundation.item.TooltipModifier;
-import com.railwayteam.railways.port.registrate.providers.ProviderType;
-import com.zurrtum.create.client.catnip.lang.FontHelper;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.MixinEnvironment;
@@ -70,12 +54,7 @@ public class Railways {
   public static final int DATA_FIXER_VERSION = 11;
   private static final boolean FORCE_MIXIN_AUDIT = Boolean.getBoolean("railways.force_mixin_audit");
 
-  private static final CreateRegistrate REGISTRATE = CreateRegistrate.create(MOD_ID);
-
-  static {
-    REGISTRATE.setTooltipModifierFactory(item -> new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
-        .andThen(TooltipModifier.mapNull(KineticStats.create(item))));
-  }
+  private static final CreateRegistrate REGISTRATE = new CreateRegistrate(MOD_ID);
 
   private static void migrateConfig(Path path, Function<String, String> converter) {
     Convert: try {
@@ -96,7 +75,7 @@ public class Railways {
   }
 
   public static void init() {
-    LOGGER.info("{} v{} initializing! Commit hash: {} on Create version: {} on platform: {}", NAME, RailwaysBuildInfo.VERSION, RailwaysBuildInfo.GIT_COMMIT, CreateBuildInfo.VERSION, Loader.getFormatted());
+    LOGGER.info("{} v{} initializing! Commit hash: {} on Create version: {} on platform: {}", NAME, RailwaysBuildInfo.VERSION, RailwaysBuildInfo.GIT_COMMIT, Utils.createVersion(), Loader.getFormatted());
     Path configDir = Utils.configDir();
     Path clientConfigDir = configDir.resolve(MOD_ID + "-client.toml");
     migrateConfig(clientConfigDir, CRConfigs::migrateClient);
@@ -122,23 +101,8 @@ public class Railways {
     ModSetupLate.registerPostRegistration();
   }
 
-  public static ResourceLocation asResource(String name) {
-    return new ResourceLocation(MOD_ID, name);
-  }
-
-  public static void gatherData(DataGenerator.PackGenerator gen) {
-    REGISTRATE.addDataGenerator(ProviderType.BLOCK_TAGS, CRTagGen::generateBlockTags);
-    REGISTRATE.addDataGenerator(ProviderType.ITEM_TAGS, CRTagGen::generateItemTags);
-    REGISTRATE.addDataGenerator(ProviderType.LANG, CRLangGen::generate);
-    gen.addProvider(RailwaysSequencedAssemblyRecipeGen::new);
-    gen.addProvider(RailwaysStandardRecipeGen::new);
-    gen.addProvider(RailwaysMechanicalCraftingRecipeGen::create);
-    gen.addProvider(RailwaysProcessingRecipeGen::registerAll);
-
-    gen.addProvider(CRAdvancements::new);
-    gen.addProvider(EmiExcludedTagGen::new);
-    gen.addProvider(EmiRecipeDefaultsGen::new);
-    gen.addProvider(RailwaysHatOffsetGenerator::new);
+  public static Identifier asResource(String name) {
+    return Identifier.fromNamespaceAndPath(MOD_ID, name);
   }
 
   public static CreateRegistrate registrate() {

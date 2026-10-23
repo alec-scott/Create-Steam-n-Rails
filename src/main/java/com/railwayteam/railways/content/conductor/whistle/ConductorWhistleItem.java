@@ -53,7 +53,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -94,8 +94,8 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
     }
 
     private static InteractionResult fail(Player player, String message) {
-        player.displayClientMessage(Component.translatable("railways.whistle.failure."+message).withStyle(ChatFormatting.RED), true);
-        player.displayClientMessage(Component.translatable("railways.whistle.failure."+message).withStyle(ChatFormatting.RED), false);
+        player.sendOverlayMessage(Component.translatable("railways.whistle.failure."+message).withStyle(ChatFormatting.RED));
+        player.sendSystemMessage(Component.translatable("railways.whistle.failure."+message).withStyle(ChatFormatting.RED));
         return InteractionResult.FAIL;
     }
 
@@ -133,7 +133,7 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
     @Override
     public @NotNull InteractionResult interactLivingEntity(@NotNull ItemStack pStack, @NotNull Player pPlayer,
                                                            @NotNull LivingEntity pInteractionTarget, @NotNull InteractionHand pUsedHand) {
-        if (pPlayer.level.isClientSide)
+        if (pPlayer.level.isClientSide())
             return InteractionResult.PASS;
         if (pInteractionTarget instanceof ConductorEntity conductor && conductor.getVehicle() instanceof CarriageContraptionEntity cce) {
             Train train = cce.getCarriage().train;
@@ -142,13 +142,13 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
                 stackTag.putUUID("SelectedTrain", train.id);
                 stackTag.putUUID("SelectedConductor", conductor.getUUID());
                 stackTag.putByte("SelectedColor", conductor.getEntityData().get(ConductorEntity.COLOR));
-                pPlayer.displayClientMessage(Component.translatable("railways.whistle.set"), true);
+                pPlayer.sendOverlayMessage(Component.translatable("railways.whistle.set"));
                 pStack.setTag(stackTag);
                 pPlayer.setItemInHand(pUsedHand, pStack);
                 AllSoundEvents.PECULIAR_BELL_USE.play(pPlayer.level, null, conductor.getX(), conductor.getY(), conductor.getZ(), .5f, 1.1f);
                 return InteractionResult.SUCCESS;
             } else {
-                pPlayer.displayClientMessage(Component.translatable("railways.whistle.not_owner").withStyle(ChatFormatting.RED), true);
+                pPlayer.sendOverlayMessage(Component.translatable("railways.whistle.not_owner").withStyle(ChatFormatting.RED));
                 return InteractionResult.FAIL;
             }
         }
@@ -174,9 +174,9 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
 
 
         if (player.isSteppingCarefully() && stack.hasTag()) {
-            if (level.isClientSide)
+            if (level.isClientSide())
                 return InteractionResult.SUCCESS;
-            player.displayClientMessage(Component.translatable("railways.whistle.clear"), true);
+            player.sendOverlayMessage(Component.translatable("railways.whistle.clear"));
             stack.setTag(null);
             AllSoundEvents.CONTROLLER_CLICK.play(level, null, pos, 1, .5f);
             return InteractionResult.SUCCESS;
@@ -184,7 +184,7 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
 
         if (state.getBlock() instanceof StationBlock || state.getBlock() instanceof ITrackBlock) {
             level.playSound(null, pos, CRSounds.CONDUCTOR_WHISTLE.get(), SoundSource.BLOCKS, 0.3f, 1f);
-            if (level.isClientSide)
+            if (level.isClientSide())
                 return InteractionResult.SUCCESS;
 
 
@@ -229,8 +229,8 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
                 withGraphLocation(level, pos, front, null, type, (overlap, location) -> result.setValue(overlap));
 
                 if (result.getValue().feedback != null) {
-                    player.displayClientMessage(CreateLang.translateDirect(result.getValue().feedback)
-                            .withStyle(ChatFormatting.RED), true);
+                    player.sendOverlayMessage(CreateLang.translateDirect(result.getValue().feedback)
+                            .withStyle(ChatFormatting.RED));
                     AllSoundEvents.DENY.play(level, null, pos, .5f, 1);
                     return InteractionResult.FAIL;
                 }
@@ -297,7 +297,7 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
                 if (!scheduleStack.isEmpty()) {
                     for (CompoundTag passengerTag : ((AccessorCarriage) conductorCarriage).getSerialisedPassengers().values()) {
                         if (passengerTag.contains("PlayerPassenger")) continue;
-                        if (passengerTag.contains("id") && CREntities.CONDUCTOR.getId().equals(new ResourceLocation(passengerTag.getString("id")))) {
+                        if (passengerTag.contains("id") && CREntities.CONDUCTOR.getId().equals(Identifier.parse(passengerTag.getString("id")))) {
                             // It is a conductor
                             if (passengerTag.hasUUID("UUID") && passengerTag.getUUID("UUID").equals(conductorId)) {
                                 // It is the targeted conductor
@@ -335,7 +335,7 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
             }
 
 
-            player.displayClientMessage(Component.translatable("railways.whistle.success"), true);
+            player.sendOverlayMessage(Component.translatable("railways.whistle.success"));
             AllSoundEvents.CONTROLLER_CLICK.play(level, null, pos, 1, 1);
 
             Schedule schedule = new Schedule();

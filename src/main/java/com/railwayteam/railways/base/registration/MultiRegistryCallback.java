@@ -20,22 +20,18 @@ package com.railwayteam.railways.base.registration;
 
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.port.registrate.AbstractRegistrate;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
 public final class MultiRegistryCallback<A, B> {
     private static final Logger LOGGER = LoggerFactory.getLogger(Railways.ID_NAME+"/MultiRegistryCallback");
 
@@ -49,8 +45,8 @@ public final class MultiRegistryCallback<A, B> {
     private final ResourceKey<? extends Registry<A>> typeA;
     private final ResourceKey<? extends Registry<B>> typeB;
 
-    private final ResourceLocation idA;
-    private final ResourceLocation idB;
+    private final Identifier idA;
+    private final Identifier idB;
 
     private @Nullable BiConsumer<A, B> callback;
 
@@ -58,8 +54,8 @@ public final class MultiRegistryCallback<A, B> {
     private @Nullable B valueB;
 
     private MultiRegistryCallback(
-        AbstractRegistrate<?> registrateA, ResourceKey<? extends Registry<A>> typeA, ResourceLocation idA,
-        AbstractRegistrate<?> registrateB, ResourceKey<? extends Registry<B>> typeB, ResourceLocation idB,
+        AbstractRegistrate<?> registrateA, ResourceKey<? extends Registry<A>> typeA, Identifier idA,
+        AbstractRegistrate<?> registrateB, ResourceKey<? extends Registry<B>> typeB, Identifier idB,
         BiConsumer<A, B> callback
     ) {
         this.registrateA = registrateA;
@@ -75,7 +71,7 @@ public final class MultiRegistryCallback<A, B> {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static <T> @Nullable T getEntry(ResourceKey<? extends Registry<T>> registry, ResourceLocation id) {
+    private static <T> @Nullable T getEntry(ResourceKey<? extends Registry<T>> registry, Identifier id) {
         Registry<T> $registry = (Registry<T>) BuiltInRegistries.REGISTRY.get((ResourceKey) registry);
         if ($registry == null) return null;
         if (!$registry.containsKey(id)) return null; // don't just return the default value for defaulted registries
@@ -153,8 +149,8 @@ public final class MultiRegistryCallback<A, B> {
     }
 
     public static <A, B> void create(
-        AbstractRegistrate<?> registrateA, ResourceKey<? extends Registry<A>> typeA, ResourceLocation idA,
-        AbstractRegistrate<?> registrateB, ResourceKey<? extends Registry<B>> typeB, ResourceLocation idB,
+        AbstractRegistrate<?> registrateA, ResourceKey<? extends Registry<A>> typeA, Identifier idA,
+        AbstractRegistrate<?> registrateB, ResourceKey<? extends Registry<B>> typeB, Identifier idB,
         BiConsumer<A, B> callback
     ) {
         if (FINALIZERS == null) {

@@ -22,7 +22,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.registry.CRTrackMaterials;
 import com.zurrtum.create.content.trains.track.TrackMaterial;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -33,11 +33,11 @@ public class MixinTrackMaterial {
      * If it finds a modded cherry track material it'll replace it {@link CRTrackMaterials#CHERRY}
      * Which is from 1.20 Vanilla.
      */
-    @ModifyExpressionValue(method = "deserialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/ResourceLocation;tryParse(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"))
-    private static ResourceLocation railways$updateCherryCompatTracks(ResourceLocation original) {
+    @ModifyExpressionValue(method = "deserialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/Identifier;tryParse(Ljava/lang/String;)Lnet/minecraft/resources/Identifier;"))
+    private static Identifier railways$updateCherryCompatTracks(Identifier original) {
         return switch (original.toString()) {
             case "biomesoplenty:cherry", "byg:cherry", "blue_skies:cherry"
-                    -> CRTrackMaterials.CHERRY.id;
+                    -> CRTrackMaterials.CHERRY.getId();
             case "biomesoplenty:cherry_wide", "byg:cherry_wide", "blue_skies:cherry_wide"
                     -> CRTrackMaterials.getWide(CRTrackMaterials.CHERRY).id;
             case "biomesoplenty:cherry_narrow", "byg:cherry_narrow", "blue_skies:cherry_narrow"
@@ -47,10 +47,10 @@ public class MixinTrackMaterial {
     }
     
     // Properly deserialize pre-resourcelocation tracks
-    @ModifyExpressionValue(method = "deserialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/ResourceLocation;tryParse(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;", remap = true))
-    private static ResourceLocation railways$deserializeLegacyTracks(ResourceLocation original) {
+    @ModifyExpressionValue(method = "deserialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/Identifier;tryParse(Ljava/lang/String;)Lnet/minecraft/resources/Identifier;", remap = true))
+    private static Identifier railways$deserializeLegacyTracks(Identifier original) {
         if (original.getNamespace().equals("minecraft")) {
-            ResourceLocation alternate = Railways.asResource(original.getPath());
+            Identifier alternate = Railways.asResource(original.getPath());
             if (TrackMaterial.ALL.containsKey(alternate))
                 return alternate;
         }

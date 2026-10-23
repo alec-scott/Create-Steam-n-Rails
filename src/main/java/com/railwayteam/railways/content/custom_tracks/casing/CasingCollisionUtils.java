@@ -18,12 +18,14 @@
 
 package com.railwayteam.railways.content.custom_tracks.casing;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.railwayteam.railways.mixin_interfaces.IHasTrackCasing;
 import com.railwayteam.railways.registry.CRBlocks;
 import com.railwayteam.railways.registry.CRTrackMaterials.CRTrackType;
 import com.zurrtum.create.content.trains.track.TrackBlock;
 import com.zurrtum.create.content.trains.track.TrackBlockEntity;
-import com.zurrtum.create.content.trains.track.TrackMaterial.TrackType;
+import com.railwayteam.railways.port.create.track.TrackType;
 import com.zurrtum.create.content.trains.track.TrackShape;
 import com.zurrtum.create.foundation.block.ProperWaterloggedBlock;
 import net.minecraft.core.BlockPos;
@@ -264,7 +266,7 @@ public class CasingCollisionUtils {
         TrackShape shape = state.getValue(TrackBlock.SHAPE);
         if (((IHasTrackCasing) be).railways$isAlternate() || ((IHasTrackCasing) be).railways$getTrackCasing() == null)
             return false;
-        TrackType trackType = ((TrackBlock) state.getBlock()).getMaterial().trackType;
+        TrackType trackType = TrackMaterialData.of(((TrackBlock) state.getBlock()).getMaterial()).trackType;
         if (!OFFSETS.containsKey(trackType))
             return false;
         Map<TrackShape, Set<BlockPos>> shapeMap = OFFSETS.get(trackType);
@@ -273,7 +275,7 @@ public class CasingCollisionUtils {
 
     public static void manageTracks(TrackBlockEntity be, boolean remove) {
         TrackShape shape = be.getBlockState().getValue(TrackBlock.SHAPE);
-        TrackType trackType = ((TrackBlock) be.getBlockState().getBlock()).getMaterial().trackType;
+        TrackType trackType = TrackMaterialData.of(((TrackBlock) be.getBlockState().getBlock()).getMaterial()).trackType;
         if (!OFFSETS.containsKey(trackType))
             return;
         Map<TrackShape, Set<BlockPos>> shapeMap = OFFSETS.get(trackType);

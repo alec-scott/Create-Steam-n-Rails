@@ -48,7 +48,7 @@ public class CustomTrackBlock  { //done using a brass hand on a track should cal
         }
         Block newBlock;
         if (handStack.getItem() instanceof BlockItem blockItem && CasingChecker.isValid(newBlock = blockItem.getBlock())) {
-            if (world.isClientSide) return InteractionResult.SUCCESS;
+            if (world.isClientSide()) return InteractionResult.SUCCESS;
             Block currentCasing = IHasTrackCasing.getTrackCasing(world, pos);
             if (currentCasing == newBlock) {
                 return (IHasTrackCasing.setAlternateModel(world, pos, !IHasTrackCasing.isAlternate(world, pos))) ?
@@ -68,7 +68,7 @@ public class CustomTrackBlock  { //done using a brass hand on a track should cal
         } else if (handStack.isEmpty()) {
             Block currentCasing = IHasTrackCasing.getTrackCasing(world, pos);
             if (currentCasing != null) {
-                if (world.isClientSide) return InteractionResult.SUCCESS;
+                if (world.isClientSide()) return InteractionResult.SUCCESS;
                 handStack = new ItemStack(currentCasing);
                 IHasTrackCasing.setTrackCasing(world, pos, null);
                 if (!player.isCreative())

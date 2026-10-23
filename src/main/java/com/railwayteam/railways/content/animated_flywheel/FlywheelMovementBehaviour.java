@@ -38,7 +38,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 public class FlywheelMovementBehaviour implements MovementBehaviour {
     @Override
     public boolean isActive(MovementContext context) {
-        return context.world.isClientSide;
+        return context.world.isClientSide();
     }
 
     private static class TemporaryData {
@@ -53,7 +53,7 @@ public class FlywheelMovementBehaviour implements MovementBehaviour {
 
         // Early exit checks, don't mind them :)
         if (!CRConfigs.client().animatedFlywheels.get()) return;
-        if (!context.world.isClientSide || Minecraft.getInstance().isPaused()) return;
+        if (!context.world.isClientSide() || Minecraft.getInstance().isPaused()) return;
         if (!(context.contraption instanceof CarriageContraption carriageContraption)) return;
         if (!(carriageContraption.entity instanceof CarriageContraptionEntity carriageContraptionEntity)) return;
         if (!(context.contraption.getOrCreateClientContraptionLazy().getBlockEntity(context.localPos) instanceof FlywheelBlockEntity flywheelBlockEntity)) return;

@@ -44,9 +44,9 @@ public class MixinTrackBlockItem {
 
         if (state.getBlock() instanceof ITrackBlock track && track.getTrackAxes(level, pos, state)
             .size() > 1) {
-            if (!level.isClientSide)
-                player.displayClientMessage(CreateLang.translateDirect("track.junction_start")
-                    .withStyle(ChatFormatting.RED), true);
+            if (!level.isClientSide())
+                player.sendOverlayMessage(CreateLang.translateDirect("track.junction_start")
+                    .withStyle(ChatFormatting.RED));
             cir.setReturnValue(InteractionResult.SUCCESS);
         }
     }

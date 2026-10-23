@@ -29,7 +29,7 @@ import com.zurrtum.create.api.registry.CreateRegistries;
 import com.railwayteam.railways.port.create.foundation.data.CreateRegistrate;
 import com.railwayteam.railways.port.registrate.util.entry.BlockEntry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
@@ -87,7 +87,7 @@ public class CRExtraRegistration {
         }
     }
 
-    private static void addRailwaysBlockToCreateBlockEntity(BlockEntry<?> railwaysBlock, ResourceLocation createBE) {
+    private static void addRailwaysBlockToCreateBlockEntity(BlockEntry<?> railwaysBlock, Identifier createBE) {
         MultiRegistryCallback.create(
             CREATE_REGISTRATE, Registries.BLOCK_ENTITY_TYPE, createBE,
             Railways.registrate(), Registries.BLOCK, railwaysBlock.getId(),

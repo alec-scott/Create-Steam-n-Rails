@@ -57,6 +57,6 @@ public class MixinSandPaperItem {
         if (player != null)
             stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(p.getUsedItemHand()));
 
-        cir.setReturnValue(InteractionResult.sidedSuccess(level.isClientSide));
+        cir.setReturnValue(InteractionResult.sidedSuccess(level.isClientSide()));
     }
 }

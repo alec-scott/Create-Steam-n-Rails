@@ -37,7 +37,7 @@ public class MixinTrainRelocator {
     private static void tryToApproachStation(Train train, Level level, BlockPos pos, BezierTrackPointLocation bezier,
                                              boolean bezierDirection, Vec3 lookAngle, boolean simulate,
                                              CallbackInfoReturnable<Boolean> cir) {
-        if (!simulate && !level.isClientSide && !((IHandcarTrain) train).railways$isHandcar())
+        if (!simulate && !level.isClientSide() && !((IHandcarTrain) train).railways$isHandcar())
             TrainUtils.tryToParkNearby(train, 1.25);
     }
 }

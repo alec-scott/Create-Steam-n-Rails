@@ -33,7 +33,7 @@ import com.zurrtum.create.catnip.levelWrappers.SchematicLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -75,7 +75,7 @@ public abstract class MixinTrackBlockEntity extends SmartBlockEntity implements 
         if (this.level != null) {
             if (this.railways$trackCasing == null) { //Clean up the tile entity if it is no longer needed
                 CasingCollisionUtils.manageTracks((TrackBlockEntity) (Object) this, true);
-                if (!this.level.isClientSide) {
+                if (!this.level.isClientSide()) {
                     if (!this.connections.isEmpty() || getBlockState().getOptionalValue(TrackBlock.SHAPE)
                         .orElse(TrackShape.NONE)
                         .isPortal())
@@ -160,7 +160,7 @@ public abstract class MixinTrackBlockEntity extends SmartBlockEntity implements 
         }
 
         if (tag.contains("TrackCasing")) {
-            ResourceLocation casingName = ResourceLocation.of(tag.getString("TrackCasing"), ':');
+            Identifier casingName = Identifier.of(tag.getString("TrackCasing"), ':');
             if (BuiltInRegistries.BLOCK.containsKey(casingName)) {
                 this.railways$setTrackCasing(BuiltInRegistries.BLOCK.get(casingName));
                 return;

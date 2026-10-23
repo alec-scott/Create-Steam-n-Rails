@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin.client;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.llamalad7.mixinextras.sugar.Local;
 import com.railwayteam.railways.content.custom_tracks.phantom.PhantomSpriteManager;
 import com.railwayteam.railways.mixin_interfaces.IHasTrackCasing;
@@ -28,7 +30,7 @@ import com.zurrtum.create.content.trains.track.BezierConnection;
 import com.zurrtum.create.infrastructure.component.BezierTrackPointLocation;
 import com.zurrtum.create.content.trains.track.TrackBlock;
 import com.zurrtum.create.content.trains.track.TrackBlockEntity;
-import com.zurrtum.create.content.trains.track.TrackMaterial.TrackType;
+import com.railwayteam.railways.port.create.track.TrackType;
 import com.zurrtum.create.content.trains.track.TrackShape;
 import com.zurrtum.create.content.trains.track.TrackTargetingBehaviour.RenderedTrackOverlayType;
 import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
@@ -55,7 +57,7 @@ public class MixinTrackBlockClient {
     ) // Yeah, it's nice to shift the overlays up, but don't crash the game for it.
     private <Self extends Affine<Self>> void bezierShiftTrackOverlay(Affine<Self> affine, BlockGetter world, BlockPos pos, BlockState state, BezierTrackPointLocation bezierPoint, AxisDirection direction, RenderedTrackOverlayType type, CallbackInfoReturnable<PartialModel> cir, @Local BezierConnection bc) {
         IHasTrackCasing casingBc = (IHasTrackCasing) bc;
-        if (bc.getMaterial().trackType == CRTrackType.MONORAIL) {
+        if (TrackMaterialData.of(bc.getMaterial()).trackType == CRTrackType.MONORAIL) {
             affine.translate(0, 14/16f, 0);
             return;
         }
@@ -71,7 +73,7 @@ public class MixinTrackBlockClient {
 
     @Inject(method = "prepareTrackOverlay", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/client/content/trains/track/TrackRenderer;getModelAngles(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;", remap = true), remap = true)
     private <Self extends Affine<Self>> void blockShiftTrackOverlay(Affine<Self> affine, BlockGetter world, BlockPos pos, BlockState state, BezierTrackPointLocation bezierPoint, AxisDirection direction, RenderedTrackOverlayType type, CallbackInfoReturnable<PartialModel> cir) {
-        if (bezierPoint == null && state.getBlock() instanceof TrackBlock trackBlock && trackBlock.getMaterial().trackType == CRTrackMaterials.CRTrackType.MONORAIL) {
+        if (bezierPoint == null && state.getBlock() instanceof TrackBlock trackBlock && TrackMaterialData.of(trackBlock.getMaterial()).trackType == CRTrackMaterials.CRTrackType.MONORAIL) {
             affine.translate(0, 14/16f, 0);
             return;
         }
@@ -80,7 +82,7 @@ public class MixinTrackBlockClient {
             TrackShape shape = state.getValue(TrackBlock.SHAPE);
             if (casingTE.railways$getTrackCasing() != null) {
                 CRBlockPartials.TrackCasingSpec spec = CRBlockPartials.TRACK_CASINGS.get(shape);
-                TrackType trackType = trackBlock.getMaterial().trackType;
+                TrackType trackType = TrackMaterialData.of(trackBlock.getMaterial()).trackType;
                 if (spec != null)
                     affine.translate(
                         spec.getXShift(trackType),

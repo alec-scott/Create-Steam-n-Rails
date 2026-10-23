@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.mixin.client;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
+import com.railwayteam.railways.port.create.track.TrackType;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.railwayteam.railways.mixin_interfaces.IHasTrackCasing;
@@ -66,9 +70,9 @@ public class MixinTrackRenderer {
                     }
                 }
 
-                TrackMaterial.TrackType trackType = null;
+                TrackType trackType = null;
                 if (te.getBlockState().getBlock() instanceof TrackBlock trackBlock)
-                    trackType = trackBlock.getMaterial().trackType;
+                    trackType = TrackMaterialData.of(trackBlock.getMaterial()).trackType;
 
                 CRBlockPartials.TrackCasingSpec spec = CRBlockPartials.TRACK_CASINGS.get(shape);
                 if (((IHasTrackCasing) te).railways$isAlternate())

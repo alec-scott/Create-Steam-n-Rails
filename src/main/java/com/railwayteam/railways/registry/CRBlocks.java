@@ -18,6 +18,12 @@
 
 package com.railwayteam.railways.registry;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
+import com.zurrtum.create.AllItemTags;
+
+import com.zurrtum.create.AllBlockTags;
+
 import com.railwayteam.railways.ModSetup;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.base.data.BuilderTransformers;
@@ -90,7 +96,6 @@ import com.railwayteam.railways.multiloader.CommonTags;
 import com.railwayteam.railways.util.FusedSupplier;
 import com.railwayteam.railways.util.ShapeWrapper;
 import com.zurrtum.create.AllBlocks;
-import com.simibubi.create.AllTags;
 import com.zurrtum.create.api.contraption.BlockMovementChecks;
 import com.zurrtum.create.content.trains.track.TrackBlock;
 import com.zurrtum.create.content.trains.track.TrackBlockItem;
@@ -172,15 +177,15 @@ public class CRBlocks {
 
     private static BlockEntry<TrackBlock> makeTrack(TrackMaterial material, NonNullBiConsumer<DataGenContext<Block, TrackBlock>, RegistrateBlockstateProvider> blockstateGen, NonNullConsumer<? super TrackBlock> onRegister, Function<BlockBehaviour.Properties, BlockBehaviour.Properties> collectProperties) {
         List<TagKey<Block>> trackTags = new ArrayList<>();
-        trackTags.add(AllTags.AllBlockTags.TRACKS.tag);
-        if (material.trackType != CRTrackMaterials.CRTrackType.MONORAIL)
-            trackTags.add(AllTags.AllBlockTags.GIRDABLE_TRACKS.tag);
+        trackTags.add(AllBlockTags.TRACKS);
+        if (TrackMaterialData.of(material).trackType != CRTrackMaterials.CRTrackType.MONORAIL)
+            trackTags.add(AllBlockTags.GIRDABLE_TRACKS);
         List<TagKey<Item>> itemTags = new ArrayList<>();
         if (material == CRTrackMaterials.PHANTOM || material == CRTrackMaterials.getWide(CRTrackMaterials.PHANTOM) || material == CRTrackMaterials.getNarrow(CRTrackMaterials.PHANTOM)) {
             itemTags.add(CRTags.AllItemTags.PHANTOM_TRACK_REVEALING.tag);
         }
         //noinspection unchecked
-        return REGISTRATE.block("track_" + material.resourceName(), material::createBlock)
+        return REGISTRATE.block("track_" + TrackMaterialData.of(material).resourceName(), material::createBlock)
             .initialProperties(SharedProperties::stone)
             .properties(p -> collectProperties.apply(p)
                 .mapColor(MapColor.METAL)
@@ -192,14 +197,14 @@ public class CRBlocks {
             .blockstate(blockstateGen)
             .tag(CommonTags.RELOCATION_NOT_SUPPORTED.forge, CommonTags.RELOCATION_NOT_SUPPORTED.fabric)
             .tag((TagKey<Block>[]) trackTags.toArray(TagKey[]::new)) // keep the cast, or stuff breaks
-            .lang(material.langName + " Train Track")
+            .lang(TrackMaterialData.of(material).langName + " Train Track")
             .onRegister(onRegister)
             .onRegister(CreateRegistrate.blockModel(() -> TrackModel::new))
             .onRegister(CRTrackMaterials::addToBlockEntityType)
             .item(TrackBlockItem::new)
             .model((c, p) -> p.generated(c, Railways.asResource("item/track/" + c.getName())))
             .tag((TagKey<Item>[]) itemTags.toArray(TagKey[]::new))
-            .tag(AllTags.AllItemTags.TRACKS.tag)
+            .tag(AllItemTags.TRACKS)
             .build()
             .register();
     }
@@ -450,7 +455,7 @@ public class CRBlocks {
         REGISTRATE.block("mono_bogey", MonoBogeyBlock::new)
             .properties(p -> p.mapColor(MapColor.PODZOL))
             .transform(BuilderTransformers.monobogey())
-            .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
+            .tag(AllBlockTags.SAFE_NBT)
             .lang("Monorail Bogey")
             .register();
 
@@ -458,7 +463,7 @@ public class CRBlocks {
         REGISTRATE.block("invisible_bogey", InvisibleBogeyBlock::new)
             .properties(p -> p.mapColor(MapColor.PODZOL))
             .transform(BuilderTransformers.invisibleBogey())
-            .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
+            .tag(AllBlockTags.SAFE_NBT)
             .lang("Invisible Bogey")
             .register();
 
@@ -466,7 +471,7 @@ public class CRBlocks {
         REGISTRATE.block("invisible_mono_bogey", InvisibleMonoBogeyBlock::new)
             .properties(p -> p.mapColor(MapColor.PODZOL))
             .transform(BuilderTransformers.invisibleMonoBogey())
-            .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
+            .tag(AllBlockTags.SAFE_NBT)
             .lang("Invisible Mono Bogey")
             .register();
 
@@ -784,7 +789,7 @@ public class CRBlocks {
         .properties(BlockBehaviour.Properties::noCollission)
         .properties(p -> p.sound(SoundType.NETHERITE_BLOCK))
         .transform(BuilderTransformers.bufferBlockState(state -> state.getValue(StandardTrackBufferBlock.STYLE).getModel(), state -> state.getValue(StandardTrackBufferBlock.FACING)))
-        .tag(AllTags.AllBlockTags.MOVABLE_EMPTY_COLLIDER.tag)
+        .tag(AllBlockTags.MOVABLE_EMPTY_COLLIDER)
         .transform(axeOrPickaxe())
         .transform(BuilderTransformers.variantBuffer())
         .lang("Track Buffer")
@@ -801,7 +806,7 @@ public class CRBlocks {
         .properties(BlockBehaviour.Properties::noCollission)
         .properties(p -> p.sound(SoundType.NETHERITE_BLOCK))
         .transform(BuilderTransformers.bufferBlockState(state -> state.getValue(NarrowTrackBufferBlock.STYLE).getModel(), state -> state.getValue(NarrowTrackBufferBlock.FACING)))
-        .tag(AllTags.AllBlockTags.MOVABLE_EMPTY_COLLIDER.tag)
+        .tag(AllBlockTags.MOVABLE_EMPTY_COLLIDER)
         .transform(axeOrPickaxe())
         .transform(BuilderTransformers.variantBuffer())
         .lang("Narrow Track Buffer")
@@ -815,7 +820,7 @@ public class CRBlocks {
         .properties(BlockBehaviour.Properties::noCollission)
         .properties(p -> p.sound(SoundType.NETHERITE_BLOCK))
         .transform(BuilderTransformers.monoBuffer())
-        .tag(AllTags.AllBlockTags.MOVABLE_EMPTY_COLLIDER.tag)
+        .tag(AllBlockTags.MOVABLE_EMPTY_COLLIDER)
         .transform(axeOrPickaxe())
         .transform(BuilderTransformers.variantBuffer())
         .lang("Monorail Track Buffer")
@@ -829,7 +834,7 @@ public class CRBlocks {
         .properties(BlockBehaviour.Properties::noCollission)
         .properties(p -> p.sound(SoundType.NETHERITE_BLOCK))
         .transform(BuilderTransformers.bufferBlockState(state -> Railways.asResource("block/buffer/wide_buffer_stop"), state -> state.getValue(WideTrackBufferBlock.FACING)))
-        .tag(AllTags.AllBlockTags.MOVABLE_EMPTY_COLLIDER.tag)
+        .tag(AllBlockTags.MOVABLE_EMPTY_COLLIDER)
         .transform(axeOrPickaxe())
         .transform(BuilderTransformers.variantBuffer())
         .lang("Wide Track Buffer")
@@ -928,8 +933,8 @@ public class CRBlocks {
                 .strength(0.8F)
                 .sound(SoundType.METAL)
                 .noOcclusion().noLootTable())
-            .tag(AllTags.AllBlockTags.TRACKS.tag)
-            .tag(AllTags.AllBlockTags.GIRDABLE_TRACKS.tag)
+            .tag(AllBlockTags.TRACKS)
+            .tag(AllBlockTags.GIRDABLE_TRACKS)
             .addLayer(() -> RenderType::cutoutMipped)
             .transform(pickaxeOnly())
             .transform(BuilderTransformers.invisibleBlockState())

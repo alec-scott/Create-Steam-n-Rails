@@ -42,7 +42,6 @@ import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.model.SpriteFinder;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -57,7 +56,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.DyeColor;
@@ -70,7 +69,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -81,8 +79,6 @@ import static com.railwayteam.railways.content.buffer.BufferModelUtils.getSwappe
 import static com.zurrtum.create.client.infrastructure.model.CopycatModel.getModelOf;
 
 @Environment(EnvType.CLIENT)
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
 public class CopycatHeadstockModel extends ForwardingBakedModel {
 
     protected static final AABB CUBE_AABB = new AABB(BlockPos.ZERO);
@@ -109,7 +105,7 @@ public class CopycatHeadstockModel extends ForwardingBakedModel {
     }
 
     private static boolean filterCopycatParts(BakedQuad quad) {
-        return !quad.getSprite().contents().name().equals(new ResourceLocation("create", "block/copycat_base"));
+        return !quad.getSprite().contents().name().equals(Identifier.fromNamespaceAndPath("create", "block/copycat_base"));
     }
 
     @Override

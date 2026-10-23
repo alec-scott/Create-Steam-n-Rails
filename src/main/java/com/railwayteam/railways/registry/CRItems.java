@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.registry;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
+import com.zurrtum.create.AllItemTags;
+
 import com.google.common.collect.ImmutableList;
 import com.railwayteam.railways.ModSetup;
 import com.railwayteam.railways.Railways;
@@ -33,18 +37,17 @@ import com.railwayteam.railways.content.palettes.painting.PaintPitcherItem;
 import com.railwayteam.railways.multiloader.CommonTags;
 import com.railwayteam.railways.registry.CRPalettes.DyedOnlyPalettesColorList;
 import com.railwayteam.railways.util.TextUtils;
-import com.simibubi.create.AllTags;
 import com.zurrtum.create.content.processing.sequenced.SequencedAssemblyItem;
 import com.zurrtum.create.content.trains.track.TrackMaterial;
 import com.railwayteam.railways.port.create.foundation.data.CreateRegistrate;
 import com.railwayteam.railways.port.registrate.builders.ItemBuilder;
 import com.railwayteam.railways.port.registrate.providers.RegistrateRecipeProvider;
 import com.railwayteam.railways.port.registrate.util.entry.ItemEntry;
-import net.minecraft.advancements.critereon.InventoryChangeTrigger;
+import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.DyeColor;
@@ -66,7 +69,7 @@ public class CRItems {
     public static final TagKey<Item> CONDUCTOR_CAPS = CRTags.AllItemTags.CONDUCTOR_CAPS.tag;
 
     public static TagKey<Item> makeItemTag(String mod, String path) {
-        return TagKey.create(Registries.ITEM, new ResourceLocation(mod, path));
+        return TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(mod, path));
     }
 
     private static ItemBuilder<? extends Item, ?> makeMinecart(String name, AbstractMinecart.Type type) {
@@ -138,10 +141,10 @@ public class CRItems {
                 .register());
         }
 
-        for (TrackMaterial material : TrackMaterial.allFromMod(Railways.MOD_ID)) {
-            ITEM_INCOMPLETE_TRACK.put(material, REGISTRATE.item("track_incomplete_" + material.resourceName(), SequencedAssemblyItem::new)
+        for (TrackMaterial material : TrackMaterialData.allFromMod(Railways.MOD_ID)) {
+            ITEM_INCOMPLETE_TRACK.put(material, REGISTRATE.item("track_incomplete_" + TrackMaterialData.of(material).resourceName(), SequencedAssemblyItem::new)
                 .model((c, p) -> p.generated(c, Railways.asResource("item/track_incomplete/" + c.getName())))
-                .lang("Incomplete " + material.langName + " Track")
+                .lang("Incomplete " + TrackMaterialData.of(material).langName + " Track")
                 .register());
         }
     }
@@ -157,13 +160,13 @@ public class CRItems {
 
     public static final ItemEntry<? extends Item> EMPTY_PAINT_PITCHER = REGISTRATE.item("empty_paint_pitcher", EmptyPaintPitcherItem::create)
         .lang("Empty Paint Pitcher")
-        .tag(AllTags.AllItemTags.UPRIGHT_ON_BELT.tag)
+        .tag(AllItemTags.UPRIGHT_ON_BELT)
         .register();
 
     public static final ItemEntry<? extends PaintPitcherItem> SANDY_PITCHER = REGISTRATE.item("sandy_paint_pitcher", p -> PaintPitcherItem.create(p, null))
         .transform(BuilderTransformers.paintPitcher())
         .properties(p -> p.stacksTo(1))
-        .tag(AllTags.AllItemTags.UPRIGHT_ON_BELT.tag)
+        .tag(AllItemTags.UPRIGHT_ON_BELT)
         .tag(CRTags.AllItemTags.FILLED_PAINT_PITCHERS.tag)
         .lang("Sandy Paint Pitcher")
         .register();
@@ -174,7 +177,7 @@ public class CRItems {
         return REGISTRATE.item(colorReg + "_paint_pitcher", p -> PaintPitcherItem.create(p, color))
             .transform(BuilderTransformers.paintPitcher())
             .properties(p -> p.stacksTo(1))
-            .tag(AllTags.AllItemTags.UPRIGHT_ON_BELT.tag)
+            .tag(AllItemTags.UPRIGHT_ON_BELT)
             .tag(CRTags.AllItemTags.FILLED_PAINT_PITCHERS.tag)
             .lang(colorName + " Paint Pitcher")
             .register();

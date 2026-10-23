@@ -18,9 +18,10 @@
 
 package com.railwayteam.railways.mixin;
 
+import com.zurrtum.create.AllBlockTags;
+
 import com.railwayteam.railways.config.CRConfigs;
 import com.railwayteam.railways.util.MixinVariables;
-import com.simibubi.create.AllTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.BlockGetter;
@@ -41,7 +42,7 @@ public class MixinExplosionDamageCalculator {
     @Inject(method = "shouldBlockExplode", at = @At("HEAD"), cancellable = true)
     private void creepersDontBreakTracks(Explosion explosion, BlockGetter reader, BlockPos pos, BlockState state, float power, CallbackInfoReturnable<Boolean> cir) {
         if (explosion.getDirectSourceEntity() instanceof Creeper || MixinVariables.largeGhastFireballExplosion) {
-            if (AllTags.AllBlockTags.TRACKS.matches(state) && !CRConfigs.server().explosiveTrackDamage.get()) {
+            if (state.is(AllBlockTags.TRACKS) && !CRConfigs.server().explosiveTrackDamage.get()) {
                 cir.setReturnValue(false);
             }
         }

@@ -19,7 +19,6 @@
 package com.railwayteam.railways.content.palettes.hazard_stripes;
 
 import com.railwayteam.railways.content.palettes.PalettesColor;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
@@ -28,15 +27,12 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public class DirectionalHazardStripesBlock extends HazardStripesBlock {
-    public static DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public DirectionalHazardStripesBlock(Properties properties, PalettesColor highlightColor, PalettesColor baseColor) {
         super(properties, highlightColor, baseColor);

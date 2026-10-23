@@ -245,7 +245,7 @@ public abstract class TrackSwitchBlock extends HorizontalDirectionalBlock implem
     if (AllItems.WRENCH.isIn(itemInHand))
       return InteractionResult.PASS;
 
-    if (level.isClientSide) {
+    if (level.isClientSide()) {
       return InteractionResult.SUCCESS;
     }
 

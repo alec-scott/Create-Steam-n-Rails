@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.custom_tracks.monorail;
 
+import com.zurrtum.create.content.trains.bogey.BogeySize;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.content.bogey_menu.handler.BogeyMenuHandlerServer;
 import com.railwayteam.railways.content.custom_bogeys.special.monobogey.AbstractMonoBogeyBlock;
@@ -26,7 +28,7 @@ import com.railwayteam.railways.registry.CRBlocks;
 import com.railwayteam.railways.registry.CRBogeyStyles;
 import com.railwayteam.railways.registry.CRShapes;
 import com.zurrtum.create.AllItems;
-import com.simibubi.create.content.trains.bogey.BogeySizes;
+import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import com.zurrtum.create.content.trains.bogey.BogeyStyle;
 import com.zurrtum.create.content.trains.graph.TrackEdge;
 import com.zurrtum.create.content.trains.graph.TrackGraphHelper;
@@ -72,7 +74,7 @@ public class MonorailTrackBlock extends TrackBlock {
     public BlockState getBogeyAnchor(BlockGetter world, BlockPos pos, BlockState state) {
         BlockEntry<? extends AbstractMonoBogeyBlock<?>> block = CRBlocks.MONO_BOGEY;
         if (BogeyMenuHandlerServer.getCurrentPlayer() != null) {
-            Pair<BogeyStyle, BogeySizes.BogeySize> styleData = BogeyMenuHandlerServer.getStyle(BogeyMenuHandlerServer.getCurrentPlayer());
+            Pair<BogeyStyle, BogeySize> styleData = BogeyMenuHandlerServer.getStyle(BogeyMenuHandlerServer.getCurrentPlayer());
             if (styleData.getFirst() == CRBogeyStyles.INVISIBLE || styleData.getFirst() == CRBogeyStyles.INVISIBLE_MONOBOGEY)
                 block = CRBlocks.INVISIBLE_MONO_BOGEY;
         }
@@ -192,7 +194,7 @@ public class MonorailTrackBlock extends TrackBlock {
         if (result.consumesAction())
             return result;
 
-        if (!world.isClientSide && AllItems.BRASS_HAND.isIn(player.getItemInHand(hand))) {
+        if (!world.isClientSide() && AllItems.BRASS_HAND.isIn(player.getItemInHand(hand))) {
             TrackPropagator.onRailAdded(world, pos, state);
             return InteractionResult.SUCCESS;
         }

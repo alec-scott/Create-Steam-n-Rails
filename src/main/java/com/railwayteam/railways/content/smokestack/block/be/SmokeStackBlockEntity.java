@@ -186,7 +186,7 @@ public class SmokeStackBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     protected void animateTick() {
-        if (level == null || !level.isClientSide) return;
+        if (level == null || !level.isClientSide()) return;
 
         BlockState state = getBlockState();
         RandomSource random = level.getRandom();

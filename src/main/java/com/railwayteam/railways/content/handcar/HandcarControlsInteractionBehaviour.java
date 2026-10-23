@@ -37,7 +37,7 @@ public class HandcarControlsInteractionBehaviour extends ControlsInteractionBeha
     public boolean handlePlayerInteraction(Player player, InteractionHand activeHand, BlockPos localPos, AbstractContraptionEntity contraptionEntity) {
         if (!AdventureUtils.isAdventure(player) && AllItems.WRENCH.isIn(player.getItemInHand(activeHand))) {
             if (contraptionEntity instanceof CarriageContraptionEntity cce) {
-                if (player.level.isClientSide) return true;
+                if (player.level.isClientSide()) return true;
 
                 ItemStack stack = CRBlocks.HANDCAR.asStack();
                 if (!player.isCreative()) {

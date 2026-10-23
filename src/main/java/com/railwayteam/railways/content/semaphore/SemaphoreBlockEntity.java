@@ -89,7 +89,7 @@ public class SemaphoreBlockEntity extends SmartBlockEntity implements IOverridab
     public void tick() {
 
         super.tick();
-        if (!level.isClientSide)
+        if (!level.isClientSide())
             return;
 
         if (overrideLastingTicks > 0) {
@@ -233,7 +233,7 @@ public class SemaphoreBlockEntity extends SmartBlockEntity implements IOverridab
         signalState = state;
         overrideLastingTicks = ticks;
         isDistantSignal = distantSignal;
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             CRPackets.PACKETS.sendTo(PlayerSelection.tracking(this),
                 new OverridableSignalPacket(getBlockPos(),signalBE == null ? null : signalBE.getBlockPos(), state, ticks, distantSignal));
         }

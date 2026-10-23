@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.custom_bogeys.special.invisible;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.google.common.collect.ImmutableSet;
 import com.railwayteam.railways.registry.CRBlockEntities;
 import com.railwayteam.railways.registry.CRBogeyStyles;
@@ -26,12 +28,12 @@ import com.railwayteam.railways.registry.CRTrackMaterials.CRTrackType;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.zurrtum.create.content.trains.bogey.AbstractBogeyBlock;
-import com.simibubi.create.content.trains.bogey.BogeySizes;
+import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import com.zurrtum.create.content.trains.bogey.BogeyStyle;
 import com.zurrtum.create.content.trains.entity.Carriage;
 import com.zurrtum.create.content.trains.entity.CarriageBogey;
 import com.zurrtum.create.content.trains.entity.TravellingPoint;
-import com.zurrtum.create.content.trains.track.TrackMaterial.TrackType;
+import com.railwayteam.railways.port.create.track.TrackType;
 import com.zurrtum.create.foundation.block.IBE;
 import com.zurrtum.create.foundation.block.ProperWaterloggedBlock;
 import net.minecraft.core.BlockPos;
@@ -49,7 +51,7 @@ public class InvisibleBogeyBlock extends AbstractBogeyBlock<InvisibleBogeyBlockE
 	implements IBE<InvisibleBogeyBlockEntity>, ProperWaterloggedBlock, SpecialBlockItemRequirement {
 
 	public InvisibleBogeyBlock(Properties props) {
-		super(props, BogeySizes.SMALL);
+		super(props, AllBogeySizes.SMALL);
 		registerDefaultState(defaultBlockState().setValue(WATERLOGGED, false));
 	}
 
@@ -66,10 +68,10 @@ public class InvisibleBogeyBlock extends AbstractBogeyBlock<InvisibleBogeyBlockE
 		if (point.edge == null)
 			return false;
 		
-		return point.edge.getTrackMaterial().trackType != getTrackType(bogey.getStyle())
-			&& point.edge.getTrackMaterial().trackType != CRTrackType.WIDE_GAUGE
-			&& point.edge.getTrackMaterial().trackType != CRTrackType.NARROW_GAUGE
-			&& point.edge.getTrackMaterial().trackType != CRTrackType.MONORAIL;
+		return TrackMaterialData.of(point.edge.getTrackMaterial()).trackType != getTrackType(bogey.getStyle())
+			&& TrackMaterialData.of(point.edge.getTrackMaterial()).trackType != CRTrackType.WIDE_GAUGE
+			&& TrackMaterialData.of(point.edge.getTrackMaterial()).trackType != CRTrackType.NARROW_GAUGE
+			&& TrackMaterialData.of(point.edge.getTrackMaterial()).trackType != CRTrackType.MONORAIL;
 	}
 
 	@Override

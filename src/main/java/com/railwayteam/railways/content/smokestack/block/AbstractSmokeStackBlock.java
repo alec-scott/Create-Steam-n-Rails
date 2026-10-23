@@ -18,13 +18,13 @@
 
 package com.railwayteam.railways.content.smokestack.block;
 
+import com.zurrtum.create.AllItemTags;
+
 import com.railwayteam.railways.util.ShapeWrapper;
-import com.simibubi.create.AllTags;
 import com.zurrtum.create.content.equipment.wrench.IWrenchable;
 import com.zurrtum.create.foundation.block.IBE;
 import com.zurrtum.create.foundation.block.ProperWaterloggedBlock;
 import com.zurrtum.create.foundation.blockEntity.SmartBlockEntity;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -48,10 +48,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public abstract class AbstractSmokeStackBlock<T extends SmartBlockEntity> extends Block implements ProperWaterloggedBlock, IWrenchable, IBE<T> {
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
@@ -113,21 +110,21 @@ public abstract class AbstractSmokeStackBlock<T extends SmartBlockEntity> extend
     @SuppressWarnings("deprecation")
     public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
                                  BlockHitResult pHit) {
-        if (AllTags.AllItemTags.WRENCH.matches(pPlayer.getItemInHand(pHand))) {
+        if (pPlayer.getItemInHand(pHand).is(AllItemTags.WRENCH)) {
             return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
         }
         pState = pState.cycle(ENABLED);
         pLevel.setBlock(pPos, pState, 2);
         if (pState.getValue(WATERLOGGED))
             pLevel.scheduleTick(pPos, Fluids.WATER, Fluids.WATER.getTickDelay(pLevel));
-        return InteractionResult.sidedSuccess(pLevel.isClientSide);
+        return InteractionResult.sidedSuccess(pLevel.isClientSide());
     }
 
     @Override
     @SuppressWarnings("deprecation")
     public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
         super.neighborChanged(state, level, pos, block, fromPos, isMoving);
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             boolean powered = level.hasNeighborSignal(pos);
             boolean shouldBeEnabled = !powered;
             if (powered != state.getValue(POWERED)) {

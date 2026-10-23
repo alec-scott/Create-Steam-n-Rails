@@ -19,17 +19,18 @@
 
 package com.railwayteam.railways.content.custom_bogeys.special.monobogey;
 
+import com.railwayteam.railways.port.create.track.TrackType;
+
 import com.google.common.collect.ImmutableList;
 import com.railwayteam.railways.registry.CRTrackMaterials;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.zurrtum.create.content.trains.bogey.AbstractBogeyBlock;
-import com.simibubi.create.content.trains.bogey.BogeySizes;
+import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import com.zurrtum.create.content.trains.bogey.BogeyStyle;
 import com.zurrtum.create.content.trains.track.TrackMaterial;
 import com.zurrtum.create.foundation.block.IBE;
 import com.zurrtum.create.foundation.block.ProperWaterloggedBlock;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
@@ -41,17 +42,14 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.Vec3;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public abstract class AbstractMonoBogeyBlock<T extends MonoBogeyBlockEntity> extends AbstractBogeyBlock<T> implements IBE<T>, ProperWaterloggedBlock, SpecialBlockItemRequirement {
 
     public static final BooleanProperty UPSIDE_DOWN = BooleanProperty.create("upside_down");
 
     public AbstractMonoBogeyBlock(Properties pProperties) {
-        super(pProperties, BogeySizes.SMALL);
+        super(pProperties, AllBogeySizes.SMALL);
         registerDefaultState(defaultBlockState().setValue(UPSIDE_DOWN, false));
     }
 
@@ -63,7 +61,7 @@ public abstract class AbstractMonoBogeyBlock<T extends MonoBogeyBlockEntity> ext
     }
 
     @Override
-    public TrackMaterial.TrackType getTrackType(BogeyStyle style) {
+    public TrackType getTrackType(BogeyStyle style) {
         return CRTrackMaterials.CRTrackType.MONORAIL;
     }
 

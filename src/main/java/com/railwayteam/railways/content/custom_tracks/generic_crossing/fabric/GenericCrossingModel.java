@@ -24,7 +24,6 @@ import com.zurrtum.create.content.trains.track.TrackShape;
 import com.zurrtum.create.catnip.data.Pair;
 import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -43,7 +42,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
-@MethodsReturnNonnullByDefault
 public class GenericCrossingModel implements BakedModel, FabricBakedModel {
     private final BakedModel wrapped;
 

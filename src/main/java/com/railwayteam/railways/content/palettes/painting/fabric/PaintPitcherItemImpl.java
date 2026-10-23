@@ -23,16 +23,12 @@ import com.railwayteam.railways.content.palettes.PalettesColor;
 import com.railwayteam.railways.content.palettes.painting.PaintPitcherItem;
 import io.github.fabricators_of_create.porting_lib.item.ReequipAnimationItem;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 
 @ImplClass
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 @SuppressWarnings("UnstableApiUsage")
 public class PaintPitcherItemImpl extends PaintPitcherItem implements ReequipAnimationItem {
     public PaintPitcherItemImpl(Properties properties, @Nullable PalettesColor color) {

@@ -33,12 +33,12 @@ public class TagCycleSelectionPacket implements C2SPacket {
     }
 
     public TagCycleSelectionPacket(FriendlyByteBuf buf) {
-        target = BuiltInRegistries.ITEM.get(buf.readResourceLocation());
+        target = BuiltInRegistries.ITEM.get(buf.readIdentifier());
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeResourceLocation(BuiltInRegistries.ITEM.getKey(target));
+        buffer.writeIdentifier(BuiltInRegistries.ITEM.getKey(target));
     }
 
     @Override

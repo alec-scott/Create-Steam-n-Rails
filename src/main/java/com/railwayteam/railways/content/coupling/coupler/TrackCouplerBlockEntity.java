@@ -66,7 +66,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -167,7 +167,7 @@ public class TrackCouplerBlockEntity extends SmartBlockEntity implements Transfo
     }
 
     protected void onPowered() {
-        if (level == null || level.isClientSide)
+        if (level == null || level.isClientSide())
             return;
 //        this.getSecondaryCoupler().blockEntityAdded(this, false); //FIX_ME remove this
         OperationInfo info = getOperationInfo();
@@ -239,7 +239,7 @@ public class TrackCouplerBlockEntity extends SmartBlockEntity implements Transfo
     @Override
     public void lazyTick() {
         super.lazyTick();
-        if (level == null || level.isClientSide)
+        if (level == null || level.isClientSide())
             return;
         BlockState trackState = edgePoint.getTrackBlockState();
         BlockState secondaryTrackState = getSecondaryTrackState();
@@ -334,7 +334,7 @@ public class TrackCouplerBlockEntity extends SmartBlockEntity implements Transfo
     }
 
     public boolean areEdgePointsOk() {
-        return (level != null && level.isClientSide && clientInfo != null) ? clientInfo.edgePointsOk : edgePointsOk;
+        return (level != null && level.isClientSide() && clientInfo != null) ? clientInfo.edgePointsOk : edgePointsOk;
     }
 
     @Nullable

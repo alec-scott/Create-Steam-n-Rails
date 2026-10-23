@@ -18,7 +18,6 @@
 
 package com.railwayteam.railways.util.client;
 
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -27,15 +26,12 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * A simple implementation of BlockGetter for testing occlusion culling. (For example, to test copycats)
  */
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
 public class OcclusionTestLevel implements BlockGetter {
     private final Map<BlockPos, BlockState> blocks = new HashMap<>();
     private final BlockGetter blockGetter;

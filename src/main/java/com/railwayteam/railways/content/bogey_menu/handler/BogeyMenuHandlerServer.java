@@ -19,7 +19,7 @@
 package com.railwayteam.railways.content.bogey_menu.handler;
 
 import com.zurrtum.create.AllBogeyStyles;
-import com.simibubi.create.content.trains.bogey.BogeySizes;
+import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import com.zurrtum.create.content.trains.bogey.BogeySize;
 import com.zurrtum.create.content.trains.bogey.BogeyStyle;
 import com.zurrtum.create.catnip.data.Pair;
@@ -48,6 +48,6 @@ public class BogeyMenuHandlerServer {
     public static Pair<BogeyStyle, @Nullable BogeySize> getStyle(UUID uuid) {
         if (selectedStyles.containsKey(uuid))
             return selectedStyles.get(uuid);
-        return Pair.of(AllBogeyStyles.STANDARD, BogeySizes.SMALL);
+        return Pair.of(AllBogeyStyles.STANDARD, AllBogeySizes.SMALL);
     }
 }

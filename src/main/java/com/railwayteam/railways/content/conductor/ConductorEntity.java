@@ -103,7 +103,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -529,7 +529,7 @@ public class ConductorEntity extends AbstractGolem {
   }
 
   public void stopViewing(ServerPlayer player) {
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       currentlyViewing.clear();
       player.camera = player;
       CRPackets.PACKETS.sendTo(player, new SetCameraViewPacket(player));
@@ -578,7 +578,7 @@ public class ConductorEntity extends AbstractGolem {
 
   @Override
   public boolean isCrouching() {
-    return level.isClientSide ? (visualBaseEntity != null ? visualBaseEntity.isCrouching() : super.isCrouching()) : super.isCrouching();
+    return level.isClientSide() ? (visualBaseEntity != null ? visualBaseEntity.isCrouching() : super.isCrouching()) : super.isCrouching();
   }
 
   // make public
@@ -589,11 +589,11 @@ public class ConductorEntity extends AbstractGolem {
   }
 
   public boolean isPossessed() {
-    return level.isClientSide ? ClientHandler.isPossessed(this) : currentlyViewing.get() != null;
+    return level.isClientSide() ? ClientHandler.isPossessed(this) : currentlyViewing.get() != null;
   }
 
   public boolean isPossessedAndClient() {
-    return level.isClientSide && isPossessed();
+    return level.isClientSide() && isPossessed();
   }
 
   // only used by MouseHandler
@@ -959,7 +959,7 @@ public class ConductorEntity extends AbstractGolem {
 
   public ItemStack unequipToolbox() {
     setJob(Job.DEFAULT);
-    if (level.isClientSide || toolbox == null) {
+    if (level.isClientSide() || toolbox == null) {
       if (toolbox != null)
         toolbox.setRemoved();
       setToolbox(null);
@@ -996,7 +996,7 @@ public class ConductorEntity extends AbstractGolem {
     } else if (this.isCarryingToolbox()) {
       if (player.isShiftKeyDown() && player.getItemInHand(hand).isEmpty()) {
         player.setItemInHand(hand, this.unequipToolbox());
-      } else if (!level.isClientSide) {
+      } else if (!level.isClientSide()) {
         openToolbox(player);
       }
       return InteractionResult.SUCCESS;
@@ -1064,7 +1064,7 @@ public class ConductorEntity extends AbstractGolem {
     if (!sectionPos.equals(oldSectionPos)) {
         setHasSentChunks(false);
     }
-    if (level.isClientSide) {
+    if (level.isClientSide()) {
       ConductorPossessionController.tryUpdatePossession(this);
       updatePossessionInputs();
     }
@@ -1560,7 +1560,7 @@ public class ConductorEntity extends AbstractGolem {
           getHeldSchedules().add(stack);
       }
     }
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       getEntityData().set(HOLDING_SCHEDULES, isHoldingSchedules());
       frequencies.read(nbt.getCompound("frequencies"));
       updateFrequencyListeners();

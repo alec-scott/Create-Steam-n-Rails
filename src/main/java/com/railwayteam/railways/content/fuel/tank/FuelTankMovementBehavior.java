@@ -30,7 +30,7 @@ public class FuelTankMovementBehavior implements MovementBehaviour {
 
     @Override
     public void tick(MovementContext context) {
-        if(!context.world.isClientSide)
+        if(!context.world.isClientSide())
             return;
 
         BlockEntity be = context.contraption.getOrCreateClientContraptionLazy().getBlockEntity(context.localPos);

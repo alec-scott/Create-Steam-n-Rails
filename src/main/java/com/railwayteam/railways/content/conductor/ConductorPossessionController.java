@@ -306,7 +306,7 @@ public class ConductorPossessionController {
         if (!(entity instanceof Player player))
             return false;
 
-        if (player.level.isClientSide)
+        if (player.level.isClientSide())
             return ClientHandler.isPlayerMountedOnCamera();
         else
             return ((ServerPlayer) player).getCamera() instanceof ConductorEntity;
@@ -317,7 +317,7 @@ public class ConductorPossessionController {
         if (!(entity instanceof Player player))
             return null;
 
-        if (player.level.isClientSide)
+        if (player.level.isClientSide())
             return ClientHandler.getPlayerMountedOnCamera();
         else
             return ((ServerPlayer) player).getCamera() instanceof ConductorEntity ce ? ce : null;

@@ -18,15 +18,17 @@
 
 package com.railwayteam.railways.mixin;
 
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.railwayteam.railways.registry.CRBogeyStyles;
 import com.zurrtum.create.content.trains.bogey.AbstractBogeyBlock;
 import com.zurrtum.create.content.trains.bogey.BogeyStyle;
 import com.zurrtum.create.content.trains.track.ITrackBlock;
-import com.zurrtum.create.content.trains.track.TrackMaterial.TrackType;
+import com.railwayteam.railways.port.create.track.TrackType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -52,7 +54,7 @@ public abstract class MixinAbstractBogeyBlock {
         AbstractBogeyBlock<?> $this = (AbstractBogeyBlock<?>) (Object) this;
         BlockPos trackPos = $this.isUpsideDown(level.getBlockState(pos)) ? pos.above() : pos.below();
         if (level.getBlockState(trackPos).getBlock() instanceof ITrackBlock trackBlock) {
-            railways$trackType.set(trackBlock.getMaterial().trackType);
+            railways$trackType.set(TrackMaterialData.of(trackBlock.getMaterial()).trackType);
         } else {
             railways$trackType.remove();
         }
@@ -69,7 +71,7 @@ public abstract class MixinAbstractBogeyBlock {
         AbstractBogeyBlock<?> $this = (AbstractBogeyBlock<?>) (Object) this;
         BlockPos trackPos = $this.isUpsideDown(state) ? pos.above() : pos.below();
         if (level.getBlockState(trackPos).getBlock() instanceof ITrackBlock trackBlock) {
-            railways$trackType.set(trackBlock.getMaterial().trackType);
+            railways$trackType.set(TrackMaterialData.of(trackBlock.getMaterial()).trackType);
         } else {
             railways$trackType.remove();
         }
@@ -82,7 +84,7 @@ public abstract class MixinAbstractBogeyBlock {
     }
 
     @WrapOperation(method = "getNextStyle(Lcom/zurrtum/create/content/trains/bogey/BogeyStyle;)Lcom/zurrtum/create/content/trains/bogey/BogeyStyle;", at = @At(value = "INVOKE", target = "Ljava/util/Map;values()Ljava/util/Collection;"))
-    private Collection<BogeyStyle> filterStyles(Map<ResourceLocation, BogeyStyle> instance, Operation<Collection<BogeyStyle>> original) {
+    private Collection<BogeyStyle> filterStyles(Map<Identifier, BogeyStyle> instance, Operation<Collection<BogeyStyle>> original) {
         TrackType trackType = railways$trackType.get();
         if (trackType == null) {
             return original.call(instance);

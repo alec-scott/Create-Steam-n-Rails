@@ -21,16 +21,16 @@ package com.railwayteam.railways.content.custom_bogeys.blocks.wide;
 import com.railwayteam.railways.content.custom_bogeys.blocks.base.CRBogeyBlock;
 import com.railwayteam.railways.registry.CRBogeyStyles;
 import com.railwayteam.railways.registry.CRTrackMaterials.CRTrackType;
-import com.simibubi.create.content.trains.bogey.BogeySizes;
+import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import com.zurrtum.create.content.trains.bogey.BogeySize;
 import com.zurrtum.create.content.trains.bogey.BogeyStyle;
-import com.zurrtum.create.content.trains.track.TrackMaterial.TrackType;
+import com.railwayteam.railways.port.create.track.TrackType;
 import com.railwayteam.railways.port.registrate.util.nullness.NonNullFunction;
 import net.minecraft.world.phys.Vec3;
 
 public class WideGaugeBogeyBlock extends CRBogeyBlock {
     public static NonNullFunction<Properties, WideGaugeBogeyBlock> create(boolean large) {
-        return (props) -> new WideGaugeBogeyBlock(props, large ? BogeySizes.LARGE : BogeySizes.SMALL);
+        return (props) -> new WideGaugeBogeyBlock(props, large ? AllBogeySizes.LARGE : AllBogeySizes.SMALL);
     }
 
     protected WideGaugeBogeyBlock(Properties props, BogeySize size) {
@@ -48,11 +48,11 @@ public class WideGaugeBogeyBlock extends CRBogeyBlock {
 
     @Override
     public Vec3 getConnectorAnchorOffset() {
-        return new Vec3(0, 7 / 32f, size == BogeySizes.SMALL ? 48 / 32f : 36 / 32f);
+        return new Vec3(0, 7 / 32f, size == AllBogeySizes.SMALL ? 48 / 32f : 36 / 32f);
     }
 
     @Override
     public double getWheelRadius() {
-        return (size == BogeySizes.LARGE ? 12.5 : 6.5) / 16d;
+        return (size == AllBogeySizes.LARGE ? 12.5 : 6.5) / 16d;
     }
 }

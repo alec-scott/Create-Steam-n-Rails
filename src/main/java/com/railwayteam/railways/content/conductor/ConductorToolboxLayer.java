@@ -18,13 +18,14 @@
 
 package com.railwayteam.railways.content.conductor;
 
+import com.zurrtum.create.AllItemTags;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.railwayteam.railways.content.conductor.toolbox.MountedToolbox;
 import com.railwayteam.railways.registry.CRBlockPartials;
 import com.zurrtum.create.client.AllPartialModels;
-import com.simibubi.create.AllTags;
 import com.zurrtum.create.client.catnip.render.CachedBuffers;
 import com.zurrtum.create.client.catnip.render.SuperByteBuffer;
 import com.zurrtum.create.catnip.data.Iterate;
@@ -50,7 +51,7 @@ public class ConductorToolboxLayer<T extends ConductorEntity, M extends EntityMo
   @Override
   public void render(@NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, @NotNull T conductorEntity, float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
     ItemStack itemstack = conductorEntity.getToolboxDisplayStack();
-    if (itemstack.is(AllTags.AllItemTags.TOOLBOXES.tag) && conductorEntity.isCarryingToolbox()) {
+    if (itemstack.is(AllItemTags.TOOLBOXES) && conductorEntity.isCarryingToolbox()) {
       MountedToolbox holder = conductorEntity.getToolbox();
       BlockState blockState = ((BlockItem) itemstack.getItem()).getBlock().defaultBlockState();
       SuperByteBuffer body =

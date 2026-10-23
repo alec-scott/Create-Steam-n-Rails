@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.base.data.fabric;
 
+import com.zurrtum.create.AllBlockTags;
+
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.annotation.multiloader.ImplClass;
 import com.railwayteam.railways.content.buffer.MonoTrackBufferBlock;
@@ -65,7 +67,6 @@ import com.railwayteam.railways.registry.CRPalettes.Wrapping;
 import com.railwayteam.railways.registry.CRTags;
 import com.railwayteam.railways.util.TextUtils;
 import com.zurrtum.create.AllBlocks;
-import com.simibubi.create.AllTags;
 import com.zurrtum.create.Create;
 import com.zurrtum.create.content.decoration.MetalLadderBlock;
 import com.zurrtum.create.content.decoration.copycat.CopycatBlock;
@@ -87,7 +88,7 @@ import com.zurrtum.create.catnip.data.Couple;
 import com.zurrtum.create.catnip.data.Iterate;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
@@ -200,7 +201,7 @@ public class BuilderTransformersImpl {
             .forAllStates(state -> ConfiguredModel.builder()
                 .modelFile(p.models().getExistingFile(state.getValue(CONDUCTOR_VISIBLE) ?
                     Railways.asResource("block/copycat_vent_visible") :
-                    new ResourceLocation("block/air")))
+                    Identifier.parse("block/air")))
                 .build()));
     }
 
@@ -304,7 +305,7 @@ public class BuilderTransformersImpl {
                     .sound(SoundType.NETHERITE_BLOCK)
                 )
                 .transform(pickaxeOnly())
-                .tag(AllTags.AllBlockTags.WRENCH_PICKUP.tag)
+                .tag(AllBlockTags.WRENCH_PICKUP)
                 .tag(CRTags.AllBlockTags.LOCOMETAL.tag);
             if (type != null)
                 out = out.blockstate((c, p) -> p.simpleBlock(c.get(), p.models().cubeAll(
@@ -318,8 +319,8 @@ public class BuilderTransformersImpl {
         return b -> b.transform(locoMetalBase(color, null))
             .blockstate((c, p) -> {
                 String modelName = "block/palettes/"+TextUtils.prefixToFolder(c.getName(), color.getSerializedName());
-                ResourceLocation side = p.modLoc("block/palettes/" + color.getSerializedName() + "/riveted_pillar_side");
-                ResourceLocation end = p.modLoc("block/palettes/" + color.getSerializedName() + "/riveted_pillar_top");
+                Identifier side = p.modLoc("block/palettes/" + color.getSerializedName() + "/riveted_pillar_side");
+                Identifier end = p.modLoc("block/palettes/" + color.getSerializedName() + "/riveted_pillar_top");
                 p.axisBlock(c.get(),
                     p.models().cubeColumn(modelName, side, end),
                     p.models().cubeColumnHorizontal(modelName + "_horizontal", side, end)
@@ -380,7 +381,7 @@ public class BuilderTransformersImpl {
             //.transform(BlockStressDefaults.setNoImpact())
             .blockstate((c, p) -> {
                 String modelName = join("/", "block", "palettes", "flywheel", color.getSerializedName(), "block");
-                ResourceLocation flywheelTex = p.modLoc(join("/", "block", "palettes", color.getSerializedName(), "flywheel"));
+                Identifier flywheelTex = p.modLoc(join("/", "block", "palettes", color.getSerializedName(), "flywheel"));
                 BlockStateGen.axisBlock(
                     c, p,
                     $ -> p.models().withExistingParent(modelName, Create.asResource("block/flywheel/block"))
@@ -391,7 +392,7 @@ public class BuilderTransformersImpl {
             .item()
             .tag(tags)
             .model((c, p) -> {
-                ResourceLocation flywheelTex = p.modLoc(join("/", "block", "palettes", color.getSerializedName(), "flywheel"));
+                Identifier flywheelTex = p.modLoc(join("/", "block", "palettes", color.getSerializedName(), "flywheel"));
                 p.withExistingParent(c.getName(), Create.asResource("block/flywheel/item"))
                     .texture("0", flywheelTex)
                     .texture("particle", flywheelTex);
@@ -522,8 +523,8 @@ public class BuilderTransformersImpl {
         return b -> b.transform(locoMetalBase(color, null))
             .blockstate((c, p) -> {
                 String modelName = "block/palettes/"+TextUtils.prefixToFolder(c.getName(), color.getSerializedName());
-                ResourceLocation side = p.modLoc("block/palettes/" + color.getSerializedName() + "/" + type.getTextureName());
-                ResourceLocation end = p.modLoc("block/palettes/" + color.getSerializedName() + "/" + type.getTextureName());
+                Identifier side = p.modLoc("block/palettes/" + color.getSerializedName() + "/" + type.getTextureName());
+                Identifier end = p.modLoc("block/palettes/" + color.getSerializedName() + "/" + type.getTextureName());
                 axisBlock(p, c.get(),
                     p.models().cubeColumn(modelName, side, end),
                     p.models().cubeColumnHorizontal(modelName + "_horizontal", side, end)
@@ -652,7 +653,7 @@ public class BuilderTransformersImpl {
             .onRegister(CreateRegistrate.blockModel(() -> CopycatHeadstockBarsModel::new));
     }
 
-    public static <B extends TrackBufferBlock<?>, P> NonNullUnaryOperator<BlockBuilder<B, P>> bufferBlockState(Function<BlockState, ResourceLocation> modelFunc, Function<BlockState, Direction> facingFunc) {
+    public static <B extends TrackBufferBlock<?>, P> NonNullUnaryOperator<BlockBuilder<B, P>> bufferBlockState(Function<BlockState, Identifier> modelFunc, Function<BlockState, Direction> facingFunc) {
         return b -> b.blockstate((c, p) -> p.getVariantBuilder(c.getEntry())
             .forAllStatesExcept(state -> ConfiguredModel.builder()
                 .modelFile(p.models().getExistingFile(modelFunc.apply(state)))

@@ -328,7 +328,7 @@ public class TrackSwitchBlockEntity extends SmartBlockEntity implements Transfor
             if (sw != null) {
                 sw.setLocked(isLocked());
             }
-            if (level.isClientSide) {
+            if (level.isClientSide()) {
                 if (sw != null) {
                     sw.setSwitchState(state);
                     exitCount = sw.getExits().size();
@@ -371,7 +371,7 @@ public class TrackSwitchBlockEntity extends SmartBlockEntity implements Transfor
     /*protected void onStateChange() {
         if (level != null) {
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 0);
-            if (level.isClientSide)
+            if (level.isClientSide())
                 clientLazyTick();
         }
     }*/

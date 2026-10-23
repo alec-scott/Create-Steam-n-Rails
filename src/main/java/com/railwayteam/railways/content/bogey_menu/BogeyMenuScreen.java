@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.bogey_menu;
 
+import com.zurrtum.create.content.trains.bogey.BogeySize;
+
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.Window;
@@ -37,7 +39,7 @@ import com.railwayteam.railways.util.packet.BogeyStyleSelectionPacket;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.AllSoundEvents;
 import com.zurrtum.create.content.trains.bogey.AbstractBogeyBlock;
-import com.simibubi.create.content.trains.bogey.BogeySizes;
+import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import com.zurrtum.create.content.trains.bogey.BogeyStyle;
 import com.zurrtum.create.client.foundation.gui.AllGuiTextures;
 import com.zurrtum.create.client.foundation.gui.AllIcons;
@@ -64,7 +66,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionf;
@@ -208,7 +210,7 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
             BogeyEntry bogeyEntry = bogeyList[i];
             if (bogeyEntry != null) {
                 // Icon
-                ResourceLocation icon = bogeyEntry.iconLocation();
+                Identifier icon = bogeyEntry.iconLocation();
                 if (icon != null)
                     renderIcon(guiGraphics, ms, icon, x + 20, y + 42 + (i * 18));
 
@@ -251,11 +253,11 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
 
             float bogeyScale = selectedBogey.scale();
 
-            List<Pair<BogeyStyle, BogeySizes.BogeySize>> renderCycle = BogeyMenuHandlerClient.getRenderCycle(style);
+            List<Pair<BogeyStyle, BogeySize>> renderCycle = BogeyMenuHandlerClient.getRenderCycle(style);
 
-            Pair<BogeyStyle, BogeySizes.BogeySize> renderPair = renderCycle.get((ticksOpen / 40) % renderCycle.size());
+            Pair<BogeyStyle, BogeySize> renderPair = renderCycle.get((ticksOpen / 40) % renderCycle.size());
             BogeyStyle renderStyle = renderPair.getFirst();
-            BogeySizes.BogeySize renderSize = renderPair.getSecond();
+            BogeySize renderSize = renderPair.getSecond();
 
             if (BogeyMenuManagerImpl.SIZES_TO_SCALE.containsKey(renderPair)) {
                 bogeyScale = BogeyMenuManagerImpl.SIZES_TO_SCALE.get(renderPair);
@@ -330,7 +332,7 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
         }
     }
 
-    private void renderIcon(GuiGraphics guiGraphics, PoseStack ms, ResourceLocation icon, int x, int y) {
+    private void renderIcon(GuiGraphics guiGraphics, PoseStack ms, Identifier icon, int x, int y) {
         ms.pushPose();
         guiGraphics.blit(icon, x, y, 0, 0, 0, 16, 16, 16, 16);
         ms.popPose();
@@ -496,7 +498,7 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
         if (selectedBogey == null) return;
 
         BogeyStyle style = selectedBogey.bogeyStyle();
-        BogeySizes.BogeySize size = BogeyMenuHandlerClient.getSize(style);
+        BogeySize size = BogeyMenuHandlerClient.getSize(style);
 
         CRPackets.PACKETS.send(new BogeyStyleSelectionPacket(style, size));
 

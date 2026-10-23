@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.registry.fabric;
 
+import com.zurrtum.create.AllItemTags;
+
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.content.fuel.psi.PortableFuelInterfaceBlock;
 import com.railwayteam.railways.content.fuel.tank.FuelTankBlock;
@@ -25,7 +27,6 @@ import com.railwayteam.railways.content.fuel.tank.FuelTankGenerator;
 import com.railwayteam.railways.content.fuel.tank.FuelTankItem;
 import com.railwayteam.railways.content.fuel.tank.FuelTankModel;
 import com.railwayteam.railways.content.fuel.tank.FuelTankMovementBehavior;
-import com.simibubi.create.AllTags;
 import com.zurrtum.create.api.behaviour.movement.MovementBehaviour;
 import com.zurrtum.create.api.contraption.storage.fluid.MountedFluidStorageType;
 import com.zurrtum.create.content.contraptions.actors.psi.PortableStorageInterfaceMovement;
@@ -67,7 +68,7 @@ public class CRBlocksImpl {
             .blockstate((c, p) -> p.directionalBlock(c.get(), AssetLookup.partialBaseModel(c, p)))
             .onRegister(movementBehaviour(new PortableStorageInterfaceMovement()))
             .item()
-            .tag(AllTags.AllItemTags.CONTRAPTION_CONTROLLED.tag)
+            .tag(AllItemTags.CONTRAPTION_CONTROLLED)
             .transform(customItemModel())
             .register();
 

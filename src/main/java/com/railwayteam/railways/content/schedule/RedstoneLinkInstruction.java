@@ -45,7 +45,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -109,7 +109,7 @@ public class RedstoneLinkInstruction extends ScheduleInstruction {
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return Railways.asResource("redstone_link");
     }
 
