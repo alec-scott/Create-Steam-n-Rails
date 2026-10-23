@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "railways",
+  "version": "${version}",
+  "name": "Create: Steam 'n' Rails",
+  "description": "Customization and extension of Create rail systems and steam system\n\nUnofficial Fabric 26.1.2 port on Create Fly.",
+  "authors": [
+    "The Railways Team"
+  ],
+  "contact": {
+    "sources": "https://github.com/Layers-of-Railways/Railway/"
+  },
+  "license": ["LGPL v3"],
+  "icon": "assets/railways/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.railwayteam.railways.fabric.RailwaysImpl"
+    ],
+    "client": [
+      "com.railwayteam.railways.fabric.RailwaysClientImpl"
+    ]
+  },
+  "accessWidener": "railways.accesswidener",
+  "mixins": [
+    "railways.mixins.json",
+    "railways-common.mixins.json"
+  ],
+  "depends": {
+    "minecraft": "${minecraft_version}",
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": ">=${fabric_api_version}",
+    "forgeconfigapiport": ">=${forgeconfigapiport_version}",
+    "create": "${create_fly_version_range}",
+    "java": ">=25"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "Modrinth": "https://modrinth.com/mod/create-steam-n-rails",
+        "CurseForge": "https://curseforge.com/minecraft/mc-mods/create-steam-n-rails",
+        "Discord": "https://discord.gg/md78MGbEfK"
+      }
+    }
+  }
+}

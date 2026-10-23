@@ -1,0 +1,111 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+}
+
+version = "${mod_version}+fabric-mc${minecraft_version}"
+group = maven_group
+base { archivesName = archives_base_name }
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.fabricmc.net/' }
+    maven { url = 'https://raw.githubusercontent.com/Fuzss/modresources/main/maven/' }
+    maven { url = 'https://maven.maxhenkel.de/repository/public' }
+    exclusiveContent {
+        forRepository { maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven' } }
+        filter { includeGroup 'maven.modrinth' }
+    }
+}
+
+loom {
+    accessWidenerPath = file('src/main/resources/railways.accesswidener')
+}
+
+sourceSets {
+    main {
+        resources.srcDir 'src/generated/resources'
+        java {
+            srcDir layout.buildDirectory.dir('generated/sources/buildInfo')
+            // Compat for mods with no 26.1 Fabric build checked yet; see PORTING-26.1.md.
+            exclude 'com/railwayteam/railways/compat/emi/**'
+            exclude 'com/railwayteam/railways/compat/tweakeroo/**'
+            exclude 'com/railwayteam/railways/mixin/compat/voicechat/**'
+            exclude 'com/railwayteam/railways/mixin/compat/tweakeroo/**'
+        }
+    }
+}
+
+def gitHash = providers.exec {
+    commandLine 'git', 'rev-parse', '--short', 'HEAD'
+    ignoreExitValue = true
+}.standardOutput.asText.map { it.trim() }
+
+// Replaces the Blossom template the Architectury build used.
+def generateBuildInfo = tasks.register('generateBuildInfo') {
+    def outDir = layout.buildDirectory.dir('generated/sources/buildInfo')
+    def ver = project.version.toString()
+    def hash = gitHash.getOrElse('unknown')
+    inputs.property('version', ver)
+    inputs.property('gitHash', hash)
+    outputs.dir(outDir)
+    doLast {
+        def f = outDir.get().file('com/railwayteam/railways/RailwaysBuildInfo.java').asFile
+        f.parentFile.mkdirs()
+        f.text = """package com.railwayteam.railways;
+
+public class RailwaysBuildInfo {
+  public static final String VERSION = "${ver}";
+  public static final String GIT_COMMIT = "${hash}";
+  public static final boolean INCLUDE_DEV_COMMANDS = false;
+}
+"""
+    }
+}
+tasks.named('compileJava') { dependsOn generateBuildInfo }
+tasks.matching { it.name == 'sourcesJar' }.configureEach { dependsOn generateBuildInfo }
+
+dependencies {
+    // 26.1 is unobfuscated: no mappings, and Loom no longer remaps (non-remap "fabric-loom" plugin).
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+    implementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forgeconfigapiport_version}"
+
+    implementation files(create_fly_jar)
+
+    // Used by the relocated Registrate port (com.railwayteam.railways.port.registrate)
+    compileOnly "org.projectlombok:lombok:1.18.42"
+    annotationProcessor "org.projectlombok:lombok:1.18.42"
+
+    // Optional compat
+    compileOnly "de.maxhenkel.voicechat:voicechat-api:${voicechat_api_version}"
+}
+
+processResources {
+    def props = [
+            version                 : project.version,
+            minecraft_version       : minecraft_version,
+            fabric_loader_version   : fabric_loader_version,
+            fabric_api_version      : fabric_api_version,
+            forgeconfigapiport_version: forgeconfigapiport_version,
+            create_fly_version_range: create_fly_version_range
+    ]
+    inputs.properties(props)
+    filesMatching('fabric.mod.json') { expand props }
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(java_version as int)
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = java_version as int
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['-Xmaxerrs', '10000'])
+}
+
+jar {
+    from('LICENSE') { rename { "LICENSE_railways" } }
+    manifest { attributes('Git-Hash': gitHash.getOrElse('unknown')) }
+}
