@@ -56,7 +56,7 @@ public class CRTagGen {
 
 	public static void generateBlockTags(RegistrateTagsProvider<Block> prov) {
 		prov.addTag(CRTags.AllBlockTags.SEMAPHORE_POLES.tag)
-				.add(AllBlocks.METAL_GIRDER.get(), AllBlocks.METAL_GIRDER_ENCASED_SHAFT.get())
+				.add(AllBlocks.METAL_GIRDER, AllBlocks.METAL_GIRDER_ENCASED_SHAFT)
 				.forceAddTag(BlockTags.FENCES);
 
 		prov.addTag(CRTags.AllBlockTags.TRACK_CASING_BLACKLIST.tag);
@@ -101,7 +101,7 @@ public class CRTagGen {
 
 		prov.addTag(AllItemTags.PAINT_DRINK_BLOCKERS.tag)
 			.add(CRItems.PAINT_BRUSH.get())
-			.add(AllItems.POTATO_CANNON.get());
+			.add(AllItems.POTATO_CANNON);
 
 		prov.addTag(AllItemTags.PAINT_BRUSH_REPAIR_ITEMS.tag)
 			.add(Items.FEATHER);

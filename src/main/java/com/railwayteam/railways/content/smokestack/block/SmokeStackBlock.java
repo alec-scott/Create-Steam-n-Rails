@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.smokestack.block;
 
+import net.minecraft.world.item.ItemStack;
+
 import com.railwayteam.railways.content.smokestack.RotationType;
 import com.railwayteam.railways.content.smokestack.SmokeEmissionParams;
 import com.railwayteam.railways.content.smokestack.block.be.SmokeStackBlockEntity;
@@ -106,7 +108,7 @@ public class SmokeStackBlock extends AbstractSmokeStackBlock<SmokeStackBlockEnti
     }
 
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
+    public InteractionResult useItemOn(ItemStack stack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
         if (pPlayer.getItemInHand(pHand).getItem() instanceof DyeItem dyeItem) {
             DyeColor color = dyeItem.getDyeColor();
             withBlockEntityDo(pLevel, pPos, te -> te.setColor(color));
@@ -129,14 +131,9 @@ public class SmokeStackBlock extends AbstractSmokeStackBlock<SmokeStackBlockEnti
             });
             return InteractionResult.SUCCESS;
         }
-        return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
+        return super.useItemOn(stack, pState, pLevel, pPos, pPlayer, pHand, pHit);
     }
 
-    @Override
-    @SuppressWarnings("deprecation")
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        IBE.onRemove(state, level, pos, newState);
-    }
 
     @Override
     public Class<SmokeStackBlockEntity> getBlockEntityClass() {

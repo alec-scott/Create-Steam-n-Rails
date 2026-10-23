@@ -149,7 +149,7 @@ public class FuelTankBlock extends Block implements IWrenchable, IBE<FuelTankBlo
 
     @Override
     @SuppressWarnings("deprecation")
-    public @NotNull InteractionResult use(@NotNull BlockState state, Level world, @NotNull BlockPos pos, Player player,
+    public InteractionResult useItemOn(ItemStack stack, @NotNull BlockState state, Level world, @NotNull BlockPos pos, Player player,
                                           @NotNull InteractionHand hand, @NotNull BlockHitResult ray) {
         ItemStack heldItem = player.getItemInHand(hand);
         boolean onClient = world.isClientSide();
@@ -329,7 +329,7 @@ public class FuelTankBlock extends Block implements IWrenchable, IBE<FuelTankBlo
 
     @Override
     @SuppressWarnings("deprecation")
-    public int getAnalogOutputSignal(@NotNull BlockState blockState, @NotNull Level worldIn, @NotNull BlockPos pos) {
+    public int getAnalogOutputSignal(@NotNull BlockState blockState, @NotNull Level worldIn, @NotNull BlockPos pos, Direction direction) {
         return getBlockEntityOptional(worldIn, pos).map(FuelTankBlockEntity::getControllerBE)
                 .map(be -> ComparatorUtil.fractionToRedstoneLevel(be.getFillState()))
                 .orElse(0);

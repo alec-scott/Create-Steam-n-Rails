@@ -107,7 +107,7 @@ public abstract class MixinTrackBlockOutline {
 
     @ModifyExpressionValue(method = "drawCustomBlockSelection", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getBlock()Lnet/minecraft/world/level/block/Block;", remap = true))
     private static Block genericCrossingsAreCustom(Block original) {
-        return original instanceof GenericCrossingBlock ? AllBlocks.TRACK.get() : original;
+        return original instanceof GenericCrossingBlock ? AllBlocks.TRACK : original;
     }
 }
 

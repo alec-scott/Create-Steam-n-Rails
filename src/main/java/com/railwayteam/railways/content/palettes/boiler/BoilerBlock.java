@@ -140,7 +140,7 @@ public class BoilerBlock extends Block implements IWrenchable, IHasCustomOutline
     }
 
     @Override
-    public @NotNull InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
+    public InteractionResult useItemOn(ItemStack stack, @NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
                                           Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
         if (player.isShiftKeyDown() || !player.mayBuild())
             return InteractionResult.PASS;

@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.coupling.coupler;
 
+import net.minecraft.world.level.storage.ValueOutput;
+
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.config.CRConfigs;
 import com.railwayteam.railways.content.coupling.TrainUtils;
@@ -30,7 +34,6 @@ import com.railwayteam.railways.util.MinRespectingScrollValueBehaviour;
 import com.railwayteam.railways.util.packet.TrackCouplerClientInfoPacket;
 import com.zurrtum.create.Create;
 import com.zurrtum.create.api.contraption.transformable.TransformableBlockEntity;
-import com.zurrtum.create.client.api.goggles.IHaveGoggleInformation;
 import com.zurrtum.create.content.contraptions.StructureTransform;
 import com.zurrtum.create.content.trains.entity.Carriage;
 import com.zurrtum.create.content.trains.entity.CarriageBogey;
@@ -44,16 +47,11 @@ import com.zurrtum.create.content.trains.track.TrackBlock;
 import com.zurrtum.create.content.trains.track.TrackTargetingBehaviour;
 import com.zurrtum.create.foundation.blockEntity.SmartBlockEntity;
 import com.zurrtum.create.api.behaviour.BlockEntityBehaviour;
-import com.zurrtum.create.client.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
-import com.zurrtum.create.client.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
 import com.zurrtum.create.catnip.data.Couple;
-import com.zurrtum.create.client.catnip.lang.Lang;
-import com.zurrtum.create.client.catnip.lang.LangBuilder;
-import com.zurrtum.create.catnip.math.VecHelper;
-import com.zurrtum.create.catnip.nbt.NBTHelper;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
@@ -72,7 +70,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
-public class TrackCouplerBlockEntity extends SmartBlockEntity implements TransformableBlockEntity, IHaveGoggleInformation {
+public class TrackCouplerBlockEntity extends SmartBlockEntity implements TransformableBlockEntity {
 
     private BlockState cachedTrackState = null;
     private BlockState cachedSecondaryTrackState = null;
@@ -87,7 +85,7 @@ public class TrackCouplerBlockEntity extends SmartBlockEntity implements Transfo
 
     public TrackTargetingBehaviour<TrackCoupler> edgePoint;
     public TrackTargetingBehaviour<TrackCoupler> secondEdgePoint;
-    protected ScrollValueBehaviour edgeSpacingScroll;
+    protected MinRespectingScrollValueBehaviour edgeSpacingScroll;
 
     protected int cachedEffectiveEdgeSpacing = 5;
 
@@ -96,7 +94,7 @@ public class TrackCouplerBlockEntity extends SmartBlockEntity implements Transfo
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
+    protected void write(ValueOutput tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.putBoolean("EdgePointsOk", edgePointsOk);
         tag.putBoolean("Power", lastReportedPower);
@@ -108,34 +106,31 @@ public class TrackCouplerBlockEntity extends SmartBlockEntity implements Transfo
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
+    protected void read(ValueInput tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        edgePointsOk = tag.getBoolean("EdgePointsOk");
-        lastReportedPower = tag.getBoolean("Power");
-        lastAnalogOutput = tag.getInt("AnalogOutput");
-        edgeSpacing = tag.getInt("EdgeSpacing");
-        lastEdgeSpacing = tag.getInt("LastEdgeSpacing");
+        edgePointsOk = tag.getBooleanOr("EdgePointsOk", false);
+        lastReportedPower = tag.getBooleanOr("Power", false);
+        lastAnalogOutput = tag.getIntOr("AnalogOutput", 0);
+        edgeSpacing = tag.getIntOr("EdgeSpacing", 0);
+        lastEdgeSpacing = tag.getIntOr("LastEdgeSpacing", 0);
         edgeSpacingScroll.setValue(edgeSpacing);
         //if (clientPacket)
-        //    clientInfo = new ClientInfo(tag.getCompound("ClientInfo"));
+        //    clientInfo = new ClientInfo(tag.childOrEmpty("ClientInfo"));
         invalidateRenderBoundingBox();
     }
 
     @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+    public void addBehaviours(List<BlockEntityBehaviour<?>> behaviours) {
         behaviours.add(edgePoint = new TrackTargetingBehaviour<>(this, CREdgePointTypes.COUPLER));
         behaviours.add(secondEdgePoint = new SecondaryTrackTargetingBehaviour<>(this, CREdgePointTypes.COUPLER));
-        edgeSpacingScroll = new MinRespectingScrollValueBehaviour(Component.translatable("railways.coupler.edge_spacing"), this, new TrackCouplerValueBoxTransform(true)) {
+        edgeSpacingScroll = new MinRespectingScrollValueBehaviour(this) {
             @Override
             public String getClipboardKey() {
                 return "Coupler";
             }
         };
         edgeSpacingScroll.between(3, 15);
-        edgeSpacingScroll.withFormatter(i -> String.valueOf(Component.translatable("railways.coupler.edge_spacing.meters")));
-        edgeSpacingScroll.withFormatter(i -> i + "m");
         edgeSpacingScroll.withCallback(i -> this.edgeSpacing = i);
-        edgeSpacingScroll.requiresWrench();
         behaviours.add(edgeSpacingScroll);
     }
 
@@ -214,7 +209,7 @@ public class TrackCouplerBlockEntity extends SmartBlockEntity implements Transfo
 
     private @Nullable
     BlockState getSecondaryTrackState() {
-        return getDesiredSecondaryEdgePos().map(pos -> edgePoint.getWorld().getBlockState(pos.offset(this.getBlockPos()))).orElse(null);
+        return getDesiredSecondaryEdgePos().map(pos -> edgePoint.getLevel().getBlockState(pos.offset(this.getBlockPos()))).orElse(null);
     }
 
     private void setError(Component component) {
@@ -459,6 +454,11 @@ public class TrackCouplerBlockEntity extends SmartBlockEntity implements Transfo
         return getOperationInfo().mode;
     }
 
+    /** The last info the server sent, or {@code null} before the first one arrives. */
+    public @Nullable ClientInfo getClientInfoOrNull() {
+        return clientInfo;
+    }
+
     public ClientInfo getClientInfo() {
         return clientInfo != null ? clientInfo : ClientInfo.FALLBACK;
     }
@@ -531,19 +531,6 @@ public class TrackCouplerBlockEntity extends SmartBlockEntity implements Transfo
         secondEdgePoint.transform(blockEntity, structureTransform);
     }
 
-    private static class TrackCouplerValueBoxTransform extends CenteredSideValueBoxTransform {
-
-        public TrackCouplerValueBoxTransform(boolean vertical) {
-            super((state, d) -> d.getAxis().isVertical() == vertical);
-        }
-
-        @Override
-        protected Vec3 getSouthLocation() {
-            return VecHelper.voxelSpace(8, 8, 16);
-        }
-
-    }
-
     public static class ClientInfo {
 
         public static final ClientInfo FALLBACK = new ClientInfo(OperationMode.NONE, "??", "??", false, Component.literal("??"), Component.literal("??"));
@@ -585,77 +572,26 @@ public class TrackCouplerBlockEntity extends SmartBlockEntity implements Transfo
             error2 = te.error2;
         }
 
-        public ClientInfo(CompoundTag tag) {
-            mode = NBTHelper.readEnum(tag, "mode", OperationMode.class);
-            trainName1 = tag.getString("trainName1");
-            trainName2 = tag.getString("trainName2");
-            edgePointsOk = tag.getBoolean("edgePointsOk");
-            error = tag.contains("error") ? Component.Serializer.fromJson(tag.getString("error")) : null;
-            error2 = tag.contains("error2") ? Component.Serializer.fromJson(tag.getString("error2")) : null;
+        // PORT-NOTE(fabric): was NBT with JSON components; the packet buffer is registry-aware, so encode directly.
+        public ClientInfo(FriendlyByteBuf buf) {
+            mode = buf.readEnum(OperationMode.class);
+            trainName1 = buf.readUtf();
+            trainName2 = buf.readUtf();
+            edgePointsOk = buf.readBoolean();
+            RegistryFriendlyByteBuf rbuf = (RegistryFriendlyByteBuf) buf;
+            error = ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC.decode(rbuf).map(Component::copy).orElse(null);
+            error2 = ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC.decode(rbuf).map(Component::copy).orElse(null);
         }
 
-        public CompoundTag write() {
-            CompoundTag tag = new CompoundTag();
-            NBTHelper.writeEnum(tag, "mode", mode);
-            tag.putString("trainName1", trainName1);
-            tag.putString("trainName2", trainName2);
-            tag.putBoolean("edgePointsOk", edgePointsOk);
-            if (error != null)
-                tag.putString("error", Component.Serializer.toJson(error));
-            if (error2 != null)
-                tag.putString("error2", Component.Serializer.toJson(error2));
-            return tag;
+        public void write(FriendlyByteBuf buf) {
+            buf.writeEnum(mode);
+            buf.writeUtf(trainName1);
+            buf.writeUtf(trainName2);
+            buf.writeBoolean(edgePointsOk);
+            RegistryFriendlyByteBuf rbuf = (RegistryFriendlyByteBuf) buf;
+            ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC.encode(rbuf, Optional.ofNullable(error));
+            ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC.encode(rbuf, Optional.ofNullable(error2));
         }
     }
 
-    private static LangBuilder b() {
-        return Lang.builder(Railways.MOD_ID);
-    }
-
-    /**
-     * this method will be called when looking at a BlockEntity that implemented this
-     * interface
-     *
-     * @param tooltip
-     * @param isPlayerSneaking
-     * @return {@code true} if the tooltip creation was successful and should be
-     * displayed, or {@code false} if the overlay should not be displayed
-     */
-    @Override
-    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        b().translate("tooltip.coupler.header").forGoggles(tooltip);
-        b().translate("tooltip.coupler.mode")
-                .style(ChatFormatting.YELLOW)
-                .forGoggles(tooltip);
-        b().translate("coupler.mode." + getAllowedOperationMode().getSerializedName())
-                .style(ChatFormatting.YELLOW)
-                .forGoggles(tooltip);
-
-        String train1 = clientInfo == null ? "None" : clientInfo.trainName1;
-        String train2 = clientInfo == null ? "None" : clientInfo.trainName2;
-        OperationMode operationMode = clientInfo == null ? OperationMode.NONE : clientInfo.mode;
-        b().translate("tooltip.coupler.train1", train1)
-                .style(ChatFormatting.GOLD)
-                .forGoggles(tooltip);
-        b().translate("tooltip.coupler.train2", train2)
-                .style(ChatFormatting.GOLD)
-                .forGoggles(tooltip);
-
-        b().translate("tooltip.coupler.action." + operationMode.name().toLowerCase(Locale.ROOT))
-                .style(ChatFormatting.GREEN)
-                .forGoggles(tooltip);
-        if (clientInfo != null) {
-            if (clientInfo.error != null) {
-                b().add(clientInfo.error)
-                        .style(ChatFormatting.DARK_RED)
-                        .forGoggles(tooltip);
-            }
-            if (clientInfo.error2 != null && CRConfigs.client().showExtendedCouplerDebug.get()) {
-                b().add(clientInfo.error2)
-                        .style(ChatFormatting.DARK_PURPLE)
-                        .forGoggles(tooltip);
-            }
-        }
-        return true;
-    }
 }

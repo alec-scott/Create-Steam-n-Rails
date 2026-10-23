@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.palettes.trapdoors;
 
+import net.minecraft.world.item.ItemStack;
+
 import com.railwayteam.railways.content.palettes.doors.HingedDoorBlock;
 import com.railwayteam.railways.registry.CRBlockSetTypes;
 import com.railwayteam.railways.util.EntityUtils;
@@ -56,11 +58,11 @@ public class PalettesTrapDoorBlock extends TrapDoorBlock implements IWrenchable 
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (EntityUtils.isHolding(player, AllItems.WRENCH::isIn)) {
             return InteractionResult.PASS;
         }
-        return super.use(state, level, pos, player, hand, hit);
+        return super.useItemOn(stack, state, level, pos, player, hand, hit);
     }
 
     @Override

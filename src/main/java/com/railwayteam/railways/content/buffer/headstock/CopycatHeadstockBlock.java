@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.buffer.headstock;
 
+import net.minecraft.world.level.LevelReader;
+
 import com.railwayteam.railways.content.buffer.BlockStateBlockItemGroup;
 import com.railwayteam.railways.registry.CRBlockEntities;
 import com.railwayteam.railways.registry.CRBlocks;
@@ -169,8 +171,8 @@ public class CopycatHeadstockBlock extends WaterloggedCopycatBlock implements Bl
         BlockState otherMaterial = getMaterial(level, otherPos);
 
         // should hopefully never happen, but just in case
-        if (material == null) material = AllBlocks.COPYCAT_BASE.getDefaultState();
-        if (otherMaterial == null) otherMaterial = AllBlocks.COPYCAT_BASE.getDefaultState();
+        if (material == null) material = AllBlocks.COPYCAT_BASE.defaultBlockState();
+        if (otherMaterial == null) otherMaterial = AllBlocks.COPYCAT_BASE.defaultBlockState();
 
         if (state.is(this) == neighborState.is(this)) {
             if (CopycatSpecialCases.isBarsMaterial(material)
@@ -307,7 +309,7 @@ public class CopycatHeadstockBlock extends WaterloggedCopycatBlock implements Bl
     }
 
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
+    public InteractionResult useItemOn(ItemStack stack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
                                  BlockHitResult pHit) {
         if (AdventureUtils.isAdventure(pPlayer))
             return InteractionResult.PASS;
@@ -318,7 +320,7 @@ public class CopycatHeadstockBlock extends WaterloggedCopycatBlock implements Bl
             return InteractionResult.PASS;
         });
         if (result.consumesAction()) return result;
-        return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
+        return super.useItemOn(stack, pState, pLevel, pPos, pPlayer, pHand, pHit);
     }
 
     @Environment(EnvType.CLIENT)
@@ -337,7 +339,7 @@ public class CopycatHeadstockBlock extends WaterloggedCopycatBlock implements Bl
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
         return CRBlocks.COPYCAT_HEADSTOCK_GROUP.get(state.getValue(STYLE)).asStack();
     }
 }

@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.conductor.whistle;
 
+import net.minecraft.world.level.storage.ValueOutput;
+
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.railwayteam.railways.content.conductor.ConductorEntity;
 import com.zurrtum.create.Create;
 import com.zurrtum.create.api.contraption.transformable.TransformableBlockEntity;
@@ -105,14 +109,14 @@ public class ConductorWhistleFlagBlockEntity extends SmartBlockEntity implements
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
+    protected void write(ValueOutput tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.putByte("SelectedColor", ConductorEntity.idFrom(color));
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
+    protected void read(ValueInput tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        color = ConductorEntity.colorFrom(tag.getByte("SelectedColor"));
+        color = ConductorEntity.colorFrom(tag.getByteOr("SelectedColor", (byte) 0));
     }
 }

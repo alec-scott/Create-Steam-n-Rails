@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin;
 
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.railwayteam.railways.content.extended_sliding_doors.SlidingDoorMode;
 import com.zurrtum.create.content.decoration.slidingDoor.SlidingDoorBlockEntity;
 import com.zurrtum.create.api.behaviour.BlockEntityBehaviour;
@@ -42,7 +44,7 @@ public class MixinSlidingDoorBlockEntity implements SlidingDoorMode.IHasDoorMode
         SlidingDoorBlockEntity this_ = (SlidingDoorBlockEntity) (Object) this;
         railways$doorModeScroll = new ScrollOptionBehaviour<>(SlidingDoorMode.class, Component.translatable("create.sliding_door.mode"), this_, new SlidingDoorMode.SlidingDoorValueBoxTransform()) {
             @Override
-            public void read(CompoundTag nbt, boolean clientPacket) {
+            public void read(ValueInput nbt, boolean clientPacket) {
                 super.read(nbt, clientPacket);
                 setValue(value); // ensure that it is properly bounded
             }

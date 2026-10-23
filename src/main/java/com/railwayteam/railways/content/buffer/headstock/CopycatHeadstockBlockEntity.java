@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.buffer.headstock;
 
+import net.minecraft.world.level.storage.ValueOutput;
+
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.railwayteam.railways.content.buffer.IDyedBuffer;
 import com.railwayteam.railways.util.BlockStateUtils;
 import com.zurrtum.create.content.decoration.copycat.CopycatBlockEntity;
@@ -47,19 +51,19 @@ public class CopycatHeadstockBlockEntity extends CopycatBlockEntity implements I
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
+    protected void write(ValueOutput tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         if (color != null)
             tag.putInt("Color", color.getId());
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
+    protected void read(ValueInput tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         DyeColor prevColor = color;
 
         if (tag.contains("Color"))
-            color = DyeColor.byId(tag.getInt("Color"));
+            color = DyeColor.byId(tag.getIntOr("Color", 0));
         else
             color = null;
 

@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.coupling.coupler;
 
+import net.minecraft.world.level.redstone.Orientation;
+
+import net.minecraft.core.Direction;
+
 import com.railwayteam.railways.registry.CRBlockEntities;
 import com.zurrtum.create.content.equipment.wrench.IWrenchable;
 import com.zurrtum.create.foundation.block.IBE;
@@ -84,7 +88,7 @@ public abstract class TrackCouplerBlock extends Block implements IBE<TrackCouple
 	@SuppressWarnings("deprecation")
 	@Deprecated
     @Override
-	public int getAnalogOutputSignal(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos) {
+	public int getAnalogOutputSignal(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, Direction direction) {
 		if (level.getBlockEntity(pos) instanceof TrackCouplerBlockEntity te)
 			return te.getTargetAnalogOutput();
 		return 0;
@@ -100,13 +104,9 @@ public abstract class TrackCouplerBlock extends Block implements IBE<TrackCouple
 		return CRBlockEntities.TRACK_COUPLER.get();
 	}
 
-	@Override
-	public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-		IBE.onRemove(state, worldIn, pos, newState);
-	}
 
 	@Override
-	public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos,
+	public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, @Nullable Orientation orientation,
 								boolean pIsMoving) {
 		if (pLevel.isClientSide())
 			return;

@@ -69,7 +69,7 @@ public class CREntities {
             .loot((table, type) -> table.add(type, new LootTable.Builder().withPool(
                     LootPool.lootPool()
                             .setRolls(ConstantValue.exactly(1.0f))
-                            .add(LootItem.lootTableItem(AllItems.ANDESITE_ALLOY.get())
+                            .add(LootItem.lootTableItem(AllItems.ANDESITE_ALLOY)
                                     .apply(SetItemCountFunction.setCount(UniformGenerator.between(0.0f, 1.0f)))
                             )
             )))

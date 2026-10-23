@@ -39,13 +39,13 @@ public class TrackCouplerClientInfoPacket implements S2CPacket {
 
     public TrackCouplerClientInfoPacket(FriendlyByteBuf buf) {
         blockPos = buf.readBlockPos();
-        info = new TrackCouplerBlockEntity.ClientInfo(buf.readNbt());
+        info = new TrackCouplerBlockEntity.ClientInfo(buf);
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
         buffer.writeBlockPos(blockPos);
-        buffer.writeNbt(info.write());
+        info.write(buffer);
     }
 
     @Override

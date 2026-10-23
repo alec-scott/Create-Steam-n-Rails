@@ -24,8 +24,8 @@ import com.electronwill.nightconfig.toml.TomlParser;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.util.Utils;
 import com.railwayteam.railways.port.catnip.config.ConfigBase;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.fml.config.ModConfig;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.ApiStatus;
@@ -67,7 +67,7 @@ public class CRConfigs {
     }
 
     private static <T extends ConfigBase> T register(Supplier<T> factory, ModConfig.Type side) {
-        Pair<T, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(builder -> {
+        Pair<T, ModConfigSpec> specPair = new ModConfigSpec.Builder().configure(builder -> {
             T config = factory.get();
             config.registerAll(builder);
             return config;

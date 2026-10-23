@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.smokestack.block.variable;
 
+import net.minecraft.world.level.ScheduledTickAccess;
+
+import net.minecraft.util.RandomSource;
+
 import com.railwayteam.railways.content.buffer.BlockStateBlockItemGroup;
 import com.railwayteam.railways.content.smokestack.RotationType;
 import com.railwayteam.railways.content.smokestack.SmokestackStyle;
@@ -120,7 +124,7 @@ public non-sealed class SmokeStackExtenderBlock extends Block implements ProperW
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
         return cycleGroup.get().get(state.getValue(STYLE)).asStack();
     }
 
@@ -169,7 +173,7 @@ public non-sealed class SmokeStackExtenderBlock extends Block implements ProperW
 
     @Override
     @SuppressWarnings("deprecation")
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         BlockPos rootPos = findRoot(level, pos);
         BlockState rootState = level.getBlockState(rootPos);
         if (rootState.getBlock() instanceof VariableSmokeStackBlock rootBlock)
@@ -192,8 +196,8 @@ public non-sealed class SmokeStackExtenderBlock extends Block implements ProperW
 
     @Override
     @SuppressWarnings("deprecation")
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos currentPos, BlockPos neighborPos) {
-        updateWater(level, state, currentPos);
+    public BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos currentPos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+        updateWater(level, ticks, state, currentPos);
 
         if (direction.getAxis() != Axis.Y)
             return state;

@@ -1,0 +1,45 @@
+/*
+ * Steam 'n' Rails
+ * Copyright (c) 2026 The Railways Team
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+package com.railwayteam.railways.util.client;
+
+import com.google.common.collect.ImmutableList;
+import com.railwayteam.railways.util.MinRespectingScrollValueBehaviour;
+import com.zurrtum.create.client.foundation.blockEntity.ValueSettingsBoard;
+import com.zurrtum.create.client.foundation.blockEntity.ValueSettingsFormatter;
+import com.zurrtum.create.client.foundation.blockEntity.behaviour.ValueBoxTransform;
+import com.zurrtum.create.client.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
+import com.zurrtum.create.foundation.blockEntity.SmartBlockEntity;
+import com.zurrtum.create.foundation.blockEntity.behaviour.ValueSettings;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.BlockHitResult;
+
+/** Client half of {@link MinRespectingScrollValueBehaviour}: the value box and its settings board. */
+public class MinRespectingScrollValueBox<B extends SmartBlockEntity> extends ScrollValueBehaviour<B, MinRespectingScrollValueBehaviour> {
+    public MinRespectingScrollValueBox(Component label, B be, ValueBoxTransform slot) {
+        super(label, be, slot);
+    }
+
+    @Override
+    public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
+        int min = behaviour.getMin();
+        return new ValueSettingsBoard(this.label, behaviour.getMax() - min, 1,
+            ImmutableList.of(Component.literal("Value")),
+            new ValueSettingsFormatter(vs -> ValueSettingsFormatter.toLocaleNumber(new ValueSettings(vs.row(), vs.value() + min))));
+    }
+}

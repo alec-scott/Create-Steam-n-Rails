@@ -46,7 +46,6 @@
     "MixinCarriageBogey",
     "MixinCarriageContraptionEntity",
     "MixinConductorBlockInteractionBehavior",
-    "MixinConfigHelper",
     "MixinContraption",
     "MixinCopycatBlockEntity",
     "MixinDataFixTypes",

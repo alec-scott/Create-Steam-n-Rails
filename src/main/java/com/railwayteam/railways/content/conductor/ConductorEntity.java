@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.conductor;
 
+import net.minecraft.world.level.storage.ValueOutput;
+
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.google.common.collect.ImmutableMap;
 import com.mojang.authlib.GameProfile;
 import com.railwayteam.railways.content.conductor.toolbox.MountedToolbox;
@@ -877,7 +881,7 @@ public class ConductorEntity extends AbstractGolem {
   public boolean hurt(@NotNull DamageSource pSource, float pAmount) {
     if (getRootVehicle() instanceof CarriageContraptionEntity) // no damage when riding
       return false;
-    if (pSource.getEntity() instanceof LivingEntity living && living.getMainHandItem().is(AllItems.WRENCH.get()))
+    if (pSource.getEntity() instanceof LivingEntity living && living.getMainHandItem().is(AllItems.WRENCH))
       pAmount = 10;
     return super.hurt(pSource, pAmount);
   }
@@ -984,7 +988,7 @@ public class ConductorEntity extends AbstractGolem {
       setColor (di.getDyeColor());
       if (!player.isCreative()) player.getItemInHand(hand).shrink(1);
       return InteractionResult.SUCCESS;
-    } else if (player.getItemInHand(hand).getItem().equals(AllBlocks.ANDESITE_CASING.asStack().getItem())) {
+    } else if (player.getItemInHand(hand).getItem().equals(new ItemStack(AllBlocks.ANDESITE_CASING).getItem())) {
       if(this.getHealth()<this.getMaxHealth()){
         this.setHealth(this.getMaxHealth());
         if (!player.isCreative()) player.getItemInHand(hand).shrink(1);
@@ -1014,7 +1018,7 @@ public class ConductorEntity extends AbstractGolem {
       return InteractionResult.SUCCESS;
     } else if (getJob() == Job.REMOTE_CONTROL) {
       if (player.isShiftKeyDown() && player.getItemInHand(hand).isEmpty()) {
-        player.setItemInHand(hand, AllBlocks.REDSTONE_LINK.asStack());
+        player.setItemInHand(hand, new ItemStack(AllBlocks.REDSTONE_LINK));
         setJob(Job.DEFAULT);
       } else if (player.getItemInHand(hand).getItem() instanceof LinkedControllerItem) {
         // copy frequencies from linked controller to conductor
@@ -1025,13 +1029,13 @@ public class ConductorEntity extends AbstractGolem {
         }
         updateFrequencyListeners();
       }
-    } else if (getJob() == Job.DEFAULT && AllItems.GOGGLES.isIn(player.getItemInHand(hand))) {
+    } else if (getJob() == Job.DEFAULT && player.getItemInHand(hand).is(AllItems.GOGGLES)) {
       setJob(Job.SPY);
       player.getItemInHand(hand).shrink(1);
       return InteractionResult.SUCCESS;
     } else if (getJob() == Job.SPY) {
       if (player.isShiftKeyDown() && player.getItemInHand(hand).isEmpty()) {
-        player.setItemInHand(hand, AllItems.GOGGLES.asStack());
+        player.setItemInHand(hand, new ItemStack(AllItems.GOGGLES));
         setJob(Job.DEFAULT);
       }
     }
@@ -1163,9 +1167,9 @@ public class ConductorEntity extends AbstractGolem {
         this.spawnAtLocation(scheduleStack);
     }
     if (job == Job.REMOTE_CONTROL)
-      this.spawnAtLocation(AllBlocks.REDSTONE_LINK.asStack());
+      this.spawnAtLocation(new ItemStack(AllBlocks.REDSTONE_LINK));
     else if (job == Job.SPY)
-      this.spawnAtLocation(AllItems.GOGGLES.asStack());
+      this.spawnAtLocation(new ItemStack(AllItems.GOGGLES));
   }
 
   static class JobBasedGoal extends Goal {
@@ -1507,7 +1511,7 @@ public class ConductorEntity extends AbstractGolem {
   }
 
   @Override
-  public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
+  public void addAdditionalSaveData(ValueOutput nbt) {
     super.addAdditionalSaveData(nbt);
     nbt.put("target", NbtUtils.writeBlockPos(getEntityData().get(BLOCK)));
     nbt.putByte("color", getEntityData().get(COLOR));
@@ -1533,21 +1537,21 @@ public class ConductorEntity extends AbstractGolem {
   }
 
   @Override
-  public void readAdditionalSaveData(@NotNull CompoundTag nbt) {
+  public void readAdditionalSaveData(ValueInput nbt) {
     super.readAdditionalSaveData(nbt);
     if (nbt.contains("color", Tag.TAG_BYTE)) {
-      getEntityData().set(COLOR, nbt.getByte("color"));
+      getEntityData().set(COLOR, nbt.getByteOr("color", (byte) 0));
     }
     if (nbt.contains("target", Tag.TAG_COMPOUND)) {
-      getEntityData().set(BLOCK, NbtUtils.readBlockPos(nbt.getCompound("target")));
+      getEntityData().set(BLOCK, NbtUtils.readBlockPos(nbt.childOrEmpty("target")));
     }
     if (nbt.contains("toolboxHolder", Tag.TAG_COMPOUND)) {
-      setToolbox(MountedToolbox.read(this, nbt.getCompound("toolboxHolder")));
+      setToolbox(MountedToolbox.read(this, nbt.childOrEmpty("toolboxHolder")));
     } else {
       setToolbox(null);
     }
     if (nbt.contains("job", Tag.TAG_STRING)) {
-      setJob(Job.valueOf(nbt.getString("job")));
+      setJob(Job.valueOf(nbt.getStringOr("job", "")));
     } else {
       setJob(Job.DEFAULT);
     }
@@ -1562,7 +1566,7 @@ public class ConductorEntity extends AbstractGolem {
     }
     if (!level.isClientSide()) {
       getEntityData().set(HOLDING_SCHEDULES, isHoldingSchedules());
-      frequencies.read(nbt.getCompound("frequencies"));
+      frequencies.read(nbt.childOrEmpty("frequencies"));
       updateFrequencyListeners();
     }
   }

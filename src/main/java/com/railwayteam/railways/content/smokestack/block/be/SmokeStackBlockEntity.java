@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.smokestack.block.be;
 
+import net.minecraft.world.level.storage.ValueOutput;
+
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.content.smokestack.SmokeEmissionParams;
 import com.railwayteam.railways.content.smokestack.block.SmokeStackBlock;
@@ -80,21 +84,21 @@ public class SmokeStackBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
+    protected void read(ValueInput tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         if (tag.contains("color", Tag.TAG_INT)) {
-            int colorOrdinal = tag.getInt("color");
+            int colorOrdinal = tag.getIntOr("color", 0);
             color = DyeColor.byId(colorOrdinal);
         } else {
             color = null;
         }
-        isSoul = tag.getBoolean("isSoul");
+        isSoul = tag.getBooleanOr("isSoul", false);
 
-        height = Math.max(0, tag.getInt("height"));
+        height = Math.max(0, tag.getIntOr("height", 0));
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
+    protected void write(ValueOutput tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         if (color != null) {
             tag.putInt("color", color.getId());

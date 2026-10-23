@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.semaphore;
 
+import net.minecraft.world.level.storage.ValueOutput;
+
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.railwayteam.railways.config.CRConfigs;
 import com.railwayteam.railways.content.distant_signals.IOverridableSignal;
 import com.railwayteam.railways.multiloader.PlayerSelection;
@@ -70,13 +74,13 @@ public class SemaphoreBlockEntity extends SmartBlockEntity implements IOverridab
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
+    protected void read(ValueInput tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        cachedWasUpsideDown = tag.getBoolean("CachedWasUpsideDown");
+        cachedWasUpsideDown = tag.getBooleanOr("CachedWasUpsideDown", false);
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
+    protected void write(ValueOutput tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.putBoolean("CachedWasUpsideDown", cachedWasUpsideDown);
     }

@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.buffer;
 
+import net.minecraft.world.item.ItemStack;
+
 import com.railwayteam.railways.registry.CRBlockEntities;
 import com.railwayteam.railways.util.AdventureUtils;
 import net.minecraft.core.BlockPos;
@@ -47,13 +49,13 @@ public abstract class WoodVariantTrackBufferBlock extends TrackBufferBlock<WoodV
 
     @SuppressWarnings("deprecation")
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
+    public InteractionResult useItemOn(ItemStack stack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
                                  BlockHitResult pHit) {
         if (AdventureUtils.isAdventure(pPlayer))
             return InteractionResult.PASS;
         InteractionResult result = onBlockEntityUse(pLevel, pPos, be -> be.applyMaterialIfValid(pPlayer.getItemInHand(pHand)));
         if (result.consumesAction())
             return result;
-        return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
+        return super.useItemOn(stack, pState, pLevel, pPos, pPlayer, pHand, pHit);
     }
 }

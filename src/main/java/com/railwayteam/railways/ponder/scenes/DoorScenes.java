@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.ponder.scenes;
 
+import net.minecraft.world.item.ItemStack;
+
 import com.zurrtum.create.AllItems;
 import com.zurrtum.create.Create;
 import com.zurrtum.create.content.contraptions.elevator.ElevatorContactBlock;
@@ -118,7 +120,7 @@ public class DoorScenes {
         scene.overlay().showFilterSlotInput(blockSurface, Direction.NORTH, 60);
         scene.overlay().showControls(blockSurface, Pointing.DOWN, 60)
             .scroll()
-            .withItem(AllItems.WRENCH.asStack());
+            .withItem(new ItemStack(AllItems.WRENCH));
         scene.idle(10);
         scene.overlay().showText(60)
             .pointAt(blockSurface)

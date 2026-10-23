@@ -120,7 +120,7 @@ public class CopycatHeadstockModel extends ForwardingBakedModel {
         if (blockView.getBlockEntity(pos) instanceof CopycatHeadstockBlockEntity be) {
             material = be.getMaterial();
         } else {
-            material = AllBlocks.COPYCAT_BASE.getDefaultState();
+            material = AllBlocks.COPYCAT_BASE.defaultBlockState();
         }
 
         if (colorSwapper != null) {
@@ -146,7 +146,7 @@ public class CopycatHeadstockModel extends ForwardingBakedModel {
         }
 
         // fabric: If it is the default state do not push transformations, will cause issues with GhostBlockRenderer
-        boolean shouldTransform = material != AllBlocks.COPYCAT_BASE.getDefaultState();
+        boolean shouldTransform = material != AllBlocks.COPYCAT_BASE.defaultBlockState();
 
         // fabric: need to change the default render material
         if (shouldTransform)
@@ -265,7 +265,7 @@ public class CopycatHeadstockModel extends ForwardingBakedModel {
 
     @Override
     public void emitItemQuads(ItemStack stack, Supplier<RandomSource> randomSupplier, RenderContext context) {
-        BlockState material = AllBlocks.COPYCAT_BASE.getDefaultState();
+        BlockState material = AllBlocks.COPYCAT_BASE.defaultBlockState();
         UnaryOperator<TextureAtlasSprite> colorSwapper = null;
 
         if (stack.hasTag()) {

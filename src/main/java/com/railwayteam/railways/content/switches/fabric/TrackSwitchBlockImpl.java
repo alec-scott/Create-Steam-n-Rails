@@ -19,15 +19,15 @@
 package com.railwayteam.railways.content.switches.fabric;
 
 import com.railwayteam.railways.content.switches.TrackSwitchBlock;
-import io.github.fabricators_of_create.porting_lib.block.ConnectableRedstoneBlock;
-import io.github.fabricators_of_create.porting_lib.block.WeakPowerCheckingBlock;
+import com.zurrtum.create.foundation.block.RedStoneConnectBlock;
+import com.zurrtum.create.foundation.block.WeakPowerControlBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.SignalGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class TrackSwitchBlockImpl extends TrackSwitchBlock implements ConnectableRedstoneBlock, WeakPowerCheckingBlock {
+public class TrackSwitchBlockImpl extends TrackSwitchBlock implements RedStoneConnectBlock, WeakPowerControlBlock {
   protected TrackSwitchBlockImpl(Properties properties, boolean isAutomatic) {
     super(properties, isAutomatic);
   }
@@ -41,7 +41,7 @@ public class TrackSwitchBlockImpl extends TrackSwitchBlock implements Connectabl
   }
 
   @Override
-  public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
+  public boolean canConnectRedstone(BlockState state, Direction side) {
     return true;
   }
 

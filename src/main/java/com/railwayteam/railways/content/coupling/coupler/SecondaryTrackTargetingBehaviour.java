@@ -18,6 +18,12 @@
 
 package com.railwayteam.railways.content.coupling.coupler;
 
+import net.minecraft.core.UUIDUtil;
+
+import net.minecraft.world.level.storage.ValueOutput;
+
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.railwayteam.railways.mixin.AccessorTrackTargetingBehavior;
 import com.zurrtum.create.content.trains.graph.EdgePointType;
 import com.zurrtum.create.content.trains.signal.TrackEdgePoint;
@@ -48,9 +54,9 @@ public class SecondaryTrackTargetingBehaviour<T extends TrackEdgePoint> extends 
     }
 
     @Override
-    public void write(CompoundTag nbt, boolean clientPacket) {
+    public void write(ValueOutput nbt, boolean clientPacket) {
         AccessorTrackTargetingBehavior accessor = (AccessorTrackTargetingBehavior) this;
-        nbt.putUUID("SecondaryId", accessor.getId());
+        nbt.store("SecondaryId", UUIDUtil.CODEC, accessor.getId());
         nbt.put("SecondaryTargetTrack", NbtUtils.writeBlockPos(accessor.getTargetTrack()));
         nbt.putBoolean("SecondaryOrtho", accessor.isOrthogonal());
         nbt.putBoolean("SecondaryTargetDirection", accessor.getTargetDirection() == Direction.AxisDirection.POSITIVE);
@@ -70,22 +76,22 @@ public class SecondaryTrackTargetingBehaviour<T extends TrackEdgePoint> extends 
     }
 
     @Override
-    public void read(CompoundTag nbt, boolean clientPacket) {
+    public void read(ValueInput nbt, boolean clientPacket) {
         AccessorTrackTargetingBehavior accessor = (AccessorTrackTargetingBehavior) this;
-        accessor.setId(nbt.contains("SecondaryId") ? nbt.getUUID("SecondaryId") : UUID.randomUUID());
-        accessor.setTargetTrack(NbtUtils.readBlockPos(nbt.getCompound("SecondaryTargetTrack")));
-        accessor.setTargetDirection(nbt.getBoolean("SecondaryTargetDirection") ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
-        accessor.setOrthogonal(nbt.getBoolean("SecondaryOrtho"));
+        accessor.setId(nbt.contains("SecondaryId") ? nbt.read("SecondaryId", UUIDUtil.CODEC).orElseThrow() : UUID.randomUUID());
+        accessor.setTargetTrack(NbtUtils.readBlockPos(nbt.childOrEmpty("SecondaryTargetTrack")));
+        accessor.setTargetDirection(nbt.getBooleanOr("SecondaryTargetDirection", false) ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
+        accessor.setOrthogonal(nbt.getBooleanOr("SecondaryOrtho", false));
         if (nbt.contains("SecondaryPrevAxis"))
             accessor.setPrevDirection(VecHelper.readNBT(nbt.getList("SecondaryPrevAxis", Tag.TAG_DOUBLE)));
         if (nbt.contains("SecondaryRotatedAxis"))
             accessor.setRotatedDirection(VecHelper.readNBT(nbt.getList("SecondaryRotatedAxis", Tag.TAG_DOUBLE)));
         if (nbt.contains("SecondaryMigrate"))
-            accessor.setMigrationData(nbt.getCompound("SecondaryMigrate"));
+            accessor.setMigrationData(nbt.childOrEmpty("SecondaryMigrate"));
         if (clientPacket)
             accessor.setEdgePoint(null);
         if (nbt.contains("SecondaryBezier")) {
-            CompoundTag bezierNbt = nbt.getCompound("SecondaryBezier");
+            CompoundTag bezierNbt = nbt.childOrEmpty("SecondaryBezier");
             BlockPos key = NbtUtils.readBlockPos(bezierNbt.getCompound("Key"));
             accessor.setTargetBezier(new BezierTrackPointLocation(bezierNbt.contains("FromStack") ? key : key.offset(getPos()),
                 bezierNbt.getInt("Segment")));

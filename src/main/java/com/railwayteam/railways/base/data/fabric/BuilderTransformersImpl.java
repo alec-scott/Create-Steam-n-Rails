@@ -130,7 +130,7 @@ public class BuilderTransformersImpl {
             .transform(pickaxeOnly())
             .blockstate((c, p) -> BlockStateGen.horizontalAxisBlock(c, p, s -> p.models()
                 .getExistingFile(p.modLoc("block/bogey/monorail/top" + (s.getValue(AbstractMonoBogeyBlock.UPSIDE_DOWN) ? "_upside_down" : "")))))
-            .loot((p, l) -> p.dropOther(l, AllBlocks.RAILWAY_CASING.get()));
+            .loot((p, l) -> p.dropOther(l, AllBlocks.RAILWAY_CASING));
     }
 
     public static <B extends InvisibleBogeyBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> invisibleBogey() {
@@ -140,7 +140,7 @@ public class BuilderTransformersImpl {
             .transform(pickaxeOnly())
             .blockstate((c, p) -> BlockStateGen.horizontalAxisBlock(c, p, s -> p.models()
                 .getExistingFile(p.modLoc("block/bogey/invisible/top"))))
-            .loot((p, l) -> p.dropOther(l, AllBlocks.RAILWAY_CASING.get()));
+            .loot((p, l) -> p.dropOther(l, AllBlocks.RAILWAY_CASING));
     }
 
     public static <B extends SemaphoreBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> semaphore() {
@@ -212,7 +212,7 @@ public class BuilderTransformersImpl {
             .transform(pickaxeOnly())
             .blockstate((c, p) -> BlockStateGen.horizontalAxisBlock(c, p, s -> p.models()
                 .getExistingFile(p.modLoc("block/bogey/invisible_monorail/top" + (s.getValue(AbstractMonoBogeyBlock.UPSIDE_DOWN) ? "_upside_down" : "")))))
-            .loot((p, l) -> p.dropOther(l, AllBlocks.RAILWAY_CASING.get()));
+            .loot((p, l) -> p.dropOther(l, AllBlocks.RAILWAY_CASING));
     }
 
     public static NonNullBiConsumer<DataGenContext<Block, SmokeStackBlock>, RegistrateBlockstateProvider> defaultSmokeStack(String variant, RotationType rotType) {
@@ -351,7 +351,6 @@ public class BuilderTransformersImpl {
     public static <B extends MetalLadderBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> locoMetalLadder(PalettesColor color, String ladderType, TagKey<Item>... tags) {
         return b -> b.transform(locoMetalBase(color, null))
             .initialProperties(() -> Blocks.LADDER)
-            .addLayer(() -> RenderType::cutout)
             .properties(p -> p.sound(SoundType.COPPER))
             .blockstate((c, p) -> {
                 String main = join("/", "block", "palettes", color.getSerializedName(), ladderType+"_ladder");
@@ -712,10 +711,6 @@ public class BuilderTransformersImpl {
                 )
             ).properties(p -> p.noOcclusion()
                 .mapColor(MapColor.NONE))
-            .addLayer(() -> RenderType::solid)
-            .addLayer(() -> RenderType::cutout)
-            .addLayer(() -> RenderType::cutoutMipped)
-            .addLayer(() -> RenderType::translucent)
             .color(() -> CopycatBlock::wrappedColor)
             .onRegister(CreateRegistrate.blockModel(() -> CopycatHeadstockModel::new));
     }

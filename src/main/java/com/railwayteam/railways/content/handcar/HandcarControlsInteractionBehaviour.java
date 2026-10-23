@@ -35,7 +35,7 @@ import net.minecraft.world.phys.Vec3;
 public class HandcarControlsInteractionBehaviour extends ControlsInteractionBehaviour {
     @Override
     public boolean handlePlayerInteraction(Player player, InteractionHand activeHand, BlockPos localPos, AbstractContraptionEntity contraptionEntity) {
-        if (!AdventureUtils.isAdventure(player) && AllItems.WRENCH.isIn(player.getItemInHand(activeHand))) {
+        if (!AdventureUtils.isAdventure(player) && player.getItemInHand(activeHand).is(AllItems.WRENCH)) {
             if (contraptionEntity instanceof CarriageContraptionEntity cce) {
                 if (player.level.isClientSide()) return true;
 

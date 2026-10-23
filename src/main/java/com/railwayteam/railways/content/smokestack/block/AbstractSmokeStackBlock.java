@@ -18,6 +18,16 @@
 
 package com.railwayteam.railways.content.smokestack.block;
 
+import net.minecraft.world.level.redstone.Orientation;
+
+import net.minecraft.world.level.ScheduledTickAccess;
+
+import net.minecraft.world.level.LevelReader;
+
+import net.minecraft.world.item.ItemStack;
+
+import net.minecraft.util.RandomSource;
+
 import com.zurrtum.create.AllItemTags;
 
 import com.railwayteam.railways.util.ShapeWrapper;
@@ -101,17 +111,17 @@ public abstract class AbstractSmokeStackBlock<T extends SmartBlockEntity> extend
 
     @Override
     @SuppressWarnings("deprecation")
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos currentPos, BlockPos neighborPos) {
-        updateWater(level, state, currentPos);
+    public BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos currentPos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+        updateWater(level, ticks, state, currentPos);
         return state;
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
+    public InteractionResult useItemOn(ItemStack stack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
                                  BlockHitResult pHit) {
         if (pPlayer.getItemInHand(pHand).is(AllItemTags.WRENCH)) {
-            return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
+            return super.useItemOn(stack, pState, pLevel, pPos, pPlayer, pHand, pHit);
         }
         pState = pState.cycle(ENABLED);
         pLevel.setBlock(pPos, pState, 2);
@@ -122,8 +132,8 @@ public abstract class AbstractSmokeStackBlock<T extends SmartBlockEntity> extend
 
     @Override
     @SuppressWarnings("deprecation")
-    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
-        super.neighborChanged(state, level, pos, block, fromPos, isMoving);
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, @Nullable Orientation orientation, boolean isMoving) {
+        super.neighborChanged(state, level, pos, block, orientation, isMoving);
         if (!level.isClientSide()) {
             boolean powered = level.hasNeighborSignal(pos);
             boolean shouldBeEnabled = !powered;

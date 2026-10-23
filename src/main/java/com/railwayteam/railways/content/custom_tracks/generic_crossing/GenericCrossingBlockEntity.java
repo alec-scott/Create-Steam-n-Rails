@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.custom_tracks.generic_crossing;
 
+import net.minecraft.world.level.storage.ValueOutput;
+
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.zurrtum.create.AllTrackMaterials;
 
 import com.railwayteam.railways.content.custom_tracks.generic_crossing.TrackShapeLookup.GenericCrossingData;
@@ -72,12 +76,12 @@ public class GenericCrossingBlockEntity extends SmartBlockEntity implements IMer
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {}
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
+    protected void read(ValueInput tag, boolean clientPacket) {
         super.read(tag, clientPacket);
 
         boolean updateMesh = false;
-        TrackMaterial primary = TrackMaterial.deserialize(tag.getString("PrimaryMaterial"));
-        TrackMaterial secondary = TrackMaterial.deserialize(tag.getString("SecondaryMaterial"));
+        TrackMaterial primary = TrackMaterial.deserialize(tag.getStringOr("PrimaryMaterial", ""));
+        TrackMaterial secondary = TrackMaterial.deserialize(tag.getStringOr("SecondaryMaterial", ""));
 
         if (primary != getPrimary() || secondary != getSecondary()) updateMesh = true;
 
@@ -93,7 +97,7 @@ public class GenericCrossingBlockEntity extends SmartBlockEntity implements IMer
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
+    protected void write(ValueOutput tag, boolean clientPacket) {
         super.write(tag, clientPacket);
 
         tag.putString("PrimaryMaterial", getPrimary().id.toString());

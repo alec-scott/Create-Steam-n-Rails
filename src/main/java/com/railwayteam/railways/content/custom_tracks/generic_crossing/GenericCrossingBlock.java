@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.custom_tracks.generic_crossing;
 
+import net.minecraft.world.level.ScheduledTickAccess;
+
+import net.minecraft.world.level.LevelReader;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.registry.CRBlockEntities;
 import com.railwayteam.railways.registry.CRTrackMaterials;
@@ -114,8 +118,8 @@ public class GenericCrossingBlock extends Block implements IBE<GenericCrossingBl
 
     @SuppressWarnings("deprecation")
     @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos currentPos, BlockPos neighborPos) {
-        updateWater(level, state, currentPos);
+    public BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos currentPos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+        updateWater(level, ticks, state, currentPos);
         return state;
     }
 
@@ -150,13 +154,13 @@ public class GenericCrossingBlock extends Block implements IBE<GenericCrossingBl
     @Override
     @Environment(EnvType.CLIENT)
     public <Self extends Affine<Self>> PartialModel prepareTrackOverlay(Affine<Self> affine, BlockGetter blockGetter, BlockPos blockPos, BlockState blockState, BezierTrackPointLocation bezierTrackPointLocation, AxisDirection axisDirection, RenderedTrackOverlayType renderedTrackOverlayType) {
-        return AllBlocks.TRACK.get().prepareTrackOverlay(affine, blockGetter, blockPos, blockState, bezierTrackPointLocation, axisDirection, renderedTrackOverlayType);
+        return AllBlocks.TRACK.prepareTrackOverlay(affine, blockGetter, blockPos, blockState, bezierTrackPointLocation, axisDirection, renderedTrackOverlayType);
     }
 
     @Override
     @Environment(EnvType.CLIENT)
     public PartialModel prepareAssemblyOverlay(BlockGetter world, BlockPos pos, BlockState state, Direction direction, PoseStack ms) {
-        return AllBlocks.TRACK.get().prepareAssemblyOverlay(world, pos, state, direction, ms);
+        return AllBlocks.TRACK.prepareAssemblyOverlay(world, pos, state, direction, ms);
     }
 
     @Override

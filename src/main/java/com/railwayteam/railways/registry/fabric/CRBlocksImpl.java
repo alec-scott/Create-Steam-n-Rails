@@ -38,7 +38,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 
-import static com.zurrtum.create.api.behaviour.movement.MovementBehaviour.movementBehaviour;
+import static com.railwayteam.railways.port.create.CreateTransforms.movementBehaviour;
 import static com.railwayteam.railways.port.create.foundation.data.ModelGen.customItemModel;
 import static com.railwayteam.railways.port.create.foundation.data.TagGen.axeOrPickaxe;
 import static com.railwayteam.railways.port.create.foundation.data.TagGen.pickaxeOnly;
@@ -54,8 +54,7 @@ public class CRBlocksImpl {
             .blockstate(new FuelTankGenerator()::generate)
             .onRegister(CreateRegistrate.blockModel(() -> FuelTankModel::standard))
             .transform(MountedFluidStorageType.mountedFluidStorage(CRMountedStorageTypesImpl.FUEL_TANK))
-            .onRegister(MovementBehaviour.movementBehaviour(new FuelTankMovementBehavior()))
-            .addLayer(() -> RenderType::cutoutMipped)
+            .onRegister(com.railwayteam.railways.port.create.CreateTransforms.movementBehaviour(new FuelTankMovementBehavior()))
             .item(FuelTankItem::new)
             .model(AssetLookup.customBlockItemModel("_", "block_single_window"))
             .build()

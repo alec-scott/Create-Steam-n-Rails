@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.minecarts;
 
+import net.minecraft.world.level.storage.ValueOutput;
+
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.railwayteam.railways.registry.CREntities;
 import com.railwayteam.railways.registry.CRItems;
 import com.railwayteam.railways.util.packet.PacketSender;
@@ -123,15 +127,15 @@ public class MinecartJukebox extends MinecartBlock {
   }
 
   @Override
-  protected void readAdditionalSaveData(CompoundTag compound) {
+  protected void readAdditionalSaveData(ValueInput compound) {
     super.readAdditionalSaveData(compound);
     if (compound.contains("Disc", Tag.TAG_COMPOUND)) {
-      disc = ItemStack.of(compound.getCompound("Disc"));
+      disc = ItemStack.of(compound.childOrEmpty("Disc"));
     }
   }
 
   @Override
-  protected void addAdditionalSaveData(CompoundTag compound) {
+  protected void addAdditionalSaveData(ValueOutput compound) {
     super.addAdditionalSaveData(compound);
     compound.put("Disc", disc.save(new CompoundTag()));
   }

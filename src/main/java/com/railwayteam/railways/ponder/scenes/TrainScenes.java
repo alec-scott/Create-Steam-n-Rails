@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.ponder.scenes;
 
+import net.minecraft.world.item.ItemStack;
+
 import com.railwayteam.railways.content.coupling.coupler.TrackCouplerBlock;
 import com.railwayteam.railways.content.coupling.coupler.TrackCouplerBlockEntity;
 import com.railwayteam.railways.content.switches.TrackSwitchBlock.SwitchConstraint;
@@ -212,7 +214,7 @@ public class TrainScenes {
 
         scene.overlay().showControls(util.vector().blockSurface(signal1, Direction.EAST), Pointing.RIGHT, 40)
                 .rightClick()
-                .withItem(AllItems.WRENCH.asStack());
+                .withItem(new ItemStack(AllItems.WRENCH));
         scene.idle(6);
         scene.world().cycleBlockProperty(signal1, SignalBlock.TYPE);
         scene.idle(15);
@@ -769,7 +771,7 @@ public class TrainScenes {
 
         scene.overlay().showControls(couplerTop, Pointing.DOWN, 60)
                 .scroll()
-                .withItem(AllItems.WRENCH.asStack());
+                .withItem(new ItemStack(AllItems.WRENCH));
         scene.overlay().showScrollInput(couplerTop, Direction.DOWN, 60);
         scene.idle(5);
 
@@ -797,7 +799,7 @@ public class TrainScenes {
 
         scene.overlay().showControls(couplerTop, Pointing.DOWN, 60)
                 .rightClick()
-                .withItem(AllItems.WRENCH.asStack());
+                .withItem(new ItemStack(AllItems.WRENCH));
         scene.idle(5);
 
         scene.overlay().showText(70)
@@ -1019,7 +1021,7 @@ public class TrainScenes {
     public static void coupleTrain(SceneBuilder scene, BlockPos pos, double distance, Direction direction) {
         scene.addInstruction(PonderInstruction.simple(ponderScene -> {
             PonderLevel world = ponderScene.getWorld();
-            world.getBlockEntity(pos, AllBlockEntityTypes.BOGEY.get()).ifPresent(sbte -> {
+            world.getBlockEntity(pos, AllBlockEntityTypes.BOGEY).ifPresent(sbte -> {
                 if (sbte instanceof IStandardBogeyTEVirtualCoupling virtualCoupling) {
                     virtualCoupling.setCouplingDistance(distance);
                     virtualCoupling.setCouplingDirection(direction);
@@ -1031,7 +1033,7 @@ public class TrainScenes {
     public static void decoupleTrain(SceneBuilder scene, BlockPos pos) {
         scene.addInstruction(PonderInstruction.simple(ponderScene -> {
             PonderLevel world = ponderScene.getWorld();
-            world.getBlockEntity(pos, AllBlockEntityTypes.BOGEY.get()).ifPresent(sbte -> {
+            world.getBlockEntity(pos, AllBlockEntityTypes.BOGEY).ifPresent(sbte -> {
                 if (sbte instanceof IStandardBogeyTEVirtualCoupling virtualCoupling) {
                     virtualCoupling.setCouplingDistance(-1);
                     virtualCoupling.setCouplingDirection(Direction.UP);

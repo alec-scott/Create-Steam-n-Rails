@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.fuel.psi;
 
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.world.level.redstone.Orientation;
+
 import com.railwayteam.railways.mixin.AccessorPortableStorageInterfaceBlockEntity;
 import com.railwayteam.railways.registry.fabric.CRBlockEntitiesImpl;
 import com.zurrtum.create.AllShapes;
@@ -44,7 +48,7 @@ public class PortableFuelInterfaceBlock extends WrenchableDirectionalBlock imple
     }
 
     @Override
-    public void neighborChanged(BlockState state, Level world, BlockPos pos, Block block, BlockPos blockPos,
+    public void neighborChanged(BlockState state, Level world, BlockPos pos, Block block, @Nullable Orientation orientation,
                                 boolean isMoving) {
         withBlockEntityDo(world, pos, PortableFuelInterfaceBlockEntity::neighbourChanged);
     }
@@ -75,7 +79,7 @@ public class PortableFuelInterfaceBlock extends WrenchableDirectionalBlock imple
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState blockState, Level worldIn, BlockPos pos) {
+    public int getAnalogOutputSignal(BlockState blockState, Level worldIn, BlockPos pos, Direction direction) {
         return getBlockEntityOptional(worldIn, pos).map(be -> ((AccessorPortableStorageInterfaceBlockEntity) be).railways$isConnected() ? 15 : 0)
                 .orElse(0);
     }

@@ -195,7 +195,7 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
                 .rotateXDegrees(-22)
                 .rotateYDegrees(63);
 
-        GuiGameElement.of(AllBlocks.RAILWAY_CASING.getDefaultState()).render(guiGraphics);
+        GuiGameElement.of(AllBlocks.RAILWAY_CASING.defaultBlockState()).render(guiGraphics);
 
         ms.popPose();
 

@@ -105,7 +105,7 @@ public class RedstoneLinkInstruction extends ScheduleInstruction {
     }
 
     private ItemStack icon() {
-        return new ItemStack(AllBlocks.REDSTONE_LINK.get());
+        return new ItemStack(AllBlocks.REDSTONE_LINK);
     }
 
     @Override

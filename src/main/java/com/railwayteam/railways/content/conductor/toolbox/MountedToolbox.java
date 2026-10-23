@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.conductor.toolbox;
 
+import net.minecraft.world.level.storage.ValueOutput;
+
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.railwayteam.railways.content.conductor.ConductorEntity;
 import com.railwayteam.railways.mixin.AccessorBlockEntity;
 import com.railwayteam.railways.mixin.AccessorToolboxBlockEntity;
@@ -42,7 +46,7 @@ public class MountedToolbox extends ToolboxBlockEntity {
   protected final ConductorEntity parent;
 
   public MountedToolbox(ConductorEntity parent, DyeColor dyeColor) {
-    super(AllBlockEntityTypes.TOOLBOX.get(), parent.blockPosition(), AllBlocks.TOOLBOXES.get(dyeColor).getDefaultState());
+    super(AllBlockEntityTypes.TOOLBOX, parent.blockPosition(), AllBlocks.TOOLBOXES.get(dyeColor).getDefaultState());
     this.parent = parent;
     setLevel(parent.level);
     setLazyTickRate(10);
@@ -71,10 +75,10 @@ public class MountedToolbox extends ToolboxBlockEntity {
   }
 
   @Override
-  public void read(CompoundTag compound, boolean clientPacket) {
+  public void read(ValueInput compound, boolean clientPacket) {
     super.read(compound, clientPacket);
     if (compound.contains("Color", CompoundTag.TAG_INT)) {
-      DyeColor color = DyeColor.byId(compound.getInt("Color"));
+      DyeColor color = DyeColor.byId(compound.getIntOr("Color", 0));
       // change the color by setting the stored state and updating the color provider
       BlockState state = AllBlocks.TOOLBOXES.get(color).get().defaultBlockState();
       setBlockState(state);
@@ -82,7 +86,7 @@ public class MountedToolbox extends ToolboxBlockEntity {
   }
 
   @Override
-  public void write(CompoundTag compound, boolean clientPacket) {
+  public void write(ValueOutput compound, boolean clientPacket) {
     super.write(compound, clientPacket);
     compound.putInt("Color", getColor().getId());
   }

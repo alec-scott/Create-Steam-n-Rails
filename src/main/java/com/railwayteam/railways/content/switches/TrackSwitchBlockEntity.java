@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.switches;
 
+import net.minecraft.world.level.storage.ValueOutput;
+
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.content.switches.TrackSwitchBlock.SwitchConstraint;
@@ -521,7 +525,7 @@ public class TrackSwitchBlockEntity extends SmartBlockEntity implements Transfor
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
+    protected void write(ValueOutput tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         if (clientPacket)
             tag.putString("SwitchState", (state == null ? SwitchState.NORMAL : state).getSerializedName());
@@ -534,18 +538,18 @@ public class TrackSwitchBlockEntity extends SmartBlockEntity implements Transfor
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
+    protected void read(ValueInput tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         if (clientPacket) {
-            String switchState = tag.getString("SwitchState").toUpperCase(Locale.ROOT);
+            String switchState = tag.getStringOr("SwitchState", "").toUpperCase(Locale.ROOT);
             try {
                 state = SwitchState.valueOf(switchState);
             } catch (IllegalArgumentException e) {
                 Railways.LOGGER.error("Failed to read SwitchState", e);
             }
         }
-        lastAnalogOutput = tag.getInt("AnalogOutput");
-        byte previousPowerState = tag.getByte("PreviousPowerState");
+        lastAnalogOutput = tag.getIntOr("AnalogOutput", 0);
+        byte previousPowerState = tag.getByteOr("PreviousPowerState", (byte) 0);
         for (int i = 0; i < 6; i++) {
             previousPower[i] = (previousPowerState & (1 << i)) != 0;
         }

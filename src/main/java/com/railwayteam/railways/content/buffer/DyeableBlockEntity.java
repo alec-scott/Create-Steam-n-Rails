@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.buffer;
 
+import net.minecraft.world.level.storage.ValueOutput;
+
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.railwayteam.railways.util.BlockStateUtils;
 import com.zurrtum.create.foundation.blockEntity.SmartBlockEntity;
 import com.zurrtum.create.api.behaviour.BlockEntityBehaviour;
@@ -52,19 +56,19 @@ public class DyeableBlockEntity extends SmartBlockEntity implements IDyedBuffer 
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {}
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
+    protected void write(ValueOutput tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         if (color != null)
             tag.putInt("Color", color.getId());
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
+    protected void read(ValueInput tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         DyeColor prevColor = color;
 
         if (tag.contains("Color"))
-            color = DyeColor.byId(tag.getInt("Color"));
+            color = DyeColor.byId(tag.getIntOr("Color", 0));
         else
             color = null;
 

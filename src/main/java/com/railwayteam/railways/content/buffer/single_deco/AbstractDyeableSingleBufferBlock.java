@@ -18,6 +18,14 @@
 
 package com.railwayteam.railways.content.buffer.single_deco;
 
+import net.minecraft.world.level.ScheduledTickAccess;
+
+import net.minecraft.world.level.LevelReader;
+
+import net.minecraft.world.item.ItemStack;
+
+import net.minecraft.util.RandomSource;
+
 import com.railwayteam.railways.content.buffer.DyeableBlockEntity;
 import com.railwayteam.railways.registry.CRBlockEntities;
 import com.railwayteam.railways.util.AdventureUtils;
@@ -61,12 +69,6 @@ public abstract class AbstractDyeableSingleBufferBlock extends HorizontalDirecti
         super.createBlockStateDefinition(builder.add(FACING, WATERLOGGED));
     }
 
-    @Override
-    @SuppressWarnings("deprecation")
-    public void onRemove(@NotNull BlockState state, @NotNull Level worldIn,
-                         @NotNull BlockPos pos, @NotNull BlockState newState, boolean isMoving) {
-        IBE.onRemove(state, worldIn, pos, newState);
-    }
 
     protected abstract BlockState cycleStyle(BlockState originalState, Direction targetedFace);
 
@@ -109,14 +111,14 @@ public abstract class AbstractDyeableSingleBufferBlock extends HorizontalDirecti
 
     @SuppressWarnings("deprecation")
     @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos currentPos, BlockPos neighborPos) {
-        updateWater(level, state, currentPos);
+    public BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos currentPos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+        updateWater(level, ticks, state, currentPos);
         return state;
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
+    public InteractionResult useItemOn(ItemStack stack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
                                  BlockHitResult pHit) {
         if (AdventureUtils.isAdventure(pPlayer))
             return InteractionResult.PASS;

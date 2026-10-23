@@ -18,6 +18,12 @@
 
 package com.railwayteam.railways.content.buffer.headstock;
 
+import net.minecraft.world.level.ScheduledTickAccess;
+
+import net.minecraft.world.level.LevelReader;
+
+import net.minecraft.util.RandomSource;
+
 import com.railwayteam.railways.content.buffer.BlockStateBlockItemGroup;
 import com.railwayteam.railways.registry.CRBlockEntities;
 import com.railwayteam.railways.registry.CRBlocks;
@@ -72,12 +78,6 @@ public class HeadstockBlock extends HorizontalDirectionalBlock implements IBE<He
         super.createBlockStateDefinition(builder.add(FACING, WATERLOGGED, STYLE, UPSIDE_DOWN));
     }
 
-    @Override
-    @SuppressWarnings("deprecation")
-    public void onRemove(@NotNull BlockState state, @NotNull Level worldIn,
-                         @NotNull BlockPos pos, @NotNull BlockState newState, boolean isMoving) {
-        IBE.onRemove(state, worldIn, pos, newState);
-    }
 
     @SuppressWarnings("deprecation")
     @Override
@@ -126,14 +126,14 @@ public class HeadstockBlock extends HorizontalDirectionalBlock implements IBE<He
 
     @SuppressWarnings("deprecation")
     @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos currentPos, BlockPos neighborPos) {
-        updateWater(level, state, currentPos);
+    public BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos currentPos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+        updateWater(level, ticks, state, currentPos);
         return state;
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
+    public InteractionResult useItemOn(ItemStack stack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
                                  BlockHitResult pHit) {
         if (AdventureUtils.isAdventure(pPlayer))
             return InteractionResult.PASS;
@@ -153,7 +153,7 @@ public class HeadstockBlock extends HorizontalDirectionalBlock implements IBE<He
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
         return CRBlocks.HEADSTOCK_GROUP.get(state.getValue(STYLE)).asStack();
     }
 }

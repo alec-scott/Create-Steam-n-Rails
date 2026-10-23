@@ -20,10 +20,10 @@ package com.railwayteam.railways.config.fabric;
 
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.config.CRConfigs;
-import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
-import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
+import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v5.ModConfigEvents;
 import com.railwayteam.railways.port.catnip.config.ConfigBase;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.config.ModConfig;
 
 import java.util.Map;
 
@@ -32,7 +32,7 @@ public class CRConfigsImpl {
         CRConfigs.registerCommon();
 
         for (Map.Entry<ModConfig.Type, ConfigBase> pair : CRConfigs.CONFIGS.entrySet())
-            ForgeConfigRegistry.INSTANCE.register(Railways.MOD_ID, pair.getKey(), pair.getValue().specification);
+            ConfigRegistry.INSTANCE.register(Railways.MOD_ID, pair.getKey(), pair.getValue().specification);
 
         ModConfigEvents.loading(Railways.MOD_ID).register(CRConfigs::onLoad);
         ModConfigEvents.reloading(Railways.MOD_ID).register(CRConfigs::onReload);

@@ -18,6 +18,12 @@
 
 package com.railwayteam.railways.content.buffer;
 
+import net.minecraft.world.level.ScheduledTickAccess;
+
+import net.minecraft.world.level.LevelReader;
+
+import net.minecraft.util.RandomSource;
+
 import com.railwayteam.railways.registry.CRBlocks;
 import com.railwayteam.railways.util.AdventureUtils;
 import com.zurrtum.create.content.equipment.wrench.IWrenchable;
@@ -70,12 +76,6 @@ public abstract class TrackBufferBlock<BE extends TrackBufferBlockEntity> extend
 		super.createBlockStateDefinition(builder.add(FACING, WATERLOGGED, DIAGONAL));
 	}
 
-	@Override
-	@SuppressWarnings("deprecation")
-	public void onRemove(@NotNull BlockState state, @NotNull Level worldIn,
-											 @NotNull BlockPos pos, @NotNull BlockState newState, boolean isMoving) {
-		IBE.onRemove(state, worldIn, pos, newState);
-	}
 
 	protected abstract BlockState getCycledStyle(BlockState originalState, Direction targetedFace);
 
@@ -106,13 +106,13 @@ public abstract class TrackBufferBlock<BE extends TrackBufferBlockEntity> extend
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos currentPos, BlockPos neighborPos) {
-		updateWater(level, state, currentPos);
+	public BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos currentPos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+		updateWater(level, ticks, state, currentPos);
 		return state;
 	}
 
 	@Override
-	public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+	public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
 		return CRBlocks.TRACK_BUFFER.asStack();
 	}
 
@@ -124,7 +124,7 @@ public abstract class TrackBufferBlock<BE extends TrackBufferBlockEntity> extend
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
+	public InteractionResult useItemOn(ItemStack stack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
 															 BlockHitResult pHit) {
 		if (AdventureUtils.isAdventure(pPlayer))
 			return InteractionResult.PASS;

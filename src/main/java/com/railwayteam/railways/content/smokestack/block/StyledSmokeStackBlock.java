@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.smokestack.block;
 
+import net.minecraft.world.level.LevelReader;
+
 import com.railwayteam.railways.content.buffer.BlockStateBlockItemGroup;
 import com.railwayteam.railways.content.smokestack.RotationType;
 import com.railwayteam.railways.content.smokestack.SmokeEmissionParams;
@@ -54,7 +56,7 @@ public class StyledSmokeStackBlock extends SmokeStackBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
         return cycleGroup.get().get(state.getValue(STYLE)).asStack();
     }
 }

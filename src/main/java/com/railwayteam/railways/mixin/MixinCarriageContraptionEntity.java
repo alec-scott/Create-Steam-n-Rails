@@ -152,7 +152,7 @@ public abstract class MixinCarriageContraptionEntity extends OrientedContraption
     @Inject(method = "control", at = @At("TAIL"))
     private void railways$handcarHungerDepletion(BlockPos controlsLocalPos, Collection<Integer> heldControls, Player player, CallbackInfoReturnable<Boolean> cir) {
         if (((IHandcarTrain) this.carriage.train).railways$isHandcar()
-                && !player.getItemInHand(InteractionHand.MAIN_HAND).is(AllItems.EXTENDO_GRIP.get()))
+                && !player.getItemInHand(InteractionHand.MAIN_HAND).is(AllItems.EXTENDO_GRIP))
             player.causeFoodExhaustion((float) Math.abs(carriage.train.speed) * CRConfigs.server().handcarHungerMultiplier.getF());
     }
 

@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.custom_tracks.casing;
 
+import net.minecraft.world.level.ScheduledTickAccess;
+
+import net.minecraft.world.level.LevelReader;
+
 import com.railwayteam.railways.registry.CRBlockEntities;
 import com.railwayteam.railways.registry.CRShapes;
 import com.zurrtum.create.foundation.block.ProperWaterloggedBlock;
@@ -85,9 +89,8 @@ public abstract class CasingCollisionBlock extends Block implements EntityBlock,
 
     @SuppressWarnings("deprecation")
     @Override
-    public @NotNull BlockState updateShape(BlockState pState, Direction pDirection, BlockState pNeighborState,
-                                           LevelAccessor pLevel, BlockPos pCurrentPos, BlockPos pNeighborPos) {
-        updateWater(pLevel, pState, pCurrentPos);
+    public @NotNull BlockState updateShape(BlockState pState, LevelReader pLevel, ScheduledTickAccess ticks, BlockPos pCurrentPos, Direction pDirection, BlockPos pNeighborPos, BlockState pNeighborState, RandomSource random) {
+        updateWater(pLevel, ticks, pState, pCurrentPos);
         return pState;
     }
 

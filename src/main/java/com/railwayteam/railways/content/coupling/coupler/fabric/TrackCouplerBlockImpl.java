@@ -19,8 +19,8 @@
 package com.railwayteam.railways.content.coupling.coupler.fabric;
 
 import com.railwayteam.railways.content.coupling.coupler.TrackCouplerBlock;
-import io.github.fabricators_of_create.porting_lib.block.ConnectableRedstoneBlock;
-import io.github.fabricators_of_create.porting_lib.block.WeakPowerCheckingBlock;
+import com.zurrtum.create.foundation.block.RedStoneConnectBlock;
+import com.zurrtum.create.foundation.block.WeakPowerControlBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
@@ -28,7 +28,7 @@ import net.minecraft.world.level.SignalGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-public class TrackCouplerBlockImpl extends TrackCouplerBlock implements ConnectableRedstoneBlock, WeakPowerCheckingBlock {
+public class TrackCouplerBlockImpl extends TrackCouplerBlock implements RedStoneConnectBlock, WeakPowerControlBlock {
 	protected TrackCouplerBlockImpl(Properties pProperties) {
 		super(pProperties);
 	}
@@ -38,7 +38,7 @@ public class TrackCouplerBlockImpl extends TrackCouplerBlock implements Connecta
 	}
 
 	@Override
-	public boolean canConnectRedstone(BlockState state, BlockGetter level, BlockPos pos, @Nullable Direction direction) {
+	public boolean canConnectRedstone(BlockState state, @Nullable Direction direction) {
 		return true;
 	}
 

@@ -54,7 +54,7 @@ public abstract class ConductorCapItem extends ArmorItem {
     return com.railwayteam.railways.content.conductor.fabric.ConductorCapItemImpl.create(props, color);
   }
 
-  static boolean isCasing (Block block) { return block.equals( AllBlocks.ANDESITE_CASING.get()); }
+  static boolean isCasing (Block block) { return block.equals( AllBlocks.ANDESITE_CASING); }
   static boolean isCasing (BlockState state) { return isCasing(state.getBlock()); }
   static boolean isCasing (Level level, BlockPos pos) { return isCasing(level.getBlockState(pos)); }
 

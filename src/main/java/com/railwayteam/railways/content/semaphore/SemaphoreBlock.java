@@ -73,7 +73,7 @@ public class SemaphoreBlock extends HorizontalDirectionalBlock implements IBE<Se
     }
     @SuppressWarnings("deprecation")
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand,
+    public InteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand,
                                  BlockHitResult ray) {
         ItemStack heldItem = player.getItemInHand(hand);
 

@@ -378,7 +378,7 @@ public class RailwaysStandardRecipeGen extends RailwaysRecipeProvider {
         .unlockedBy(AllBlocks.FLUID_TANK)
         .viaShaped(b -> b
             .define('S', Ingredients.sturdySheet())
-            .define('F', AllBlocks.FLUID_TANK.get())
+            .define('F', AllBlocks.FLUID_TANK)
             .pattern("S")
             .pattern("F")
             .pattern("S")

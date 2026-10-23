@@ -42,7 +42,7 @@ public class CustomTrackBlock  { //done using a brass hand on a track should cal
         if (AdventureUtils.isAdventure(player))
             return InteractionResult.FAIL;
         ItemStack handStack = player.getItemInHand(hand);
-        if (AllItems.BRASS_HAND.isIn(handStack)) {
+        if (handStack.is(AllItems.BRASS_HAND)) {
             TrackPropagator.onRailAdded(world, pos, state);
             return InteractionResult.SUCCESS;
         }

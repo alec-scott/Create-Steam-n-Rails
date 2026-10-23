@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.fuel.tank;
 
+import net.minecraft.world.level.storage.ValueOutput;
+
+import net.minecraft.world.level.storage.ValueInput;
+
 import com.railwayteam.railways.content.fuel.LiquidFuelTrainHandler;
 import com.zurrtum.create.api.connectivity.ConnectivityHandler;
 import com.zurrtum.create.client.api.goggles.IHaveGoggleInformation;
@@ -371,7 +375,7 @@ public class FuelTankBlockEntity extends SmartBlockEntity implements IHaveGoggle
     }
 
     @Override
-    protected void read(CompoundTag compound, boolean clientPacket) {
+    protected void read(ValueInput compound, boolean clientPacket) {
         super.read(compound, clientPacket);
 
         BlockPos controllerBefore = controller;
@@ -380,21 +384,21 @@ public class FuelTankBlockEntity extends SmartBlockEntity implements IHaveGoggle
         int prevLum = luminosity;
 
         updateConnectivity = compound.contains("Uninitialized");
-        luminosity = compound.getInt("Luminosity");
+        luminosity = compound.getIntOr("Luminosity", 0);
         controller = null;
         lastKnownPos = null;
 
         if (compound.contains("LastKnownPos"))
-            lastKnownPos = NbtUtils.readBlockPos(compound.getCompound("LastKnownPos"));
+            lastKnownPos = NbtUtils.readBlockPos(compound.childOrEmpty("LastKnownPos"));
         if (compound.contains("Controller"))
-            controller = NbtUtils.readBlockPos(compound.getCompound("Controller"));
+            controller = NbtUtils.readBlockPos(compound.childOrEmpty("Controller"));
 
         if (isController()) {
-            window = compound.getBoolean("Window");
-            width = compound.getInt("Size");
-            height = compound.getInt("Height");
+            window = compound.getBooleanOr("Window", false);
+            width = compound.getIntOr("Size", 0);
+            height = compound.getIntOr("Height", 0);
             tankInventory.setCapacity(getTotalTankSize() * getCapacityMultiplier());
-            tankInventory.readFromNBT(compound.getCompound("TankContent"));
+            tankInventory.readFromNBT(compound.childOrEmpty("TankContent"));
             if (tankInventory.getSpace() < 0) {
                 try (Transaction t = TransferUtil.getTransaction()) {
                     tankInventory.extract(tankInventory.variant, -tankInventory.getSpace(), t);
@@ -441,13 +445,13 @@ public class FuelTankBlockEntity extends SmartBlockEntity implements IHaveGoggle
     }
 
     @Override
-    public void write(CompoundTag compound, boolean clientPacket) {
+    public void write(ValueOutput compound, boolean clientPacket) {
         if (updateConnectivity)
             compound.putBoolean("Uninitialized", true);
         if (lastKnownPos != null)
-            compound.put("LastKnownPos", NbtUtils.writeBlockPos(lastKnownPos));
+            compound.store("LastKnownPos", BlockPos.CODEC, lastKnownPos);
         if (!isController())
-            compound.put("Controller", NbtUtils.writeBlockPos(controller));
+            compound.store("Controller", BlockPos.CODEC, controller);
         if (isController()) {
             compound.putBoolean("Window", window);
             compound.put("TankContent", tankInventory.writeToNBT(new CompoundTag()));

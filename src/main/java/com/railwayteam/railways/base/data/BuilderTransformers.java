@@ -101,7 +101,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
-import static com.zurrtum.create.api.behaviour.interaction.MovingInteractionBehaviour.interactionBehaviour;
+import static com.railwayteam.railways.port.create.CreateTransforms.interactionBehaviour;
 import static com.railwayteam.railways.port.create.foundation.data.TagGen.pickaxeOnly;
 
 public class BuilderTransformers {
@@ -124,7 +124,7 @@ public class BuilderTransformers {
             .properties(BlockBehaviour.Properties::noOcclusion)
             .transform(pickaxeOnly())
             .tag(AllBlockTags.SAFE_NBT)
-            .loot((p, l) -> p.dropOther(l, AllBlocks.RAILWAY_CASING.get()));
+            .loot((p, l) -> p.dropOther(l, AllBlocks.RAILWAY_CASING));
     }
 
     public static <B extends CRBogeyBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> standardBogey() {
@@ -169,7 +169,6 @@ public class BuilderTransformers {
             .properties(p -> p.mapColor(MapColor.COLOR_GRAY))
             .properties(p -> p.sound(SoundType.NETHERITE_BLOCK))
             .properties(BlockBehaviour.Properties::noOcclusion)
-            .addLayer(() -> RenderType::cutoutMipped)
             .transform(pickaxeOnly());
     }
 
@@ -255,7 +254,6 @@ public class BuilderTransformers {
             .transform(BuilderTransformers.locoMetalBase(color, null))
             .properties(BlockBehaviour.Properties::noOcclusion)
             .properties(p -> p.pushReaction(PushReaction.DESTROY))
-            .addLayer(() -> RenderType::cutoutMipped)
             .onRegister(interactionBehaviour(new DoorMovingInteraction()))
             .tag(BlockTags.DOORS)
             .tag(BlockTags.WOODEN_DOORS) // for villager AI

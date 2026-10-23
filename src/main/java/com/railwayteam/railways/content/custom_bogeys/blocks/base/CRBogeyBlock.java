@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.custom_bogeys.blocks.base;
 
+import net.minecraft.world.level.LevelReader;
+
 import com.railwayteam.railways.port.create.track.TrackType;
 
 import com.railwayteam.railways.content.custom_bogeys.blocks.base.be.CRBogeyBlockEntity;
@@ -77,8 +79,8 @@ public class CRBogeyBlock extends AbstractBogeyBlock<CRBogeyBlockEntity>
 	}
 
 	@Override
-	public @NotNull ItemStack getCloneItemStack(@NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull BlockState state) {
-		return AllBlocks.RAILWAY_CASING.asStack();
+	public @NotNull ItemStack getCloneItemStack(LevelReader level, @NotNull BlockPos pos, @NotNull BlockState state, boolean includeData) {
+		return new ItemStack(AllBlocks.RAILWAY_CASING);
 	}
 
 	@Override

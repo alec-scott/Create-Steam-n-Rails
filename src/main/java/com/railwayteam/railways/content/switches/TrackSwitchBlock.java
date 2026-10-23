@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.switches;
 
+import net.minecraft.world.level.redstone.Orientation;
+
 import com.railwayteam.railways.content.conductor.ConductorEntity;
 import com.railwayteam.railways.registry.CRBlockEntities;
 import com.railwayteam.railways.registry.CRShapes;
@@ -209,10 +211,6 @@ public abstract class TrackSwitchBlock extends HorizontalDirectionalBlock implem
       CRBlockEntities.ANDESITE_SWITCH.get();
   }
 
-  @Override
-  public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-    IBE.onRemove(state, level, pos, newState);
-  }
 
   @SuppressWarnings("deprecation")
   @Override
@@ -239,10 +237,10 @@ public abstract class TrackSwitchBlock extends HorizontalDirectionalBlock implem
 
   @SuppressWarnings("deprecation")
   @Override
-  public @NotNull InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
+  public InteractionResult useItemOn(ItemStack stack, @NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
                                         @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
     ItemStack itemInHand = player.getItemInHand(hand);
-    if (AllItems.WRENCH.isIn(itemInHand))
+    if (itemInHand.is(AllItems.WRENCH))
       return InteractionResult.PASS;
 
     if (level.isClientSide()) {
@@ -275,8 +273,8 @@ public abstract class TrackSwitchBlock extends HorizontalDirectionalBlock implem
   }
 
   @Override
-  public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
-    super.neighborChanged(state, level, pos, block, fromPos, isMoving);
+  public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, @Nullable Orientation orientation, boolean isMoving) {
+    super.neighborChanged(state, level, pos, block, orientation, isMoving);
 
     TrackSwitchBlockEntity te = getBlockEntity(level, pos);
     if (te != null) {
@@ -304,7 +302,7 @@ public abstract class TrackSwitchBlock extends HorizontalDirectionalBlock implem
   @SuppressWarnings("deprecation")
   @Deprecated
   @Override
-  public int getAnalogOutputSignal(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos) {
+  public int getAnalogOutputSignal(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, Direction direction) {
     if (level.getBlockEntity(pos) instanceof TrackSwitchBlockEntity te)
       return te.getTargetAnalogOutput();
     return 0;

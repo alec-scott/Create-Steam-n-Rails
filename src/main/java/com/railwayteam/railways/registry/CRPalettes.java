@@ -87,8 +87,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.railwayteam.railways.util.TextUtils.*;
-import static com.zurrtum.create.api.behaviour.interaction.MovingInteractionBehaviour.interactionBehaviour;
-import static com.zurrtum.create.api.behaviour.movement.MovementBehaviour.movementBehaviour;
+import static com.railwayteam.railways.port.create.CreateTransforms.interactionBehaviour;
+import static com.railwayteam.railways.port.create.CreateTransforms.movementBehaviour;
 import static com.railwayteam.railways.port.create.foundation.data.CreateRegistrate.connectedTextures;
 import static com.railwayteam.railways.port.create.foundation.data.ModelGen.customItemModel;
 
@@ -610,7 +610,6 @@ public class CRPalettes {
                 .transform(BuilderTransformers.locometalWindow(color, type))
                 .properties(CRPalettes::glassProperties)
                 .lang(joinSpace(colorName, type.getLangName(), "Locometal Window"))
-                .addLayer(() -> RenderType::cutoutMipped)
                 .tag(BlockTags.IMPERMEABLE)
                 .removeTag(ProviderType.BLOCK_TAGS, AllBlockTags.WRENCH_PICKUP)
                 .loot(RegistrateBlockLootTables::dropWhenSilkTouch)
@@ -632,7 +631,6 @@ public class CRPalettes {
             .transform(BuilderTransformers.locometalTrapdoor(color))
             .lang(joinSpace(colorName, "Locometal Trapdoor"))
             .properties(BlockBehaviour.Properties::noOcclusion)
-            .addLayer(() -> RenderType::cutoutMipped)
             .tag(BlockTags.TRAPDOORS)
             .onRegister(interactionBehaviour(new TrapdoorMovingInteraction()))
             .item()

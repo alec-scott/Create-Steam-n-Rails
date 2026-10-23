@@ -15,37 +15,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.railwayteam.railways.util;
 
-import com.google.common.collect.ImmutableList;
 import com.zurrtum.create.foundation.blockEntity.SmartBlockEntity;
-import com.zurrtum.create.client.foundation.blockEntity.behaviour.ValueBoxTransform;
-import com.zurrtum.create.client.foundation.blockEntity.ValueSettingsBoard;
-import com.zurrtum.create.client.foundation.blockEntity.ValueSettingsFormatter;
-import com.zurrtum.create.client.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
-import net.minecraft.network.chat.Component;
+import com.zurrtum.create.foundation.blockEntity.behaviour.ValueSettings;
+import com.zurrtum.create.foundation.blockEntity.behaviour.scrollValue.ServerScrollValueBehaviour;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.BlockHitResult;
 
-public class MinRespectingScrollValueBehaviour extends ScrollValueBehaviour {
-    private int min;
-
-    public MinRespectingScrollValueBehaviour(Component label, SmartBlockEntity be, ValueBoxTransform slot) {
-        super(label, be, slot);
+/**
+ * A scroll value whose settings board starts at {@code min} instead of 0.
+ *
+ * <p>PORT-NOTE(fabric): Create Fly splits scroll values into this server half (stored on the block entity) and a client
+ * half for the value box; see {@code util/client/MinRespectingScrollValueBox}.</p>
+ */
+public class MinRespectingScrollValueBehaviour extends ServerScrollValueBehaviour {
+    public MinRespectingScrollValueBehaviour(SmartBlockEntity be) {
+        super(be);
     }
 
-    @Override
-    public ScrollValueBehaviour between(int min, int max) {
-        this.min = min;
-        return super.between(min, max);
-    }
-
-    @Override
-    public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
-        return new ValueSettingsBoard(this.label, this.max - this.min, 1,
-            ImmutableList.of(Component.literal("Value")),
-            new ValueSettingsFormatter(vs -> new ValueSettings(vs.row(), vs.value() + this.min).format()));
+    public int getMin() {
+        return min;
     }
 
     @Override

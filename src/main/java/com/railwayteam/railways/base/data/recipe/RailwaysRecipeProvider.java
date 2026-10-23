@@ -83,7 +83,7 @@ public abstract class RailwaysRecipeProvider extends RecipeProvider {
         }
 
         public static ItemLike precisionMechanism() {
-            return AllItems.PRECISION_MECHANISM.get();
+            return AllItems.PRECISION_MECHANISM;
         }
 
         public static TagKey<Item> ironNugget() {
@@ -99,11 +99,11 @@ public abstract class RailwaysRecipeProvider extends RecipeProvider {
         }
 
         public static ItemLike girder() {
-            return AllBlocks.METAL_GIRDER.get();
+            return AllBlocks.METAL_GIRDER;
         }
 
         public static ItemLike metalBracket() {
-            return AllBlocks.METAL_BRACKET.get();
+            return AllBlocks.METAL_BRACKET;
         }
 
         public static TagKey<Item> ironSheet() {
@@ -125,27 +125,27 @@ public abstract class RailwaysRecipeProvider extends RecipeProvider {
         public static ItemLike lever() { return Items.LEVER; }
 
         public static ItemLike cogwheel() {
-            return AllBlocks.COGWHEEL.get();
+            return AllBlocks.COGWHEEL;
         }
 
         public static ItemLike railwayCasing() {
-            return AllBlocks.RAILWAY_CASING.get();
+            return AllBlocks.RAILWAY_CASING;
         }
 
         public static ItemLike brassCasing() {
-            return AllBlocks.BRASS_CASING.get();
+            return AllBlocks.BRASS_CASING;
         }
 
         public static ItemLike andesiteCasing() {
-            return AllBlocks.ANDESITE_CASING.get();
+            return AllBlocks.ANDESITE_CASING;
         }
 
         public static ItemLike propeller() {
-            return AllItems.PROPELLER.get();
+            return AllItems.PROPELLER;
         }
 
         public static ItemLike electronTube() {
-            return AllItems.ELECTRON_TUBE.get();
+            return AllItems.ELECTRON_TUBE;
         }
 
         public static TagKey<Item> copperIngot() {
@@ -165,7 +165,7 @@ public abstract class RailwaysRecipeProvider extends RecipeProvider {
         }
 
         public static ItemLike industrialIron() {
-            return AllBlocks.INDUSTRIAL_IRON_BLOCK.get();
+            return AllBlocks.INDUSTRIAL_IRON_BLOCK;
         }
 
         public static TagKey<Item> brassSheet() {
@@ -177,7 +177,7 @@ public abstract class RailwaysRecipeProvider extends RecipeProvider {
         }
 
         public static ItemLike contraptionControls() {
-            return AllBlocks.CONTRAPTION_CONTROLS.get();
+            return AllBlocks.CONTRAPTION_CONTROLS;
         }
 
         public static ItemLike stick() {
@@ -185,11 +185,11 @@ public abstract class RailwaysRecipeProvider extends RecipeProvider {
         }
 
         public static ItemLike andesiteAlloy() {
-            return AllItems.ANDESITE_ALLOY.get();
+            return AllItems.ANDESITE_ALLOY;
         }
 
         public static ItemLike smallCog() {
-            return AllBlocks.COGWHEEL.get();
+            return AllBlocks.COGWHEEL;
         }
 
         public static ItemLike ironBlock() {
@@ -217,7 +217,7 @@ public abstract class RailwaysRecipeProvider extends RecipeProvider {
         }
 
         public static ItemLike shaft() {
-            return AllBlocks.SHAFT.get();
+            return AllBlocks.SHAFT;
         }
 
         public static ItemLike smallBuffer() {
@@ -245,19 +245,19 @@ public abstract class RailwaysRecipeProvider extends RecipeProvider {
         }
 
         public static ItemLike copycatPanel() {
-            return AllBlocks.COPYCAT_PANEL.get();
+            return AllBlocks.COPYCAT_PANEL;
         }
 
         public static ItemLike sturdySheet() {
-            return AllItems.STURDY_SHEET.get();
+            return AllItems.STURDY_SHEET;
         }
 
         public static ItemLike chute() {
-            return AllBlocks.CHUTE.get();
+            return AllBlocks.CHUTE;
         }
 
         public static ItemLike flywheel() {
-            return AllBlocks.FLYWHEEL.get();
+            return AllBlocks.FLYWHEEL;
         }
 
         public static TagKey<Item> woodenDoors() {

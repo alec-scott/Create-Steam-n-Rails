@@ -47,6 +47,7 @@ public class RailwaysImpl implements ModInitializer {
 		CRConfigsImpl.register();
 		CRParticleTypes.init();
 		CommonEventsFabric.init();
+		com.railwayteam.railways.port.create.ItemUseOverrides.init();
 	}
 
 	public static void finalizeRegistrate() {

@@ -19,6 +19,8 @@
 
 package com.railwayteam.railways.content.custom_bogeys.special.monobogey;
 
+import net.minecraft.world.level.LevelReader;
+
 import com.railwayteam.railways.port.create.track.TrackType;
 
 import com.google.common.collect.ImmutableList;
@@ -97,8 +99,8 @@ public abstract class AbstractMonoBogeyBlock<T extends MonoBogeyBlockEntity> ext
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
-        return AllBlocks.RAILWAY_CASING.asStack();
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
+        return new ItemStack(AllBlocks.RAILWAY_CASING);
     }
 
     @Override

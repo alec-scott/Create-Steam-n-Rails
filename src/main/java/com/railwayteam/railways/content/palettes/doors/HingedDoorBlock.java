@@ -18,6 +18,14 @@
 
 package com.railwayteam.railways.content.palettes.doors;
 
+import net.minecraft.world.level.ScheduledTickAccess;
+
+import net.minecraft.world.level.LevelReader;
+
+import net.minecraft.world.item.ItemStack;
+
+import net.minecraft.util.RandomSource;
+
 import com.railwayteam.railways.registry.CRBlockSetTypes;
 import com.railwayteam.railways.util.EntityUtils;
 import com.zurrtum.create.AllItems;
@@ -50,8 +58,8 @@ public class HingedDoorBlock extends DoorBlock implements IWrenchable {
     }
 
     @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        BlockState super$updateShape = super.updateShape(state, direction, neighborState, level, pos, neighborPos);
+    public BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+        BlockState super$updateShape = super.updateShape(state, level, ticks, pos, direction, neighborPos, neighborState, random);
         DoubleBlockHalf doubleBlockHalf = state.getValue(HALF);
         if (direction.getAxis() != Direction.Axis.Y || doubleBlockHalf == DoubleBlockHalf.LOWER != (direction == Direction.UP)) {
             return super$updateShape;
@@ -72,11 +80,11 @@ public class HingedDoorBlock extends DoorBlock implements IWrenchable {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (EntityUtils.isHolding(player, AllItems.WRENCH::isIn)) {
             return InteractionResult.PASS;
         }
-        return super.use(state, level, pos, player, hand, hit);
+        return super.useItemOn(stack, state, level, pos, player, hand, hit);
     }
 
     @Override

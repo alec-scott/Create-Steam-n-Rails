@@ -47,6 +47,6 @@ public class MixinAllBlocks {
             remap = false
     )
     private static <T extends Block, P> BlockBuilder<T, P> railways$addFlywheelMovementBehaviour(BlockBuilder<T, P> original) {
-        return original.onRegister(MovementBehaviour.movementBehaviour(new FlywheelMovementBehaviour()));
+        return original.onRegister(com.railwayteam.railways.port.create.CreateTransforms.movementBehaviour(new FlywheelMovementBehaviour()));
     }
 }
