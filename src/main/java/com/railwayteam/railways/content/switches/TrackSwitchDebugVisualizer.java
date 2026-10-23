@@ -20,7 +20,7 @@ package com.railwayteam.railways.content.switches;
 
 import com.railwayteam.railways.registry.CREdgePointTypes;
 import com.railwayteam.railways.util.EntityUtils;
-import com.simibubi.create.CreateClient;
+import com.zurrtum.create.client.Create;
 import com.zurrtum.create.content.trains.graph.TrackEdge;
 import com.zurrtum.create.content.trains.graph.TrackGraph;
 import com.zurrtum.create.content.trains.graph.TrackNode;
@@ -91,7 +91,7 @@ public class TrackSwitchDebugVisualizer {
     int range = 64;
     int rangeSqr = range*range;
 
-    for (TrackGraph graph : CreateClient.RAILWAYS.trackNetworks.values()) {
+    for (TrackGraph graph : Create.RAILWAYS.trackNetworks.values()) {
       for (TrackNodeLocation tnl : graph.getNodes()) {
         if (!Objects.equals(tnl.dimension, mc.level.dimension()))
           continue;

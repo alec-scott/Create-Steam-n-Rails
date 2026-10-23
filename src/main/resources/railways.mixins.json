@@ -6,8 +6,6 @@
   "client": [
     "client.CopycatModelMixin",
     "client.LevelRendererMixin",
-    "client.PortingLibModelsMixin",
-    "client.PortingLibObjLoaderMixin",
     "client.TrackBlockOutlineMixin",
     "client.TrainHUDMixin"
   ],
@@ -20,10 +18,8 @@
     "FluidNetworkMixin",
     "CreateCodecsMixin",
     "ItemStackMixin",
-    "MixinLootDataManager",
     "TrainMixin",
-    "TrainRelocationPacketMixin",
-    "self.BoilerBlockMixin",
+    "TrainRelocationPacketMixin"
   ],
   "injectors": {
     "defaultRequire": 1,

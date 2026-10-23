@@ -20,14 +20,10 @@ package com.railwayteam.railways.util.fabric;
 
 import com.railwayteam.railways.annotation.multiloader.ImplClass;
 import com.railwayteam.railways.content.fuel.tank.FuelTankBlockEntity;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
 import com.zurrtum.create.infrastructure.fluids.FluidStack;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.Fluid;
-import org.jetbrains.annotations.Nullable;
 
 @ImplClass
 public class FluidUtilsImpl {
@@ -49,9 +45,5 @@ public class FluidUtilsImpl {
         }
 
         return fluid;
-    }
-
-    public static void addFluidOutput(ProcessingRecipeBuilder<ProcessingRecipe<?>> b, Fluid fluid, long amount, @Nullable CompoundTag nbt) {
-        b.withFluidOutputs(new FluidStack(fluid, amount, nbt));
     }
 }

@@ -20,7 +20,7 @@ package com.railwayteam.railways.util.packet;
 
 import com.railwayteam.railways.mixin.AccessorTrain;
 import com.railwayteam.railways.multiloader.S2CPacket;
-import com.simibubi.create.CreateClient;
+import com.zurrtum.create.client.Create;
 import com.zurrtum.create.content.trains.entity.Train;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -63,8 +63,8 @@ public class AddTrainEndPacket implements S2CPacket {
     public void handle(Minecraft mc) {
         Level level = mc.level;
         if (level != null) {
-            Train train = CreateClient.RAILWAYS.trains.get(trainId);
-            Train backTrain = CreateClient.RAILWAYS.trains.get(backTrainId);
+            Train train = Create.RAILWAYS.trains.get(trainId);
+            Train backTrain = Create.RAILWAYS.trains.get(backTrainId);
             if (train != null && backTrain != null) {
                 train.carriages.addAll(backTrain.carriages);
                 backTrain.carriages.clear();
@@ -82,7 +82,7 @@ public class AddTrainEndPacket implements S2CPacket {
 
                 train.carriages.forEach(c -> c.setTrain(train));
 
-                CreateClient.RAILWAYS.trains.remove(backTrainId);
+                Create.RAILWAYS.trains.remove(backTrainId);
             }
         }
     }

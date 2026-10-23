@@ -19,22 +19,21 @@
 package com.railwayteam.railways.util.packet;
 
 import com.railwayteam.railways.content.shadow_realm.ShadowRealm;
-import com.railwayteam.railways.mixin.AccessorTrainPacket;
 import com.railwayteam.railways.mixin.AccessorTrainRelocator;
 import com.railwayteam.railways.multiloader.S2CPacket;
 import com.zurrtum.create.content.trains.entity.Train;
-import com.simibubi.create.content.trains.entity.TrainPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 public record ShadowTrainRestorePacket(Train train) implements S2CPacket {
     public ShadowTrainRestorePacket(FriendlyByteBuf buf) {
-        this(((AccessorTrainPacket) new TrainPacket(buf)).railways$getTrain());
+        this(Train.STREAM_CODEC.decode((RegistryFriendlyByteBuf) buf));
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        new TrainPacket(train, true).write(buffer);
+        Train.STREAM_CODEC.encode((RegistryFriendlyByteBuf) buffer, train);
     }
 
     @Override

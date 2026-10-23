@@ -86,7 +86,7 @@ public class SemaphoreBlockEntity extends SmartBlockEntity implements IOverridab
     }
 
     @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+    public void addBehaviours(List<BlockEntityBehaviour<?>> behaviours) {
 
     }
     @Override

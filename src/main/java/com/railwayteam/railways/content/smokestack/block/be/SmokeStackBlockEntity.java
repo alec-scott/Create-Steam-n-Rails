@@ -59,7 +59,7 @@ public class SmokeStackBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {}
+    public void addBehaviours(List<BlockEntityBehaviour<?>> behaviours) {}
 
     public @Nullable DyeColor getColor() {
         return color;

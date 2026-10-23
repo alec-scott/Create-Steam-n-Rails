@@ -18,7 +18,7 @@
 
 package com.railwayteam.railways.util;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.player.Player;
@@ -35,18 +35,13 @@ public class ItemUtils {
 		return hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
 	}
 
+	/** PORT-NOTE(fabric): item NBT became data components (1.20.5); copies the component changes. */
 	public static void copyStackData(ItemStack source, ItemStack target) {
-		CompoundTag tag = source.getTag();
-		if (tag != null) {
-			target.setTag(tag.copy());
-		} else {
-			target.setTag(null);
-		}
+		target.applyComponents(source.getComponentsPatch());
 	}
 
 	public static boolean isUnbreakable(ItemStack stack) {
 		if (stack.isEmpty()) return false;
-		CompoundTag tag = stack.getTag();
-		return tag != null && tag.getBoolean("Unbreakable");
+		return stack.has(DataComponents.UNBREAKABLE);
 	}
 }

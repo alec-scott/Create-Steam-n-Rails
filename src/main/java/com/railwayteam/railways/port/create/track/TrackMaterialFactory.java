@@ -4,6 +4,7 @@ import com.railwayteam.railways.port.registrate.util.nullness.NonNullSupplier;
 import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
 import com.zurrtum.create.content.trains.track.TrackBlock;
 import com.zurrtum.create.content.trains.track.TrackMaterial;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
@@ -76,6 +77,17 @@ public class TrackMaterialFactory {
 
 	public TrackMaterialFactory sleeper(ItemLike... items) {
 		this.sleeperIngredient = () -> Optional.of(Ingredient.of(items));
+		return this;
+	}
+
+	/**
+	 * A sleeper item that may not exist (another mod's slab), resolved when first needed.
+	 *
+	 * <p>PORT-NOTE(fabric): replaces Railways' {@code SoftIngredient}; 26.1 ingredients are final and can't hold a
+	 * missing item.</p>
+	 */
+	public TrackMaterialFactory softSleeper(Identifier item) {
+		this.sleeperIngredient = () -> BuiltInRegistries.ITEM.getOptional(item).map(Ingredient::of);
 		return this;
 	}
 

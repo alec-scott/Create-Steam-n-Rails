@@ -26,10 +26,17 @@ import com.zurrtum.create.content.trains.graph.TrackEdge;
 import com.zurrtum.create.content.trains.graph.TrackGraph;
 import com.zurrtum.create.content.trains.signal.SignalPropagator;
 import com.zurrtum.create.content.trains.signal.SingleBlockEntityEdgePoint;
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.UUID;
 
@@ -43,8 +50,8 @@ public class TrackCoupler extends SingleBlockEntityEdgePoint {
     }
 
     @Override
-    public void tick(TrackGraph graph, boolean preTrains) {
-        super.tick(graph, preTrains);
+    public void tick(MinecraftServer server, TrackGraph graph, boolean preTrains) {
+        super.tick(server, graph, preTrains);
         if (isActivated())
             activated--;
         if (!isActivated())
@@ -73,7 +80,7 @@ public class TrackCoupler extends SingleBlockEntityEdgePoint {
 
     private void notifyTrains(Level level) {
         TrackGraph graph = Create.RAILWAYS.sided(level)
-            .getGraph(level, edgeLocation.getFirst());
+            .getGraph(edgeLocation.getFirst());
         if (graph == null)
             return;
         TrackEdge edge = graph.getConnection(edgeLocation.map(graph::locateNode));
@@ -83,11 +90,19 @@ public class TrackCoupler extends SingleBlockEntityEdgePoint {
     }
 
     @Override
-    public void read(CompoundTag nbt, boolean migration, DimensionPalette dimensions) {
-        super.read(nbt, migration, dimensions);
-        activated = nbt.getInt("Activated");
-        if (nbt.contains("TrainId"))
-            currentTrain = nbt.getUUID("TrainId");
+    public void read(ValueInput view, boolean migration, DimensionPalette dimensions) {
+        super.read(view, migration, dimensions);
+        activated = view.getIntOr("Activated", 0);
+        currentTrain = view.read("TrainId", UUIDUtil.CODEC).orElse(null);
+    }
+
+    @Override
+    public <T> void decode(DynamicOps<T> ops, T input, boolean migration, DimensionPalette dimensions) {
+        super.decode(ops, input, migration, dimensions);
+        MapLike<T> map = ops.getMap(input).getOrThrow();
+        T activatedValue = map.get("Activated");
+        activated = activatedValue == null ? 0 : ops.getNumberValue(activatedValue, 0).intValue();
+        currentTrain = map.get("TrainId") == null ? null : UUIDUtil.CODEC.parse(ops, map.get("TrainId")).result().orElse(null);
     }
 
     @Override
@@ -98,11 +113,20 @@ public class TrackCoupler extends SingleBlockEntityEdgePoint {
     }
 
     @Override
-    public void write(CompoundTag nbt, DimensionPalette dimensions) {
-        super.write(nbt, dimensions);
-        nbt.putInt("Activated", activated);
+    public void write(ValueOutput view, DimensionPalette dimensions) {
+        super.write(view, dimensions);
+        view.putInt("Activated", activated);
+        view.storeNullable("TrainId", UUIDUtil.CODEC, currentTrain);
+    }
+
+    @Override
+    public <T> DataResult<T> encode(DynamicOps<T> ops, T empty, DimensionPalette dimensions) {
+        DataResult<T> prefix = super.encode(ops, empty, dimensions);
+        RecordBuilder<T> map = ops.mapBuilder();
+        map.add("Activated", ops.createInt(activated));
         if (currentTrain != null)
-            nbt.putUUID("TrainId", currentTrain);
+            map.add("TrainId", currentTrain, UUIDUtil.CODEC);
+        return map.build(prefix);
     }
 
     @Override

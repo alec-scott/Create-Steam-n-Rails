@@ -22,15 +22,11 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 import net.minecraft.world.level.storage.ValueInput;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.content.switches.TrackSwitchBlock.SwitchConstraint;
 import com.railwayteam.railways.content.switches.TrackSwitchBlock.SwitchState;
-import com.railwayteam.railways.registry.CRBlockPartials;
 import com.railwayteam.railways.registry.CREdgePointTypes;
-import com.railwayteam.railways.registry.CRIcons;
 import com.zurrtum.create.api.contraption.transformable.TransformableBlockEntity;
-import com.zurrtum.create.client.api.goggles.IHaveGoggleInformation;
 import com.zurrtum.create.content.contraptions.StructureTransform;
 import com.zurrtum.create.content.trains.graph.TrackEdge;
 import com.zurrtum.create.content.trains.graph.TrackGraph;
@@ -38,26 +34,13 @@ import com.zurrtum.create.content.trains.graph.TrackGraphLocation;
 import com.zurrtum.create.content.trains.graph.TrackNodeLocation;
 import com.zurrtum.create.content.trains.track.TrackTargetingBehaviour;
 import com.zurrtum.create.foundation.blockEntity.SmartBlockEntity;
+import com.zurrtum.create.foundation.blockEntity.behaviour.scrollValue.ServerScrollOptionBehaviour;
 import com.zurrtum.create.api.behaviour.BlockEntityBehaviour;
-import com.zurrtum.create.client.foundation.blockEntity.behaviour.ValueBoxTransform;
-import com.zurrtum.create.client.foundation.blockEntity.behaviour.scrollValue.INamedIconOptions;
-import com.zurrtum.create.client.foundation.blockEntity.behaviour.scrollValue.ScrollOptionBehaviour;
-import com.zurrtum.create.client.foundation.gui.AllIcons;
-import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
-import com.zurrtum.create.client.flywheel.lib.transform.TransformStack;
 import com.zurrtum.create.catnip.animation.LerpedFloat;
-import com.zurrtum.create.client.catnip.lang.Lang;
-import com.zurrtum.create.client.catnip.lang.LangBuilder;
-import com.zurrtum.create.catnip.math.AngleHelper;
-import com.zurrtum.create.catnip.math.VecHelper;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -78,15 +61,15 @@ import static java.util.stream.Collectors.toSet;
 import static net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING;
 
 
-public class TrackSwitchBlockEntity extends SmartBlockEntity implements TransformableBlockEntity, IHaveGoggleInformation {
+public class TrackSwitchBlockEntity extends SmartBlockEntity implements TransformableBlockEntity {
     public TrackTargetingBehaviour<TrackSwitch> edgePoint;
     private SwitchState state;
     private int lastAnalogOutput = 0;
     private final boolean[] previousPower = new boolean[6];
 
-    protected ScrollOptionBehaviour<AutoMode> autoMode;
+    protected ServerScrollOptionBehaviour<AutoMode> autoMode;
 
-    int exitCount = 0; // client only
+    public int exitCount = 0; // client only
 
     /**
      * Only for use in ponders
@@ -111,28 +94,10 @@ public class TrackSwitchBlockEntity extends SmartBlockEntity implements Transfor
     @ApiStatus.Internal
     public @Nullable PonderData ponderData;
 
-    enum AutoMode implements INamedIconOptions {
-        MANUAL_ONLY(CRIcons.I_SWITCH_MANUAL),
-        AUTO(CRIcons.I_SWITCH_AUTO)
-        ;
-
-        private final String translationKey;
-        private final AllIcons icon;
-
-        AutoMode(AllIcons icon) {
-            this.icon = icon;
-            this.translationKey = "railways.switch.auto_mode." + Lang.asId(name());
-        }
-
-        @Override
-        public AllIcons getIcon() {
-            return icon;
-        }
-
-        @Override
-        public String getTranslationKey() {
-            return translationKey;
-        }
+    // PORT-NOTE(fabric): icons and lang keys are client side, in client/TrackSwitchClientBehaviours.
+    public enum AutoMode {
+        MANUAL_ONLY,
+        AUTO
     }
 
     @Nullable
@@ -140,47 +105,23 @@ public class TrackSwitchBlockEntity extends SmartBlockEntity implements Transfor
         return edgePoint == null ? null : edgePoint.getEdgePoint();
     }
 
-    final LerpedFloat lerpedAngle = LerpedFloat.angular().chase(0.0, 0.3, LerpedFloat.Chaser.EXP);
+    public final LerpedFloat lerpedAngle = LerpedFloat.angular().chase(0.0, 0.3, LerpedFloat.Chaser.EXP);
 
     public TrackSwitchBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
     @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+    public void addBehaviours(List<BlockEntityBehaviour<?>> behaviours) {
         behaviours.add(edgePoint = new TrackTargetingBehaviour<>(this, CREdgePointTypes.SWITCH));
         if (isAutomatic()) {
-            autoMode = new ScrollOptionBehaviour<>(AutoMode.class, Component.translatable("railways.switch.auto_mode"),
-                    this, new ValueBoxTransform() {
-                @Override
-                public Vec3 getLocalOffset(LevelAccessor levelAccessor, BlockPos blockPos, BlockState blockState) {
-                    Vec3 base = new Vec3(12 / 16.0, 4.5 / 16.0, 4 / 16.0);
-                    base = VecHelper.rotateCentered(base, AngleHelper.horizontalAngle(blockState.getValue(FACING)), Direction.Axis.Y);
-                    return base;
-                }
-
-                @Override
-                public void rotate(LevelAccessor levelAccessor, BlockPos blockPos, BlockState blockState, PoseStack ms) {
-                    TransformStack.of(ms)
-                            .rotateY(AngleHelper.horizontalAngle(blockState.getValue(FACING)) - 90)
-                            .rotateX(90);
-                }
-
-                @Override
-                public boolean testHit(LevelAccessor level, BlockPos pos, BlockState state, Vec3 localHit) {
-                    Vec3 offset = getLocalOffset(level, pos, state);
-                    if (offset == null)
-                        return false;
-                    return localHit.distanceTo(offset) < scale / 3;
-                }
-            });
+            autoMode = new ServerScrollOptionBehaviour<>(AutoMode.class, this);
             autoMode.withCallback(ordinal -> {
                 AutoMode mode = AutoMode.values()[ordinal];
                 TrackSwitch sw = getSwitch();
                 if (sw != null)
                     sw.setAutoTrainsSwitch(mode == AutoMode.AUTO);
             });
-            autoMode.requiresWrench();
             behaviours.add(autoMode);
         }
     }
@@ -244,34 +185,6 @@ public class TrackSwitchBlockEntity extends SmartBlockEntity implements Transfor
         };
     }
 
-    public PartialModel getOverlayModel() {
-        TrackSwitch sw = edgePoint.getEdgePoint();
-        if (sw == null) {
-            return null;
-        }
-
-        if (sw.hasStraightExit() && sw.hasLeftExit() && sw.hasRightExit()) {
-            if (isNormal()) {
-                return CRBlockPartials.SWITCH_3WAY_STRAIGHT;
-            } else if (isReverseLeft()) {
-                return CRBlockPartials.SWITCH_3WAY_LEFT;
-            } else if (isReverseRight()) {
-                return CRBlockPartials.SWITCH_3WAY_RIGHT;
-            }
-        } else if (sw.hasStraightExit() && sw.hasLeftExit()) {
-            return isNormal() ? CRBlockPartials.SWITCH_LEFT_STRAIGHT
-                    : CRBlockPartials.SWITCH_LEFT_TURN;
-        } else if (sw.hasStraightExit() && sw.hasRightExit()) {
-            return isNormal() ? CRBlockPartials.SWITCH_RIGHT_STRAIGHT
-                    : CRBlockPartials.SWITCH_RIGHT_TURN;
-        } else if (sw.hasLeftExit() && sw.hasRightExit()) {
-            return isReverseLeft() ? CRBlockPartials.SWITCH_2WAY_LEFT
-                    : CRBlockPartials.SWITCH_2WAY_RIGHT;
-        }
-
-        return CRBlockPartials.SWITCH_NONE;
-    }
-
     void calculateExits(TrackSwitch sw) {
         TrackGraphLocation loc;
         try {
@@ -301,23 +214,6 @@ public class TrackSwitchBlockEntity extends SmartBlockEntity implements Transfor
         }
 
         sw.updateExits(edge.node2.getLocation(), exits);
-    }
-
-    private static LangBuilder b() {
-        return Lang.builder(Railways.MOD_ID);
-    }
-
-    @Override
-    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        b().translate("tooltip.switch.header").forGoggles(tooltip);
-        b().translate("tooltip.switch.state")
-                .style(ChatFormatting.YELLOW)
-                .forGoggles(tooltip);
-        b().translate("switch.state." + getState().getSerializedName())
-                .style(ChatFormatting.YELLOW)
-                .forGoggles(tooltip);
-
-        return true;
     }
 
     private final int clientLazyTickRate = 10;
@@ -567,7 +463,7 @@ public class TrackSwitchBlockEntity extends SmartBlockEntity implements Transfor
 
     @Override
     protected AABB createRenderBoundingBox() {
-        return new AABB(worldPosition, edgePoint.getGlobalPosition())
+        return new AABB(Vec3.atLowerCornerOf(worldPosition), Vec3.atLowerCornerOf(edgePoint.getGlobalPosition()))
             .inflate(2);
     }
 }

@@ -33,8 +33,19 @@ import org.jetbrains.annotations.Contract;
 import java.util.function.Predicate;
 
 public class EntityUtils {
-	public static CompoundTag getPersistentData(Entity entity) {
-		return com.railwayteam.railways.util.fabric.EntityUtilsImpl.getPersistentData(entity);
+	/**
+	 * Create's per-player toolbox data.
+	 *
+	 * <p>PORT-NOTE(fabric): was {@code getPersistentData(player).getCompound("CreateToolboxData")}; Create Fly keeps it
+	 * in synced entity data ({@code AllSynchedDatas.TOOLBOX}). The returned tag is a copy unless written back with
+	 * {@link #setToolboxData}.</p>
+	 */
+	public static CompoundTag getToolboxData(Player player) {
+		return com.zurrtum.create.AllSynchedDatas.TOOLBOX.get(player);
+	}
+
+	public static void setToolboxData(Player player, CompoundTag data) {
+		com.zurrtum.create.AllSynchedDatas.TOOLBOX.set(player, data);
 	}
 
 	/**

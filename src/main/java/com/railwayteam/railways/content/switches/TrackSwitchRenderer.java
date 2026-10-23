@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.switches;
 
+import com.railwayteam.railways.content.switches.client.TrackSwitchClientBehaviours;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.content.switches.TrackSwitchBlock.SwitchState;
 import com.railwayteam.railways.content.switches.TrackSwitchBlockEntity.PonderData;
@@ -157,7 +159,7 @@ public class TrackSwitchRenderer extends SmartBlockEntityRenderer<TrackSwitchBlo
     TransformStack.of(ms)
             .translate(targetPosition.subtract(pos));
     CustomTrackOverlayRendering.renderOverlay(level, targetPosition, target.getTargetDirection(), target.getTargetBezier(), ms,
-            buffer, light, overlay, te.getOverlayModel(), 1, offsetToSide);
+            buffer, light, overlay, TrackSwitchClientBehaviours.overlayModel(te), 1, offsetToSide);
     ms.popPose();
   }
 }

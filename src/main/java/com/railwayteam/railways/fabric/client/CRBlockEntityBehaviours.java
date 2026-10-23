@@ -18,8 +18,11 @@
 package com.railwayteam.railways.fabric.client;
 
 import com.railwayteam.railways.content.coupling.coupler.client.TrackCouplerClientBehaviours;
+import com.railwayteam.railways.content.switches.client.TrackSwitchClientBehaviours;
 import com.railwayteam.railways.registry.CRBlockEntities;
 import com.zurrtum.create.client.AllBlockEntityBehaviours;
+
+import java.util.List;
 
 /**
  * Client-only block entity behaviours (value boxes, goggle tooltips, ...).
@@ -33,5 +36,7 @@ public final class CRBlockEntityBehaviours {
     public static void register() {
         AllBlockEntityBehaviours.add(CRBlockEntities.TRACK_COUPLER.get(),
             TrackCouplerClientBehaviours::edgeSpacing, TrackCouplerClientBehaviours.Tooltip::new);
+        for (var type : List.of(CRBlockEntities.ANDESITE_SWITCH.get(), CRBlockEntities.BRASS_SWITCH.get()))
+            AllBlockEntityBehaviours.add(type, TrackSwitchClientBehaviours::autoMode, TrackSwitchClientBehaviours.Tooltip::new);
     }
 }

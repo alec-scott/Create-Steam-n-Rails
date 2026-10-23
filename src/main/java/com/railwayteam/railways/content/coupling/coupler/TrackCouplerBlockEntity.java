@@ -250,7 +250,7 @@ public class TrackCouplerBlockEntity extends SmartBlockEntity implements Transfo
                 if (point != null && secondEdgePoint.hasValidTrack()) { // don't want to try anything if not on an actual track
                     TrackGraphLocation location = secondEdgePoint.determineGraphLocation();
                     if (location != null && location.graph != null) {
-                        location.graph.removePoint(CREdgePointTypes.COUPLER, point.id);
+                        location.graph.removePoint(level.getServer(), CREdgePointTypes.COUPLER, point.id);
                         Create.RAILWAYS.trains.forEach((uuid, train) -> {
                             ((IOccupiedCouplers) train).railways$getOccupiedCouplers().remove(point.id);
                             if (uuid == point.getCurrentTrain() || train.graph == location.graph) {
@@ -520,8 +520,8 @@ public class TrackCouplerBlockEntity extends SmartBlockEntity implements Transfo
 
     @Override
     protected AABB createRenderBoundingBox() {
-        return new AABB(worldPosition, edgePoint.getGlobalPosition())
-                .minmax(new AABB(worldPosition, secondEdgePoint.getGlobalPosition()))
+        return new AABB(Vec3.atLowerCornerOf(worldPosition), Vec3.atLowerCornerOf(edgePoint.getGlobalPosition()))
+                .minmax(new AABB(Vec3.atLowerCornerOf(worldPosition), Vec3.atLowerCornerOf(secondEdgePoint.getGlobalPosition())))
                 .inflate(2);
     }
 

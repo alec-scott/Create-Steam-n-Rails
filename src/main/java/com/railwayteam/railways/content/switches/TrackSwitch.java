@@ -31,12 +31,17 @@ import com.zurrtum.create.content.trains.graph.TrackNodeLocation;
 import com.zurrtum.create.content.trains.signal.SignalPropagator;
 import com.zurrtum.create.content.trains.signal.SingleBlockEntityEdgePoint;
 import com.zurrtum.create.catnip.data.Couple;
-import com.zurrtum.create.catnip.nbt.NBTHelper;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.ListBuilder;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -168,14 +173,14 @@ public class TrackSwitch extends SingleBlockEntityEdgePoint {
     }
 
     @Override
-    public void onRemoved(TrackGraph graph) {
+    public void onRemoved(MinecraftServer server, TrackGraph graph) {
         exits.clear();
         sortExits();
-        removeFromAllGraphs();
+        removeFromAllGraphs(server);
     }
 
     private void notifyTrains(Level level) {
-        TrackGraph graph = Create.RAILWAYS.sided(level).getGraph(level, edgeLocation.getFirst());
+        TrackGraph graph = Create.RAILWAYS.sided(level).getGraph(edgeLocation.getFirst());
         if (graph == null)
             return;
         TrackEdge edge = graph.getConnection(edgeLocation.map(graph::locateNode));
@@ -334,14 +339,32 @@ public class TrackSwitch extends SingleBlockEntityEdgePoint {
     }
 
     @Override
-    public void write(CompoundTag nbt, DimensionPalette dimensions) {
-        super.write(nbt, dimensions);
-        nbt.put("SwitchPoint", switchPoint.write(dimensions));
-        nbt.put("Exits", NBTHelper.writeCompoundList(exits, e -> e.write(dimensions)));
-        nbt.putString("SwitchState", switchState.getSerializedName());
-        nbt.putBoolean("Automatic", automatic);
-        nbt.putBoolean("Locked", locked);
-        nbt.putBoolean("AutoTrainsSwitch", autoTrainsSwitch);
+    public void write(ValueOutput view, DimensionPalette dimensions) {
+        super.write(view, dimensions);
+        switchPoint.write(view.child("SwitchPoint"), dimensions);
+        ValueOutput.ValueOutputList exitList = view.childrenList("Exits");
+        for (TrackNodeLocation exit : exits)
+            exit.write(exitList.addChild(), dimensions);
+        view.putString("SwitchState", switchState.getSerializedName());
+        view.putBoolean("Automatic", automatic);
+        view.putBoolean("Locked", locked);
+        view.putBoolean("AutoTrainsSwitch", autoTrainsSwitch);
+    }
+
+    @Override
+    public <T> DataResult<T> encode(DynamicOps<T> ops, T empty, DimensionPalette dimensions) {
+        DataResult<T> prefix = super.encode(ops, empty, dimensions);
+        RecordBuilder<T> map = ops.mapBuilder();
+        map.add("SwitchPoint", TrackNodeLocation.encode(switchPoint, ops, empty, dimensions));
+        ListBuilder<T> exitList = ops.listBuilder();
+        for (TrackNodeLocation exit : exits)
+            exitList.add(TrackNodeLocation.encode(exit, ops, empty, dimensions));
+        map.add("Exits", exitList.build(empty));
+        map.add("SwitchState", ops.createString(switchState.getSerializedName()));
+        map.add("Automatic", ops.createBoolean(automatic));
+        map.add("Locked", ops.createBoolean(locked));
+        map.add("AutoTrainsSwitch", ops.createBoolean(autoTrainsSwitch));
+        return map.build(prefix);
     }
 
     @Override
@@ -355,24 +378,37 @@ public class TrackSwitch extends SingleBlockEntityEdgePoint {
     }
 
     @Override
-    public void read(CompoundTag nbt, boolean migration, DimensionPalette dimensions) {
-        super.read(nbt, migration, dimensions);
-        String exit = nbt.getString("SwitchState");
+    public void read(ValueInput view, boolean migration, DimensionPalette dimensions) {
+        super.read(view, migration, dimensions);
+        readSwitchState(view.getStringOr("SwitchState", ""));
+        automatic = view.getBooleanOr("Automatic", false);
+        locked = view.getBooleanOr("Locked", false);
+        autoTrainsSwitch = view.getBooleanOr("AutoTrainsSwitch", false);
+        List<TrackNodeLocation> exitList = new ArrayList<>();
+        for (ValueInput exit : view.childrenListOrEmpty("Exits"))
+            exitList.add(TrackNodeLocation.read(exit, dimensions));
+        updateExits(TrackNodeLocation.read(view.childOrEmpty("SwitchPoint"), dimensions), exitList);
+    }
+
+    @Override
+    public <T> void decode(DynamicOps<T> ops, T input, boolean migration, DimensionPalette dimensions) {
+        super.decode(ops, input, migration, dimensions);
+        MapLike<T> map = ops.getMap(input).getOrThrow();
+        readSwitchState(ops.getStringValue(map.get("SwitchState")).result().orElse(""));
+        automatic = ops.getBooleanValue(map.get("Automatic")).result().orElse(false);
+        locked = ops.getBooleanValue(map.get("Locked")).result().orElse(false);
+        autoTrainsSwitch = ops.getBooleanValue(map.get("AutoTrainsSwitch")).result().orElse(false);
+        List<TrackNodeLocation> exitList = new ArrayList<>();
+        ops.getStream(map.get("Exits")).result().ifPresent(stream -> stream.forEach(e -> exitList.add(TrackNodeLocation.decode(ops, e, dimensions))));
+        updateExits(TrackNodeLocation.decode(ops, map.get("SwitchPoint"), dimensions), exitList);
+    }
+
+    private void readSwitchState(String exit) {
         try {
             switchState = SwitchState.valueOf(exit.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             switchState = getValidSwitchState();
         }
-        automatic = nbt.getBoolean("Automatic");
-        locked = nbt.getBoolean("Locked");
-        autoTrainsSwitch = nbt.getBoolean("AutoTrainsSwitch");
-        updateExits(
-                TrackNodeLocation.read(nbt.getCompound("SwitchPoint"), dimensions),
-                nbt.getList("Exits", Tag.TAG_COMPOUND)
-                        .stream()
-                        .map(t -> TrackNodeLocation.read((CompoundTag) t, dimensions))
-                        .toList()
-        );
     }
 
     @Override
@@ -399,8 +435,8 @@ public class TrackSwitch extends SingleBlockEntityEdgePoint {
     }
 
     @Override
-    public void tick(TrackGraph graph, boolean preTrains) {
-        super.tick(graph, preTrains);
+    public void tick(MinecraftServer server, TrackGraph graph, boolean preTrains) {
+        super.tick(server, graph, preTrains);
         if (preTrains) {
             ticks++;
             if (ticks < 10) {

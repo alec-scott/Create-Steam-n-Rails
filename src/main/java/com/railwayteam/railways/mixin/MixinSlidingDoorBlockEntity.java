@@ -40,7 +40,7 @@ public class MixinSlidingDoorBlockEntity implements SlidingDoorMode.IHasDoorMode
     private ScrollOptionBehaviour<SlidingDoorMode> railways$doorModeScroll;
 
     @Inject(method = "addBehaviours", at = @At("RETURN"))
-    private void addScrollBehaviour(List<BlockEntityBehaviour> behaviours, CallbackInfo ci) {
+    private void addScrollBehaviour(List<BlockEntityBehaviour<?>> behaviours, CallbackInfo ci) {
         SlidingDoorBlockEntity this_ = (SlidingDoorBlockEntity) (Object) this;
         railways$doorModeScroll = new ScrollOptionBehaviour<>(SlidingDoorMode.class, Component.translatable("create.sliding_door.mode"), this_, new SlidingDoorMode.SlidingDoorValueBoxTransform()) {
             @Override

@@ -20,13 +20,10 @@ package com.railwayteam.railways.util.fabric;
 
 import com.railwayteam.railways.content.conductor.ConductorEntity;
 import com.railwayteam.railways.fabric.ConductorFakePlayerFabric;
-import com.simibubi.create.foundation.utility.fabric.ReachUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -41,18 +38,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class EntityUtilsImpl {
-	public static CompoundTag getPersistentData(Entity entity) {
-		return entity.getCustomData();
-	}
-
 	public static void givePlayerItem(Player player, ItemStack stack) {
-		try (Transaction t = TransferUtil.getTransaction()) {
+		try (Transaction t = Transaction.openOuter()) {
 			PlayerInventoryStorage inv = PlayerInventoryStorage.of(player);
 			inv.offerOrDrop(ItemVariant.of(stack), stack.getCount(), t);
 			t.commit();
 
-			Level level = player.level;
-			RandomSource r = level.random;
+			Level level = player.level();
+			RandomSource r = level.getRandom();
 			float pitch = ((r.nextFloat() - r.nextFloat()) * 0.7f + 1.0f) * 2.0f;
 			level.playSound(
 					null,
@@ -67,11 +60,11 @@ public class EntityUtilsImpl {
 	}
 
 	public static double getReachDistance(Player player) {
-		return ReachUtil.reach(player);
+		return player.blockInteractionRange();
 	}
 
 	public static boolean handleUseEvent(Player player, InteractionHand hand, BlockHitResult hit) {
-		InteractionResult result = UseBlockCallback.EVENT.invoker().interact(player, player.level, hand, hit);
+		InteractionResult result = UseBlockCallback.EVENT.invoker().interact(player, player.level(), hand, hit);
 		return result != InteractionResult.FAIL;
 	}
 }

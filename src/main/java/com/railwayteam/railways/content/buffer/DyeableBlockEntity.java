@@ -53,7 +53,7 @@ public class DyeableBlockEntity extends SmartBlockEntity implements IDyedBuffer 
     }
 
     @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {}
+    public void addBehaviours(List<BlockEntityBehaviour<?>> behaviours) {}
 
     @Override
     protected void write(ValueOutput tag, boolean clientPacket) {

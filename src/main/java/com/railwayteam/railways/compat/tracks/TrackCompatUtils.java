@@ -19,6 +19,7 @@
 package com.railwayteam.railways.compat.tracks;
 
 import com.railwayteam.railways.port.create.track.TrackMaterialData;
+import com.railwayteam.railways.port.create.track.TrackMaterialFactory;
 
 import com.zurrtum.create.AllBlockTags;
 

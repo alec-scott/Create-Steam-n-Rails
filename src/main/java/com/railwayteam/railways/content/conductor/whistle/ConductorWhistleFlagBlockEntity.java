@@ -103,7 +103,7 @@ public class ConductorWhistleFlagBlockEntity extends SmartBlockEntity implements
     }
 
     @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+    public void addBehaviours(List<BlockEntityBehaviour<?>> behaviours) {
         station = new TrackTargetingBehaviour<>(this, EdgePointType.STATION);
         behaviours.add(station);
     }

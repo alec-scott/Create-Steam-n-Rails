@@ -20,7 +20,7 @@ package com.railwayteam.railways.util.packet;
 
 import com.railwayteam.railways.mixin.AccessorTrain;
 import com.railwayteam.railways.multiloader.S2CPacket;
-import com.simibubi.create.CreateClient;
+import com.zurrtum.create.client.Create;
 import com.zurrtum.create.content.trains.entity.Train;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -59,7 +59,7 @@ public class ChopTrainEndPacket implements S2CPacket {
     public void handle(Minecraft mc) {
         Level level = mc.level;
         if (level != null) {
-            Train train = CreateClient.RAILWAYS.trains.get(trainId);
+            Train train = Create.RAILWAYS.trains.get(trainId);
             if (train != null) {
                 for (int i = 0; i < numberOfCarriages; i++) {
                     train.carriages.remove(train.carriages.size() - 1);

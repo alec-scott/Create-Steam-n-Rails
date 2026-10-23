@@ -476,7 +476,7 @@ public class FuelTankBlockEntity extends SmartBlockEntity implements IHaveGoggle
     }
 
     @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {}
+    public void addBehaviours(List<BlockEntityBehaviour<?>> behaviours) {}
 
     public FluidTank getTankInventory() {
         return tankInventory;

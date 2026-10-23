@@ -20,12 +20,8 @@ package com.railwayteam.railways.util;
 
 import com.google.gson.JsonObject;
 import com.railwayteam.railways.multiloader.fluid.FluidUnits;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.Fluid;
-import org.jetbrains.annotations.Nullable;
 
 public class FluidUtils {
     public static boolean canUseAsFuelStorage(BlockEntity be) {
@@ -39,10 +35,6 @@ public class FluidUtils {
      */
     public static Fluid getFluid(Object o) {
         return com.railwayteam.railways.util.fabric.FluidUtilsImpl.getFluid(o);
-    }
-
-    public static void addFluidOutput(ProcessingRecipeBuilder<ProcessingRecipe<?>> b, Fluid fluid, long amount, @Nullable CompoundTag nbt) {
-        com.railwayteam.railways.util.fabric.FluidUtilsImpl.addFluidOutput(b, fluid, amount, nbt);
     }
 
     public static void mangleFluidAmount(JsonObject json) {

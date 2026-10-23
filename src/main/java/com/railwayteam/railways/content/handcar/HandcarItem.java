@@ -34,7 +34,8 @@ import com.zurrtum.create.content.trains.entity.Carriage;
 import com.zurrtum.create.content.trains.entity.CarriageBogey;
 import com.zurrtum.create.content.trains.entity.CarriageContraption;
 import com.zurrtum.create.content.trains.entity.Train;
-import com.simibubi.create.content.trains.entity.TrainPacket;
+import com.zurrtum.create.infrastructure.packet.s2c.AddTrainPacket;
+import com.zurrtum.create.infrastructure.packet.s2c.RemoveTrainPacket;
 import com.zurrtum.create.content.trains.entity.TravellingPoint;
 import com.zurrtum.create.content.trains.entity.TravellingPoint.SteerDirection;
 import com.zurrtum.create.content.trains.graph.TrackEdge;
@@ -233,7 +234,7 @@ public class HandcarItem extends BlockItem implements IDeployAnywayBlockItem {
         train.name = Component.translatable("block.railways.handcar");
         train.collectInitiallyOccupiedSignalBlocks();
         Create.RAILWAYS.addTrain(train);
-        CRPackets.PACKETS.sendTo(PlayerSelection.all(), new TrainPacket(train, true));
+        CRPackets.PACKETS.sendTo(PlayerSelection.all(), new AddTrainPacket(train));
         return train;
     }
 

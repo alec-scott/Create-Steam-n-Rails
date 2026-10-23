@@ -33,7 +33,8 @@ import com.zurrtum.create.content.trains.RailwaySavedData;
 import com.zurrtum.create.content.trains.entity.Carriage;
 import com.zurrtum.create.content.trains.entity.Carriage.DimensionalCarriageEntity;
 import com.zurrtum.create.content.trains.entity.Train;
-import com.simibubi.create.content.trains.entity.TrainPacket;
+import com.zurrtum.create.infrastructure.packet.s2c.AddTrainPacket;
+import com.zurrtum.create.infrastructure.packet.s2c.RemoveTrainPacket;
 import com.zurrtum.create.content.trains.entity.TrainRelocator;
 import com.zurrtum.create.infrastructure.component.BezierTrackPointLocation;
 import com.zurrtum.create.client.foundation.utility.CreateLang;
@@ -147,7 +148,7 @@ public class ShadowRealm {
         Create.RAILWAYS.addTrain(train);
         savedData.setDirty();
 
-        CRPackets.PACKETS.sendTo(PlayerSelection.all(), new TrainPacket(train, true));
+        CRPackets.PACKETS.sendTo(PlayerSelection.all(), new AddTrainPacket(train));
         train.status.displayInformation("railways.shadow_realm.restored", true);
         return true;
     }

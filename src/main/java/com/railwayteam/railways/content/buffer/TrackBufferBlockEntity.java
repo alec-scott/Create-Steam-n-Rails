@@ -40,7 +40,7 @@ public class TrackBufferBlockEntity extends DyeableBlockEntity implements Transf
     }
 
     @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+    public void addBehaviours(List<BlockEntityBehaviour<?>> behaviours) {
         behaviours.add(edgePoint = new TrackTargetingBehaviour<>(this, CREdgePointTypes.BUFFER));
     }
 
