@@ -26,7 +26,7 @@ import com.zurrtum.create.content.trains.entity.Carriage;
 import com.zurrtum.create.content.trains.entity.CarriageContraptionEntity;
 import com.zurrtum.create.catnip.animation.LerpedFloat;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.GameType;
@@ -53,7 +53,7 @@ public class TrainHUDSwitchExtension {
         return cce.getCarriage();
     }
 
-    public static void renderOverlay(GuiGraphics graphics, float partialTicks, int width, int height) {
+    public static void renderOverlay(GuiGraphicsExtractor graphics, float partialTicks, int width, int height) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || mc.gameMode.getPlayerMode() == GameType.SPECTATOR)
             return;

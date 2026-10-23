@@ -28,7 +28,7 @@ import com.zurrtum.create.api.registry.CreateRegistries;
 import com.zurrtum.create.content.equipment.potatoCannon.AllPotatoProjectileEntityHitActions.PotionEffect;
 import com.railwayteam.railways.port.registrate.util.entry.ItemEntry;
 import net.minecraft.core.Registry;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
@@ -37,7 +37,7 @@ import net.minecraft.world.phys.BlockHitResult;
 
 @SuppressWarnings("SameParameterValue")
 public class CRPotatoProjectileTypes {
-    public static void bootstrap(BootstapContext<PotatoCannonProjectileType> ctx) {
+    public static void bootstrap(BootstrapContext<PotatoCannonProjectileType> ctx) {
         register(ctx, "paint_pitcher", builder()
             .damage(3)
             .reloadTicks(15)
@@ -54,7 +54,7 @@ public class CRPotatoProjectileTypes {
         return new PotatoCannonProjectileType.Builder();
     }
 
-    private static void register(BootstapContext<PotatoCannonProjectileType> ctx, String name, PotatoCannonProjectileType.Builder builder) {
+    private static void register(BootstrapContext<PotatoCannonProjectileType> ctx, String name, PotatoCannonProjectileType.Builder builder) {
         ctx.register(ResourceKey.create(CreateRegistries.POTATO_PROJECTILE_TYPE, Railways.asResource(name)), builder.build());
     }
 

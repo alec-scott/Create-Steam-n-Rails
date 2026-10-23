@@ -15,20 +15,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.railwayteam.railways.multiloader.fabric;
 
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.railwayteam.railways.annotation.multiloader.ImplClass;
-import io.github.fabricators_of_create.porting_lib.command.EnumArgument;
-import net.fabricmc.fabric.api.registry.FuelRegistry;
+import com.railwayteam.railways.util.ServerHolder;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 @ImplClass
 public class PlatformAbstractionHelperImpl {
+    /** PORT-NOTE(fabric): fuel values are per server since 1.21.2; a remote client gets 0. */
     public static int getBurnTime(Item item) {
-        Integer time = FuelRegistry.INSTANCE.get(item);
-        return time != null ? time : 0;
+        MinecraftServer server = ServerHolder.get();
+        return server != null ? server.fuelValues().burnDuration(new ItemStack(item)) : 0;
     }
 
     public static <T extends Enum<T>> ArgumentType<T> enumArgument(Class<T> enumClass) {

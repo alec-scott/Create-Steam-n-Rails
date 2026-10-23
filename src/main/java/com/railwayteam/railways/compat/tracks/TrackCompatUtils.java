@@ -42,7 +42,7 @@ import com.railwayteam.railways.port.registrate.providers.RegistrateBlockstatePr
 import com.railwayteam.railways.port.registrate.util.entry.BlockEntry;
 import com.railwayteam.railways.port.registrate.util.nullness.NonNullBiConsumer;
 import com.railwayteam.railways.port.registrate.util.nullness.NonNullConsumer;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -56,7 +56,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
 
-import static com.railwayteam.railways.base.data.CRTagGen.addOptionalTag;
 
 public abstract class TrackCompatUtils {
 
@@ -132,13 +131,9 @@ public abstract class TrackCompatUtils {
         String owningMod = material.getId().getNamespace();
         String name = "track_" + owningMod + "_" + TrackMaterialData.of(material).resourceName();
 
-        addOptionalTag(Railways.asResource(name), AllBlockTags.TRACKS,
-                CommonTags.RELOCATION_NOT_SUPPORTED.forge, CommonTags.RELOCATION_NOT_SUPPORTED.fabric,
-                BlockTags.MINEABLE_WITH_PICKAXE); // pickaxe-mineable tag is moved here as Registrate cannot add optional tag in BlockBuilder
-        if (TrackMaterialData.of(material).trackType != CRTrackMaterials.CRTrackType.MONORAIL)
-            addOptionalTag(Railways.asResource(name), AllBlockTags.GIRDABLE_TRACKS);
+        // PORT-NOTE(fabric): the optional tracks / girdable / pickaxe tags were datagen only (CRTagGen); the generated tag JSON has them.
 
-        return REGISTRATE.block(name, material::createBlock)
+        return REGISTRATE.block(name, p -> TrackMaterialData.of(material).createBlock(p))
             .initialProperties(SharedProperties::stone)
             .properties(p -> collectProperties.apply(p)
                 .mapColor(MapColor.METAL)

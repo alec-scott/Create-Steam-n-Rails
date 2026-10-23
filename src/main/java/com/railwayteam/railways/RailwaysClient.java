@@ -34,6 +34,7 @@ import com.railwayteam.railways.registry.CRKeys;
 import com.railwayteam.railways.registry.CRPackets;
 import com.railwayteam.railways.util.CustomTrackOverlayRendering;
 import com.railwayteam.railways.util.DevCapeUtils;
+import com.railwayteam.railways.port.create.track.TrackMaterialModels;
 import com.zurrtum.create.client.ponder.foundation.PonderIndex;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
@@ -73,6 +74,8 @@ public class RailwaysClient {
     BufferModelUtils.register();
 
     CRFluids.initRendering();
+    TrackMaterialModels.register();
+    com.railwayteam.railways.fabric.client.CRItemTooltips.register();
 
     DevCapeUtils.INSTANCE.init();
   }

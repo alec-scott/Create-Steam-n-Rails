@@ -5,6 +5,10 @@
   "plugin": "com.railwayteam.railways.mixin.CRMixinPlugin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "port.AbstractBogeyBlockMixin",
+    "port.NavigationTrackTypeMixin",
+    "port.RollingModeMixin",
+    "port.SpawnPlacementsAccessor",
     "AccessorAbstractContraptionEntity",
     "AccessorBlockEntity",
     "AccessorBlockEntityType",
@@ -112,6 +116,8 @@
     "conductor_possession.TrackedEntityMixin"
   ],
   "client": [
+    "port.client.KeyboardHandlerMixin",
+    "port.client.RollingModeIconMixin",
     "client.AccessorAbstractVisual",
     "client.AccessorBogeyStyle",
     "client.AccessorControlsHandler",

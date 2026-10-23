@@ -28,7 +28,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -88,27 +87,27 @@ public class RemoteLensItem extends Item {
     }
 
     @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand usedHand) {
+    public @NotNull InteractionResult use(@NotNull Level level, Player player, @NotNull InteractionHand usedHand) {
         ItemStack stack = player.getItemInHand(usedHand);
         if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer) {
             CompoundTag stackTag = stack.getTag();
             if (stackTag == null || !stackTag.hasUUID("SelectedConductor"))
-                return InteractionResultHolder.fail(stack);
+                return InteractionResult.FAIL;
             UUID conductorId = stackTag.getUUID("SelectedConductor");
             if (player.isShiftKeyDown()) {
                 stack.removeTagKey("SelectedConductor");
                 AllSoundEvents.CONTROLLER_CLICK.play(level, null, player.blockPosition(), .5f, 1.1f);
                 player.sendOverlayMessage(Component.translatable("railways.remote_lens.clear"));
-                return InteractionResultHolder.success(stack);
+                return InteractionResult.SUCCESS;
             }
             Entity entity = serverLevel.getEntity(conductorId);
             if (entity instanceof ConductorEntity conductor && conductor.getJob() == ConductorEntity.Job.SPY) {
-                return conductor.startViewing(serverPlayer) ? InteractionResultHolder.success(stack) : InteractionResultHolder.fail(stack);
+                return conductor.startViewing(serverPlayer) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
             } else {
-                return InteractionResultHolder.fail(stack);
+                return InteractionResult.FAIL;
             }
         } else {
-            return InteractionResultHolder.success(stack);
+            return InteractionResult.SUCCESS;
         }
     }
 }

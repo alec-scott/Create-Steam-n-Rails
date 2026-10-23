@@ -21,10 +21,10 @@ package com.railwayteam.railways.content.smokestack.particles;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.particle.SingleQuadParticle;
 
 @Environment(EnvType.CLIENT)
-public abstract class CustomAnimatedTextureSheetParticle extends TextureSheetParticle {
+public abstract class CustomAnimatedTextureSheetParticle extends SingleQuadParticle {
     protected CustomAnimatedTextureSheetParticle(ClientLevel clientLevel, double d, double e, double f) {
         super(clientLevel, d, e, f);
     }

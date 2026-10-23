@@ -34,7 +34,7 @@ import com.zurrtum.create.client.catnip.gui.element.GuiGameElement;
 import com.zurrtum.create.catnip.math.AngleHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -67,7 +67,7 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
 
     @SuppressWarnings({"IntegerDivisionInFloatingPointContext", "DuplicatedCode"})
     @Override
-    protected void renderWindow(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+    protected void renderWindow(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
         float fade = Mth.clamp((ticksOpen + AnimationTickHolder.getPartialTicks()) / 10f, 1 / 512f, 1);
 
         PoseStack ms = graphics.pose();
@@ -172,7 +172,7 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
     }
 
     @SuppressWarnings("DuplicatedCode")
-    private void drawComponent(GuiGraphics graphics, Component title, int i1) {
+    private void drawComponent(GuiGraphicsExtractor graphics, Component title, int i1) {
         PoseStack ms = graphics.pose();
 
         RenderSystem.enableBlend();
@@ -186,7 +186,7 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics) {
+    public void renderBackground(GuiGraphicsExtractor guiGraphics) {
         PoseStack ms = guiGraphics.pose();
 
         int a = ((int) (0x50 * Math.min(1, (ticksOpen + AnimationTickHolder.getPartialTicks()) / 20f))) << 24;

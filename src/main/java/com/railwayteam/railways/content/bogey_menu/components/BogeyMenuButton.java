@@ -18,7 +18,7 @@
 
 package com.railwayteam.railways.content.bogey_menu.components;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
@@ -29,5 +29,5 @@ public class BogeyMenuButton extends Button {
     }
 
     @Override // NO-OP, We take care of rendering ourselves as buttons for text doesn't update properly
-    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) { }
+    public void render(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) { }
 }

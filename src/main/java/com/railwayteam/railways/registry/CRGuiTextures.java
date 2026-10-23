@@ -26,7 +26,7 @@ import com.zurrtum.create.client.catnip.gui.element.ScreenElement;
 import com.zurrtum.create.catnip.theme.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 
 /*
@@ -96,17 +96,17 @@ public enum CRGuiTextures implements ScreenElement {
     }
 
     @Environment(EnvType.CLIENT)
-    public void render(GuiGraphics graphics, int x, int y) {
+    public void render(GuiGraphicsExtractor graphics, int x, int y) {
         graphics.blit(location, x, y, startX, startY, width, height);
     }
 
     @Environment(EnvType.CLIENT)
-    public void render(GuiGraphics graphics, int x, int y, int textureWidth, int textureHeight) {
+    public void render(GuiGraphicsExtractor graphics, int x, int y, int textureWidth, int textureHeight) {
         graphics.blit(location, x, y, startX, startY, width, height, textureWidth, textureHeight);
     }
 
     @Environment(EnvType.CLIENT)
-    public void render(GuiGraphics graphics, int x, int y, Color c) {
+    public void render(GuiGraphicsExtractor graphics, int x, int y, Color c) {
         bind();
         UIRenderHelper.drawColoredTexture(graphics, c, x, y, startX, startY, width, height);
     }

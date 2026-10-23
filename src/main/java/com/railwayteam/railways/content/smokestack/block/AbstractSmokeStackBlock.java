@@ -117,7 +117,7 @@ public abstract class AbstractSmokeStackBlock<T extends SmartBlockEntity> extend
         pLevel.setBlock(pPos, pState, 2);
         if (pState.getValue(WATERLOGGED))
             pLevel.scheduleTick(pPos, Fluids.WATER, Fluids.WATER.getTickDelay(pLevel));
-        return InteractionResult.sidedSuccess(pLevel.isClientSide());
+        return InteractionResult.SUCCESS;
     }
 
     @Override

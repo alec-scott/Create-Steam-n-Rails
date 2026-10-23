@@ -15,46 +15,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.railwayteam.railways.fabric.events;
 
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.base.reload.ClientResourceReloadListener;
 import com.railwayteam.railways.events.ClientEvents;
 import com.railwayteam.railways.registry.CRParticleTypes;
-import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents;
-import io.github.fabricators_of_create.porting_lib.event.client.KeyInputCallback;
-import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.resources.Identifier;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.ResourceManager;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 
 public class ClientEventsFabric {
 	public static void init() {
 		ClientTickEvents.START_CLIENT_TICK.register(ClientEvents::onClientTickStart);
 		ClientTickEvents.END_CLIENT_TICK.register(ClientEvents::onClientTickEnd);
-		KeyInputCallback.EVENT.register((key, scancode, action, mods) -> {
-			ClientEvents.onKeyInput(key, action != 0);
-		});
-		ClientWorldEvents.LOAD.register((mc, level) -> ClientEvents.onClientWorldLoad(level));
-		ParticleManagerRegistrationCallback.EVENT.register(CRParticleTypes::registerFactories);
-		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
-			@Override
-			public Identifier getFabricId() {
-				return Railways.asResource("client_events");
-			}
-
-			@Override
-			public void onResourceManagerReload(@NotNull ResourceManager resourceManager) {
-				ClientEvents.onTagsUpdated();
-			}
-		});
-		
-		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener((IdentifiableResourceReloadListener) ClientResourceReloadListener.INSTANCE);
+		// Key input: mixin/port/client/KeyboardHandlerMixin (was Porting Lib's KeyInputCallback)
+		ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register((mc, level) -> ClientEvents.onClientWorldLoad(level));
+		CRParticleTypes.registerFactories();
+		ResourceLoader.get(PackType.SERVER_DATA).registerReloadListener(Railways.asResource("client_events"),
+			(ResourceManagerReloadListener) resourceManager -> ClientEvents.onTagsUpdated());
+		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(Railways.asResource("client_reload_listener"),
+			ClientResourceReloadListener.INSTANCE);
 	}
 }

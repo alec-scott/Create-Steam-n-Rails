@@ -22,10 +22,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.entity.layers.ElytraLayer;
+import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import org.jetbrains.annotations.NotNull;
 
-public class ConductorElytraLayer<T extends ConductorEntity, M extends ConductorEntityModel<T>> extends ElytraLayer<T, M> {
+public class ConductorElytraLayer<T extends ConductorEntity, M extends ConductorEntityModel<T>> extends WingsLayer<T, M> {
     public ConductorElytraLayer(RenderLayerParent<T, M> renderer, EntityModelSet loader) {
         super(renderer, loader);
     }

@@ -56,7 +56,7 @@ import com.zurrtum.create.client.catnip.gui.AbstractSimiScreen;
 import com.zurrtum.create.client.catnip.gui.element.GuiGameElement;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -170,7 +170,7 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
     }
 
     @Override
-    protected void renderWindow(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    protected void renderWindow(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
         PoseStack ms = guiGraphics.pose();
 
         int x = guiLeft;
@@ -332,7 +332,7 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
         }
     }
 
-    private void renderIcon(GuiGraphics guiGraphics, PoseStack ms, Identifier icon, int x, int y) {
+    private void renderIcon(GuiGraphicsExtractor guiGraphics, PoseStack ms, Identifier icon, int x, int y) {
         ms.pushPose();
         guiGraphics.blit(icon, x, y, 0, 0, 0, 16, 16, 16, 16);
         ms.popPose();

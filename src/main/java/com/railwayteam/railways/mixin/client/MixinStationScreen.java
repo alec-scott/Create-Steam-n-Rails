@@ -30,7 +30,7 @@ import com.zurrtum.create.client.content.trains.station.StationScreen;
 import com.zurrtum.create.infrastructure.packet.c2s.TrainEditPacket;
 import com.zurrtum.create.client.foundation.gui.widget.ScrollInput;
 import com.zurrtum.create.client.foundation.utility.CreateLang;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
@@ -67,7 +67,7 @@ public abstract class MixinStationScreen extends AbstractStationScreen {
             }
 
             @Override
-            public void renderWidget(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+            public void renderWidget(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
                 super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
                 if (this.isHoveredOrFocused()) {
                     guiGraphics.renderComponentTooltip(font, ImmutableList.of(Component.translatable("railways.station.train_limit.tooltip.1"), Component.translatable("railways.station.train_limit.tooltip.2")), mouseX, mouseY);

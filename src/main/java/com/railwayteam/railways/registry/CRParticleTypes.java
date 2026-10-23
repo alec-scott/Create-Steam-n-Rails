@@ -15,21 +15,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.railwayteam.railways.registry;
 
+import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.content.smokestack.particles.chimneypush.ChimneyPushParticleData;
 import com.railwayteam.railways.content.smokestack.particles.legacy.SmokeParticleData;
 import com.railwayteam.railways.content.smokestack.particles.puffs.PuffSmokeParticleData;
 import com.railwayteam.railways.port.create.foundation.particle.ICustomParticleData;
-import com.zurrtum.create.client.catnip.lang.Lang;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
 
+import java.util.Locale;
 import java.util.function.Supplier;
 
 public enum CRParticleTypes {
@@ -43,7 +43,7 @@ public enum CRParticleTypes {
 	private final ParticleEntry<?> entry;
 
 	<D extends ParticleOptions> CRParticleTypes(Supplier<? extends ICustomParticleData<D>> typeFactory) {
-		String name = Lang.asId(name());
+		String name = name().toLowerCase(Locale.ROOT);
 		entry = new ParticleEntry<>(name, typeFactory);
 	}
 
@@ -55,17 +55,20 @@ public enum CRParticleTypes {
 		return entry.name;
 	}
 
-	public static void init() {}
+	/** Registers the particle types (PORT-NOTE(fabric): was Porting Lib's {@code LazyRegistrar}). */
+	public static void init() {
+		for (CRParticleTypes particle : values())
+			Registry.register(BuiltInRegistries.PARTICLE_TYPE, Railways.asResource(particle.entry.name), particle.entry.object);
+	}
 
+	/** PORT-NOTE(fabric): providers go through Fabric's {@code ParticleProviderRegistry}; call once during client init. */
 	@Environment(EnvType.CLIENT)
 	public static void registerFactories() {
 		for (CRParticleTypes particle : values())
-			particle.entry.registerFactory(Minecraft.getInstance().particleEngine);
+			particle.entry.registerFactory();
 	}
 
 	private static class ParticleEntry<D extends ParticleOptions> {
-		//private static final LazyRegistrar<ParticleType<?>> REGISTER = LazyRegistrar.create(Registry.PARTICLE_TYPE, Railways.MODID);
-
 		private final String name;
 		private final Supplier<? extends ICustomParticleData<D>> typeFactory;
 		private final ParticleType<D> object;
@@ -73,23 +76,12 @@ public enum CRParticleTypes {
 		public ParticleEntry(String name, Supplier<? extends ICustomParticleData<D>> typeFactory) {
 			this.name = name;
 			this.typeFactory = typeFactory;
-
 			object = this.typeFactory.get().createType();
-			register(name, () -> object);
-		}
-
-		private static void register(String id, Supplier<ParticleType<?>> supplier) {
-			com.railwayteam.railways.registry.fabric.CRParticleTypesParticleEntryImpl.register(id, supplier);
 		}
 
 		@Environment(EnvType.CLIENT)
-		public void registerFactory(ParticleEngine engine) {
-			registerFactory(object, engine, typeFactory.get());
-		}
-
-		@Environment(EnvType.CLIENT)
-		private static <T extends ParticleOptions> void registerFactory(ParticleType<T> object, ParticleEngine engine, ICustomParticleData<T> customParticleData) {
-			com.railwayteam.railways.registry.fabric.CRParticleTypesParticleEntryImpl.registerFactory(object, engine, customParticleData);
+		public void registerFactory() {
+			typeFactory.get().register(object);
 		}
 	}
 }

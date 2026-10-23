@@ -113,21 +113,21 @@ public class SmokeStackBlock extends AbstractSmokeStackBlock<SmokeStackBlockEnti
             if (!pPlayer.isCreative()) {
                 pPlayer.getItemInHand(pHand).shrink(1);
             }
-            return InteractionResult.sidedSuccess(pLevel.isClientSide());
+            return InteractionResult.SUCCESS;
         }
         if (pPlayer.getItemInHand(pHand).is(ItemTags.SOUL_FIRE_BASE_BLOCKS)) {
             withBlockEntityDo(pLevel, pPos, te -> te.setSoul(true));
             if (!pPlayer.isCreative()) {
                 pPlayer.getItemInHand(pHand).shrink(1);
             }
-            return InteractionResult.sidedSuccess(pLevel.isClientSide());
+            return InteractionResult.SUCCESS;
         }
         if (pPlayer.isShiftKeyDown()) {
             withBlockEntityDo(pLevel, pPos, te -> {
                 te.setSoul(false);
                 te.setColor(null);
             });
-            return InteractionResult.sidedSuccess(pLevel.isClientSide());
+            return InteractionResult.SUCCESS;
         }
         return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
     }

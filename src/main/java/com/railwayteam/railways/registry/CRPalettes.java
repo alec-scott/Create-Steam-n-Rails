@@ -56,7 +56,7 @@ import com.railwayteam.railways.port.registrate.providers.loot.RegistrateBlockLo
 import com.railwayteam.railways.port.registrate.util.entry.BlockEntry;
 import com.railwayteam.railways.port.registrate.util.nullness.NonNullUnaryOperator;
 import com.zurrtum.create.catnip.data.Pair;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.BlockTags;

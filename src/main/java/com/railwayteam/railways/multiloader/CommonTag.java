@@ -19,15 +19,11 @@
 package com.railwayteam.railways.multiloader;
 
 import com.railwayteam.railways.Railways;
-import com.railwayteam.railways.base.data.CRTagGen;
-import com.railwayteam.railways.port.registrate.providers.RegistrateTagsProvider;
 import net.minecraft.core.Registry;
-import net.minecraft.data.tags.TagsProvider.TagAppender;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 
-import java.util.function.Consumer;
 
 /**
  * A common tag is a trio of tags: one for common, one for fabric, and one for forge.
@@ -56,16 +52,4 @@ public class CommonTag<T> {
 		);
 	}
 
-	public CommonTag<T> generateBoth(RegistrateTagsProvider<T> tags, Consumer<TagAppender<T>> consumer) {
-		consumer.accept(CRTagGen.tagAppender(tags, fabric));
-		consumer.accept(CRTagGen.tagAppender(tags, forge));
-		return this;
-	}
-
-	public CommonTag<T> generateCommon(RegistrateTagsProvider<T> tags) {
-		CRTagGen.tagAppender(tags, tag)
-				.addOptionalTag(fabric.location())
-				.addOptionalTag(forge.location());
-		return this;
-	}
 }

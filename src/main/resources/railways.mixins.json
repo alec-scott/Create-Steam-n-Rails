@@ -24,8 +24,6 @@
     "TrainMixin",
     "TrainRelocationPacketMixin",
     "self.BoilerBlockMixin",
-    "self.ClientResourceReloadListenerMixin",
-    "self.LiquidFuelManagerReloadListenerMixin"
   ],
   "injectors": {
     "defaultRequire": 1,

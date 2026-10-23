@@ -19,8 +19,8 @@
 package com.railwayteam.railways.multiloader;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -32,7 +32,11 @@ import java.util.function.Predicate;
  * Find players to send S2C packets to.
  */
 public abstract class PlayerSelection {
-	public abstract void accept(Identifier id, FriendlyByteBuf buffer);
+	/** Sends a {@link PacketSet} S2C packet body (index + data) to the selected players. */
+	public abstract void accept(PacketSet set, RegistryFriendlyByteBuf buffer);
+
+	/** Sends a vanilla (or Create Fly) packet to the selected players. */
+	public abstract void send(Packet<?> packet);
 
 	public static PlayerSelection all() {
 		return com.railwayteam.railways.multiloader.fabric.PlayerSelectionImpl.all();

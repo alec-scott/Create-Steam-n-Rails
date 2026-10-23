@@ -27,8 +27,7 @@ sourceSets {
         java {
             srcDir layout.buildDirectory.dir('generated/sources/buildInfo')
             // Datagen is stubbed (the committed src/generated/resources are used); keep only what registration calls.
-            def keptDatagen = ['BuilderTransformers.java', 'fabric/BuilderTransformersImpl.java',
-                               'CRTagGen.java', 'fabric/CRTagGenImpl.java']
+            def keptDatagen = ['BuilderTransformers.java', 'fabric/BuilderTransformersImpl.java']
             exclude { el ->
                 def p = el.relativePath.pathString
                 !el.directory && p.startsWith('com/railwayteam/railways/base/data/') &&

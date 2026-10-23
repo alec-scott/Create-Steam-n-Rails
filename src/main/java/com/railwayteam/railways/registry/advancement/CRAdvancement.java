@@ -25,7 +25,7 @@ import com.railwayteam.railways.port.registrate.util.entry.ItemProviderEntry;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.advancements.DisplayInfo;
-import net.minecraft.advancements.FrameType;
+import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.criterion.EnchantmentPredicate;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.advancements.criterion.ItemPredicate;
@@ -137,20 +137,20 @@ public class CRAdvancement {
 	@ApiStatus.Internal
 	public enum TaskType {
 
-		SILENT(FrameType.TASK, false, false, false),
-		NORMAL(FrameType.TASK, true, false, false),
-		NOISY(FrameType.TASK, true, true, false),
-		EXPERT(FrameType.GOAL, true, true, false),
-		SECRET(FrameType.GOAL, true, true, true),
+		SILENT(AdvancementType.TASK, false, false, false),
+		NORMAL(AdvancementType.TASK, true, false, false),
+		NOISY(AdvancementType.TASK, true, true, false),
+		EXPERT(AdvancementType.GOAL, true, true, false),
+		SECRET(AdvancementType.GOAL, true, true, true),
 
 		;
 
-		private FrameType frame;
+		private AdvancementType frame;
 		private boolean toast;
 		private boolean announce;
 		private boolean hide;
 
-		TaskType(FrameType frame, boolean toast, boolean announce, boolean hide) {
+		TaskType(AdvancementType frame, boolean toast, boolean announce, boolean hide) {
 			this.frame = frame;
 			this.toast = toast;
 			this.announce = announce;

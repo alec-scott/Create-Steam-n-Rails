@@ -25,9 +25,9 @@ import com.railwayteam.railways.content.conductor.fabric.ConductorCapItemRendere
 import com.railwayteam.railways.fabric.events.ClientEventsFabric;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
+import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
+import net.fabricmc.fabric.api.resource.v1.pack.PackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -55,11 +55,11 @@ public class RailwaysClientImpl implements ClientModInitializer {
 	}
 
 	public static void registerModelLayer(ModelLayerLocation layer, Supplier<LayerDefinition> definition) {
-		EntityModelLayerRegistry.registerModelLayer(layer, definition::get);
+		ModelLayerRegistry.registerModelLayer(layer, definition::get);
 	}
 
 	public static void registerBuiltinPack(String id, String name) {
 		ModContainer mod = FabricLoader.getInstance().getModContainer(Railways.MOD_ID).orElseThrow();
-		ResourceManagerHelper.registerBuiltinResourcePack(Railways.asResource(id), mod, Component.literal(name), ResourcePackActivationType.NORMAL);
+		ResourceLoader.registerBuiltinPack(Railways.asResource(id), mod, Component.literal(name), PackActivationType.NORMAL);
 	}
 }

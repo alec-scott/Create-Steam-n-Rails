@@ -60,7 +60,7 @@ public final class TrackMaterialData {
 
 	static {
 		register(new TrackMaterialData(AllTrackMaterials.ANDESITE, "Andesite",
-			Create.asResource("block/palettes/stone_types/polished/andesite_cut_polished"), TrackType.STANDARD,
+			Identifier.fromNamespaceAndPath(Create.MOD_ID, "block/palettes/stone_types/polished/andesite_cut_polished"), TrackType.STANDARD,
 			Optional::empty, TrackMaterialFactory.DEFAULT_RAILS, null));
 	}
 

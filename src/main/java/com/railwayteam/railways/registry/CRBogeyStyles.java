@@ -71,7 +71,7 @@ import com.zurrtum.create.infrastructure.particle.CubeParticleData;
 import com.zurrtum.create.content.trains.bogey.AbstractBogeyBlock;
 import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import com.zurrtum.create.content.trains.bogey.BogeyStyle;
-import com.zurrtum.create.content.trains.bogey.BogeyStyle.SizeRenderer;
+import com.zurrtum.create.client.content.trains.bogey.SizeRenderer;
 import com.railwayteam.railways.port.create.track.TrackType;
 import com.zurrtum.create.catnip.data.Pair;
 import net.minecraft.network.chat.Component;

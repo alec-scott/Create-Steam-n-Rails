@@ -72,7 +72,7 @@ import com.railwayteam.railways.port.registrate.util.nullness.NonNullBiConsumer;
 import com.railwayteam.railways.port.registrate.util.nullness.NonNullUnaryOperator;
 import com.zurrtum.create.catnip.data.Couple;
 import net.minecraft.advancements.criterion.StatePropertiesPredicate;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;

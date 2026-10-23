@@ -26,7 +26,8 @@ import com.railwayteam.railways.multiloader.CommandRegistrar;
 import com.railwayteam.railways.registry.fabric.CRBlockEntitiesImpl;
 import com.railwayteam.railways.registry.fabric.CRBlocksImpl;
 import com.railwayteam.railways.registry.fabric.CRMountedStorageTypesImpl;
-import com.railwayteam.railways.registry.fabric.CRParticleTypesParticleEntryImpl;
+import com.railwayteam.railways.registry.CRParticleTypes;
+import com.railwayteam.railways.util.ServerHolder;
 import com.zurrtum.create.api.connectivity.ConnectivityHandler;
 import com.zurrtum.create.api.contraption.BlockMovementChecks;
 import com.zurrtum.create.api.contraption.BlockMovementChecks.CheckResult;
@@ -40,9 +41,11 @@ import net.minecraft.world.level.block.state.BlockState;
 public class RailwaysImpl implements ModInitializer {
 	@Override
 	public void onInitialize() {
+		ServerHolder.init();
+		com.railwayteam.railways.multiloader.fabric.EnumArgument.register();
 		Railways.init();
 		CRConfigsImpl.register();
-		CRParticleTypesParticleEntryImpl.register();
+		CRParticleTypes.init();
 		CommonEventsFabric.init();
 	}
 

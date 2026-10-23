@@ -34,7 +34,7 @@ import com.railwayteam.railways.port.create.foundation.data.AssetLookup;
 import com.railwayteam.railways.port.create.foundation.data.CreateRegistrate;
 import com.railwayteam.railways.port.create.foundation.data.SharedProperties;
 import com.railwayteam.railways.port.registrate.util.entry.BlockEntry;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 

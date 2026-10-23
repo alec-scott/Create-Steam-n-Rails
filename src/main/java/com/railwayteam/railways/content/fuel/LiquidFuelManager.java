@@ -18,13 +18,14 @@
 
 package com.railwayteam.railways.content.fuel;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.NotNull;
@@ -73,13 +74,12 @@ public class LiquidFuelManager {
         }
     }
 
-    public static class ReloadListener extends SimpleJsonResourceReloadListener {
-        private static final Gson GSON = new Gson();
+    public static class ReloadListener extends SimpleJsonResourceReloadListener<JsonElement> {
         public static final ReloadListener INSTANCE = new ReloadListener();
         public static final String ID = "railways_liquid_fuel";
 
         protected ReloadListener() {
-            super(GSON, ID);
+            super(ExtraCodecs.JSON, FileToIdConverter.json(ID));
         }
 
         @Override

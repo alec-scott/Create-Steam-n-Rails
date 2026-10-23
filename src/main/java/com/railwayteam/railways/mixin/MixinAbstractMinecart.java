@@ -20,7 +20,7 @@ package com.railwayteam.railways.mixin;
 
 import com.railwayteam.railways.content.minecarts.MinecartJukebox;
 import com.railwayteam.railways.content.minecarts.MinecartWorkbench;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.AbstractMinecart.Type;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;

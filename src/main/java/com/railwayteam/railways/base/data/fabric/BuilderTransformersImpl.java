@@ -86,7 +86,7 @@ import com.railwayteam.railways.port.porting_lib.models.generators.ModelFile;
 import com.railwayteam.railways.port.porting_lib.models.generators.BlockModelBuilder;
 import com.zurrtum.create.catnip.data.Couple;
 import com.zurrtum.create.catnip.data.Iterate;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;

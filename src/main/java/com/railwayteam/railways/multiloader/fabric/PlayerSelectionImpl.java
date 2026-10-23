@@ -19,13 +19,12 @@
 package com.railwayteam.railways.multiloader.fabric;
 
 import com.railwayteam.railways.multiloader.PlayerSelection;
-import io.github.fabricators_of_create.porting_lib.util.ServerLifecycleHooks;
+import com.railwayteam.railways.multiloader.PacketSet;
+import com.railwayteam.railways.util.ServerHolder;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -45,19 +44,26 @@ public class PlayerSelectionImpl extends PlayerSelection {
 	}
 
 	@Override
-	public void accept(Identifier id, FriendlyByteBuf buffer) {
-		Packet<?> packet = ServerPlayNetworking.createS2CPacket(id, buffer);
+	public void accept(PacketSet set, RegistryFriendlyByteBuf buffer) {
+		byte[] data = PacketSetImpl.RawPayload.bytesOf(buffer);
 		for (ServerPlayer player : players) {
-			ServerPlayNetworking.getSender(player).sendPacket(packet);
+			((PacketSetImpl) set).sendS2C(player, data);
+		}
+	}
+
+	@Override
+	public void send(Packet<?> packet) {
+		for (ServerPlayer player : players) {
+			player.connection.send(packet);
 		}
 	}
 
 	public static PlayerSelection all() {
-		return new PlayerSelectionImpl(PlayerLookup.all(ServerLifecycleHooks.getCurrentServer()));
+		return new PlayerSelectionImpl(PlayerLookup.all(ServerHolder.get()));
 	}
 
 	public static PlayerSelection allWith(Predicate<ServerPlayer> condition) {
-		return new PlayerSelectionImpl(PlayerLookup.all(ServerLifecycleHooks.getCurrentServer()).stream()
+		return new PlayerSelectionImpl(PlayerLookup.all(ServerHolder.get()).stream()
 			.filter(condition).toList());
 	}
 

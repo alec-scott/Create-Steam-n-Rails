@@ -20,14 +20,19 @@ package com.railwayteam.railways.multiloader;
 
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.registry.CRPackets;
-import com.simibubi.create.foundation.networking.SimplePacketBase;
+import com.railwayteam.railways.util.ServerHolder;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ServerGamePacketListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
@@ -81,7 +86,8 @@ public abstract class PacketSet {
 	public void send(C2SPacket packet) {
 		int i = idOfC2S(packet);
 		if (i != -1) {
-			FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+			RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(),
+				Minecraft.getInstance().getConnection().registryAccess());
 			buf.writeVarInt(i);
 			packet.write(buf);
 			doSendC2S(buf);
@@ -94,7 +100,9 @@ public abstract class PacketSet {
 	 * Send one of Create's packets to the server.
 	 */
 	@Environment(EnvType.CLIENT)
-	public abstract void send(SimplePacketBase packet);
+	public void send(Packet<ServerGamePacketListener> packet) {
+		Minecraft.getInstance().getConnection().send(packet);
+	}
 
 	/**
 	 * Send the given S2C packet to the given player.
@@ -106,7 +114,9 @@ public abstract class PacketSet {
 	/**
 	 * Send the given Create packet to the given player.
 	 */
-	public abstract void sendTo(ServerPlayer player, SimplePacketBase packet);
+	public void sendTo(ServerPlayer player, Packet<ClientGamePacketListener> packet) {
+		player.connection.send(packet);
+	}
 
 	/**
 	 * Send the given S2C packet to the given players.
@@ -114,10 +124,11 @@ public abstract class PacketSet {
 	public void sendTo(PlayerSelection selection, S2CPacket packet) {
 		int i = idOfS2C(packet);
 		if (i != -1) {
-			FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+			RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(),
+				ServerHolder.get().registryAccess());
 			buf.writeVarInt(i);
 			packet.write(buf);
-			selection.accept(s2cPacket, buf);
+			selection.accept(this, buf);
 		} else {
 			throw new IllegalArgumentException("Cannot send unregistered S2CPacket: " + packet);
 		}
@@ -126,14 +137,16 @@ public abstract class PacketSet {
 	/**
 	 * Send the given Create packet to the given players.
 	 */
-	public abstract void sendTo(PlayerSelection selection, SimplePacketBase packet);
+	public void sendTo(PlayerSelection selection, Packet<ClientGamePacketListener> packet) {
+		selection.send(packet);
+	}
 
 	@Environment(EnvType.CLIENT)
 	public abstract void registerS2CListener();
 	public abstract void registerC2SListener();
 
 	@Environment(EnvType.CLIENT)
-	protected abstract void doSendC2S(FriendlyByteBuf buf);
+	protected abstract void doSendC2S(RegistryFriendlyByteBuf buf);
 
 	protected int idOfC2S(C2SPacket packet) {
 		return c2sTypes.getOrDefault(packet.getClass(), -1);
@@ -165,7 +178,7 @@ public abstract class PacketSet {
 		}
 		Function<FriendlyByteBuf, C2SPacket> factory = c2sPackets.get(i);
 		C2SPacket packet = factory.apply(buf);
-		sender.server.execute(() -> packet.handle(sender));
+		sender.level().getServer().execute(() -> packet.handle(sender));
 	}
 
 	@Internal
@@ -207,7 +220,7 @@ public abstract class PacketSet {
 				return;
 			Component error = Component.literal("Steam n' Rails on the client uses a different network format than the server.")
 					.append(" You should use the same version of the mod on both sides.");
-			mc.getConnection().onDisconnect(error);
+			mc.getConnection().onDisconnect(new DisconnectionDetails(error));
 		}
 	}
 
