@@ -35,7 +35,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
-public class FlywheelMovementBehaviour implements MovementBehaviour {
+public class FlywheelMovementBehaviour extends MovementBehaviour {
     @Override
     public boolean isActive(MovementContext context) {
         return context.world.isClientSide();

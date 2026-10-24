@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.palettes.painting;
 
+import net.minecraft.world.item.component.TooltipDisplay;
+
+import java.util.function.Consumer;
+
 import net.minecraft.world.InteractionResult;
 
 import com.railwayteam.railways.content.palettes.PalettesColor;
@@ -116,18 +120,13 @@ public abstract class PaintPitcherItem extends Item {
             throw new IllegalArgumentException("Levels must be between 1 and " + MAX_LEVELS);
         }
 
-        var tag = stack.getOrCreateTag();
-        tag.putInt("FillLevel", levels);
+        ItemUtils.updateCustomData(stack, tag -> tag.putInt("FillLevel", levels));
     }
 
     public int getLevels(ItemStack stack) {
         if (!(stack.getItem() instanceof PaintPitcherItem)) return 0;
 
-        var tag = stack.getTag();
-        if (tag == null || !tag.contains("FillLevel", Tag.TAG_INT))
-            return MAX_LEVELS;
-
-        return tag.getInt("FillLevel");
+        return ItemUtils.getCustomData(stack).getIntOr("FillLevel", MAX_LEVELS);
     }
 
     public long getFluidAmount(ItemStack stack) {
@@ -139,7 +138,7 @@ public abstract class PaintPitcherItem extends Item {
         if (levels == 0) {
             ItemStack stack = CRItems.EMPTY_PAINT_PITCHER.asStack();
             copyStackData(base, stack);
-            stack.removeTagKey("FillLevel");
+            ItemUtils.updateCustomData(stack, tag -> tag.remove("FillLevel"));
             return stack;
         } else {
             ItemStack stack = new ItemStack(this);
@@ -151,7 +150,7 @@ public abstract class PaintPitcherItem extends Item {
 
     public void setFillInPlace(ItemStack stack, int levels) {
         if (levels <= 0) {
-            stack.removeTagKey("FillLevel");
+            ItemUtils.updateCustomData(stack, tag -> tag.remove("FillLevel"));
             ((ItemStackDuck) (Object) stack).railways$setItem(CRItems.EMPTY_PAINT_PITCHER.get());
         } else {
             ((ItemStackDuck) (Object) stack).railways$setItem(this);
@@ -160,7 +159,7 @@ public abstract class PaintPitcherItem extends Item {
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack, LivingEntity entity) {
         return 42;
     }
 
@@ -202,9 +201,9 @@ public abstract class PaintPitcherItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltipComponents, TooltipFlag isAdvanced) {
         int levels = getLevels(stack);
-        tooltipComponents.add(Component.translatable("item.railways.paint_pitcher.paint_level", levels, MAX_LEVELS));
+        tooltipComponents.accept(Component.translatable("item.railways.paint_pitcher.paint_level", levels, MAX_LEVELS));
     }
 
     @SuppressWarnings("ConstantValue") // IntelliJ is hallucinating that the nested loops never terminate

@@ -19,11 +19,15 @@
 package com.railwayteam.railways.util;
 
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Contract;
+
+import java.util.function.Consumer;
 
 public class ItemUtils {
 	@Contract // shut
@@ -33,6 +37,21 @@ public class ItemUtils {
 
 	public static InteractionHand oppositeHand(InteractionHand hand) {
 		return hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+	}
+
+	/**
+	 * Railways' own item data, kept in {@code minecraft:custom_data} under its 1.20 NBT keys.
+	 *
+	 * <p>PORT-NOTE(fabric): item NBT became data components in 1.20.5. Vanilla's world upgrade moves unknown item NBT
+	 * into {@code custom_data}, so storing it there keeps old items working. Returns a copy.</p>
+	 */
+	public static CompoundTag getCustomData(ItemStack stack) {
+		return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+	}
+
+	/** Edits the stack's custom data; the component is removed when the tag ends up empty. */
+	public static void updateCustomData(ItemStack stack, Consumer<CompoundTag> updater) {
+		CustomData.update(DataComponents.CUSTOM_DATA, stack, updater);
 	}
 
 	/** PORT-NOTE(fabric): item NBT became data components (1.20.5); copies the component changes. */

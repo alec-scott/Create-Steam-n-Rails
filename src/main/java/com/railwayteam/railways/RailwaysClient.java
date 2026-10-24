@@ -79,6 +79,7 @@ public class RailwaysClient {
     CreateRegistrate.registerBlockModels();
     com.railwayteam.railways.fabric.client.CRItemTooltips.register();
     com.railwayteam.railways.fabric.client.CRBlockEntityBehaviours.register();
+    com.railwayteam.railways.fabric.client.CRBlockExtensions.register();
 
     DevCapeUtils.INSTANCE.init();
   }

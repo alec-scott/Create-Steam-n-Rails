@@ -62,7 +62,7 @@ public class SemaphoreItem extends BlockItem {
             return super.place(pContext);
 
         InteractionResult result = placementHelper.getOffset(player, world, state, pos, ray)
-                .placeInWorld(world, this, player, pContext.getHand(), ray);
+                .placeInWorld(world, this, player, pContext.getHand());
 
         if(result.consumesAction())
             return result;

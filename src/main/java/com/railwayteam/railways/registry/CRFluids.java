@@ -15,21 +15,38 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.railwayteam.railways.registry;
 
-import com.simibubi.create.content.fluids.VirtualFluid;
-import com.railwayteam.railways.port.registrate.util.entry.FluidEntry;
+import com.railwayteam.railways.Railways;
+import com.zurrtum.create.infrastructure.fluids.FlowableFluid;
+import com.zurrtum.create.infrastructure.fluids.FluidEntry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 
 public class CRFluids {
-    public static final FluidEntry<VirtualFluid> PAINT = registerPaint();
+    /**
+     * Paint: a fluid without block or bucket, colored by the {@code railways:paint_color} component.
+     *
+     * <p>PORT-NOTE(fabric): was a Registrate {@code virtualFluid}; registered the way Create Fly registers its own
+     * virtual fluids ({@code AllFluids}).</p>
+     */
+    public static final FlowableFluid PAINT = registerVirtual("paint");
 
-    public static void register() {}
+    public static void register() {
+        com.railwayteam.railways.registry.fabric.CRFluidsImpl.registerAttributes();
+    }
 
-    private static FluidEntry<VirtualFluid> registerPaint() {
-        return com.railwayteam.railways.registry.fabric.CRFluidsImpl.registerPaint();
+    private static FlowableFluid registerVirtual(String name) {
+        Identifier id = Railways.asResource(name);
+        FluidEntry entry = new FluidEntry();
+        entry.still = new FlowableFluid.Still(entry);
+        entry.flowing = new FlowableFluid.Flowing(entry);
+        Registry.register(BuiltInRegistries.FLUID, id, entry.still);
+        Registry.register(BuiltInRegistries.FLUID, id.withPrefix("flowing_"), entry.flowing);
+        return entry.still;
     }
 
     @Environment(EnvType.CLIENT)

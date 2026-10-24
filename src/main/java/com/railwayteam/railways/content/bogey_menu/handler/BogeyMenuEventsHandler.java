@@ -51,7 +51,7 @@ public class BogeyMenuEventsHandler {
         if (player == null)
             return;
 
-        if (!EntityUtils.isHolding(player, AllBlocks.RAILWAY_CASING::isIn))
+        if (!EntityUtils.isHolding(player, s -> s.is(AllBlocks.RAILWAY_CASING.asItem())))
             return;
 
         ScreenOpener.open(new BogeyMenuScreen());

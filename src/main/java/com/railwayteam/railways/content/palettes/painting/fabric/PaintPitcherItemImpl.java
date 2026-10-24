@@ -21,8 +21,9 @@ package com.railwayteam.railways.content.palettes.painting.fabric;
 import com.railwayteam.railways.annotation.multiloader.ImplClass;
 import com.railwayteam.railways.content.palettes.PalettesColor;
 import com.railwayteam.railways.content.palettes.painting.PaintPitcherItem;
-import io.github.fabricators_of_create.porting_lib.item.ReequipAnimationItem;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -30,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 @ImplClass
 @SuppressWarnings("UnstableApiUsage")
-public class PaintPitcherItemImpl extends PaintPitcherItem implements ReequipAnimationItem {
+public class PaintPitcherItemImpl extends PaintPitcherItem {
     public PaintPitcherItemImpl(Properties properties, @Nullable PalettesColor color) {
         super(properties, color);
 
@@ -38,8 +39,9 @@ public class PaintPitcherItemImpl extends PaintPitcherItem implements ReequipAni
     }
 
     @Override
-    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
-        return railways$shouldCauseReequipAnimation(oldStack, newStack, slotChanged);
+    public boolean allowComponentsUpdateAnimation(Player player, InteractionHand hand, ItemStack oldStack, ItemStack newStack) {
+        // PORT-NOTE(fabric): Porting Lib's ReequipAnimationItem -> Fabric's FabricItem hook (same-slot changes only)
+        return railways$shouldCauseReequipAnimation(oldStack, newStack, false);
     }
 
     public static PaintPitcherItem create(Item.Properties properties, @Nullable PalettesColor color) {

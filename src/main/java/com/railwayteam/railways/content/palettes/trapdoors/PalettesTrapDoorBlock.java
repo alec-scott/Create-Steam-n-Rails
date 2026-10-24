@@ -43,7 +43,7 @@ public class PalettesTrapDoorBlock extends TrapDoorBlock implements IWrenchable 
     public static final BooleanProperty WINDOWED = HingedDoorBlock.WINDOWED;
 
     public PalettesTrapDoorBlock(Properties properties) {
-        super(properties, CRBlockSetTypes.LOCOMETAL);
+        super(CRBlockSetTypes.LOCOMETAL, properties);
         registerDefaultState(defaultBlockState()
             .setValue(WINDOWED, false));
     }
@@ -59,7 +59,7 @@ public class PalettesTrapDoorBlock extends TrapDoorBlock implements IWrenchable 
 
     @Override
     public InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (EntityUtils.isHolding(player, AllItems.WRENCH::isIn)) {
+        if (EntityUtils.isHolding(player, s -> s.is(AllItems.WRENCH))) {
             return InteractionResult.PASS;
         }
         return super.useItemOn(stack, state, level, pos, player, hand, hit);

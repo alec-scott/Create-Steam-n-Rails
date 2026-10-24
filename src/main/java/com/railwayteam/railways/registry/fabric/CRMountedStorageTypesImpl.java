@@ -23,7 +23,7 @@ import com.railwayteam.railways.content.fuel.tank.FuelTankMountedStorageType;
 import com.railwayteam.railways.port.registrate.util.entry.RegistryEntry;
 
 public class CRMountedStorageTypesImpl {
-	public static RegistryEntry<FuelTankMountedStorageType> FUEL_TANK = Railways.registrate()
+	public static RegistryEntry<com.zurrtum.create.api.contraption.storage.fluid.MountedFluidStorageType<?>, FuelTankMountedStorageType> FUEL_TANK = Railways.registrate()
 			.mountedFluidStorage("fuel_tank", FuelTankMountedStorageType::new)
 			.register();
 

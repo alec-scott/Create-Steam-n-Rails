@@ -179,7 +179,7 @@ public class CRAdvancement {
 		}
 
 		@ApiStatus.Internal
-		public Builder icon(ItemProviderEntry<?> item) {
+		public Builder icon(ItemProviderEntry<?, ?> item) {
 			return icon(() -> item.asStack());
 		}
 
@@ -222,7 +222,7 @@ public class CRAdvancement {
 		}
 
 		@ApiStatus.Internal
-		public Builder whenItemCollected(ItemProviderEntry<?> item) {
+		public Builder whenItemCollected(ItemProviderEntry<?, ?> item) {
 			return whenItemCollected(item.asStack()
 				.getItem());
 		}

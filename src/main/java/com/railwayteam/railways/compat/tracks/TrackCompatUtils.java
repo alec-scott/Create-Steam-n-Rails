@@ -32,7 +32,6 @@ import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.compat.Mods;
 import com.railwayteam.railways.config.CRConfigs;
-import com.railwayteam.railways.mixin.AccessorTrackMaterialFactory;
 import com.railwayteam.railways.multiloader.CommonTags;
 import com.railwayteam.railways.registry.CRTrackMaterials;
 import com.zurrtum.create.content.trains.track.*;
@@ -153,8 +152,8 @@ public abstract class TrackCompatUtils {
     }
 
     public static TrackMaterial buildCompatModels(GenericTrackCompat trackCompat, TrackMaterialFactory factory) {
-        String namespace = ((AccessorTrackMaterialFactory)factory).getId().getNamespace();
-        String path = ((AccessorTrackMaterialFactory)factory).getId().getPath();
+        String namespace = factory.getId().getNamespace();
+        String path = factory.getId().getPath();
         String prefix = "block/track/compat/" + namespace + "/" + path + "/";
 
         TrackMaterialFactory materialFactory = factory.customModels(

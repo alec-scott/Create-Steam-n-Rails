@@ -87,11 +87,11 @@ public class CRCreativeModeTabs {
         private static Predicate<Item> makeExclusionPredicate() {
             Set<Item> exclusions = new ReferenceOpenHashSet<>();
 
-            List<ItemProviderEntry<?>> simpleExclusions = List.of(
+            List<ItemProviderEntry<?, ?>> simpleExclusions = List.of(
                 //AllBlocks.REFINED_RADIANCE_CASING // just as an example
             );
 
-            for (ItemProviderEntry<?> entry : simpleExclusions) {
+            for (ItemProviderEntry<?, ?> entry : simpleExclusions) {
                 exclusions.add(entry.asItem());
             }
 
@@ -101,12 +101,12 @@ public class CRCreativeModeTabs {
         private static List<ItemOrdering> makeOrderings() {
             List<ItemOrdering> orderings = new ReferenceArrayList<>();
 
-            Map<ItemProviderEntry<?>, ItemProviderEntry<?>> simpleBeforeOrderings = Map.of(
+            Map<ItemProviderEntry<?, ?>, ItemProviderEntry<?, ?>> simpleBeforeOrderings = Map.of(
                 //AllItems.EMPTY_BLAZE_BURNER, AllBlocks.BLAZE_BURNER,
                 //AllItems.SCHEDULE, AllBlocks.TRACK_STATION
             );
 
-            Map<ItemProviderEntry<?>, ItemProviderEntry<?>> simpleAfterOrderings = Map.of(
+            Map<ItemProviderEntry<?, ?>, ItemProviderEntry<?, ?>> simpleAfterOrderings = Map.of(
                 CRBlocks.CONDUCTOR_WHISTLE_FLAG, CRItems.ITEM_CONDUCTOR_CAP.get(DyeColor.RED),
                 CRItems.REMOTE_LENS, CRBlocks.CONDUCTOR_WHISTLE_FLAG,
                 CRBlocks.CONDUCTOR_VENT, CRItems.REMOTE_LENS,
@@ -128,7 +128,7 @@ public class CRCreativeModeTabs {
         private static Function<Item, ItemStack> makeStackFunc() {
             Map<Item, Function<Item, ItemStack>> factories = new Reference2ReferenceOpenHashMap<>();
 
-            Map<ItemProviderEntry<?>, Function<Item, ItemStack>> simpleFactories = Map.of(
+            Map<ItemProviderEntry<?, ?>, Function<Item, ItemStack>> simpleFactories = Map.of(
                 /*AllItems.COPPER_BACKTANK, item -> {
                     ItemStack stack = new ItemStack(item);
                     stack.getOrCreateTag().putInt("Air", BacktankUtil.maxAirWithoutEnchants());
@@ -157,7 +157,7 @@ public class CRCreativeModeTabs {
         private static Function<Item, TabVisibility> makeVisibilityFunc() {
             Map<Item, TabVisibility> visibilities = new Reference2ObjectOpenHashMap<>();
 
-            Map<ItemProviderEntry<?>, TabVisibility> simpleVisibilities = Map.of(
+            Map<ItemProviderEntry<?, ?>, TabVisibility> simpleVisibilities = Map.of(
                 //AllItems.BLAZE_CAKE_BASE, TabVisibility.SEARCH_TAB_ONLY
             );
 
@@ -227,7 +227,7 @@ public class CRCreativeModeTabs {
 
         private List<Item> collectBlocks(ResourceKey<CreativeModeTab> tab, Predicate<Item> exclusionPredicate) {
             List<Item> items = new ReferenceArrayList<>();
-            for (RegistryEntry<Block> entry : Railways.registrate().getAll(Registries.BLOCK)) {
+            for (RegistryEntry<Block, Block> entry : Railways.registrate().getAll(Registries.BLOCK)) {
                 if (!isInCreativeTab(entry, tab))
                     continue;
                 if (entry.get() instanceof BlockStateBlockItemGroup.GroupedBlock) {
@@ -258,7 +258,7 @@ public class CRCreativeModeTabs {
                                         Predicate<Item> exclusionPredicate) {
             List<Item> items = new ReferenceArrayList<>();
 
-            for (RegistryEntry<Item> entry : Railways.registrate().getAll(Registries.ITEM)) {
+            for (RegistryEntry<Item, Item> entry : Railways.registrate().getAll(Registries.ITEM)) {
                 if (!isInCreativeTab(entry, tab))
                     continue;
                 Item item = entry.get();
@@ -272,7 +272,7 @@ public class CRCreativeModeTabs {
             return items;
         }
 
-        private static boolean isInCreativeTab(RegistryEntry<?> entry, ResourceKey<CreativeModeTab> tab) {
+        private static boolean isInCreativeTab(RegistryEntry<?, ?> entry, ResourceKey<CreativeModeTab> tab) {
             return com.railwayteam.railways.registry.fabric.CRCreativeModeTabsRegistrateDisplayItemsGeneratorImpl.isInCreativeTab(entry, tab);
         }
 

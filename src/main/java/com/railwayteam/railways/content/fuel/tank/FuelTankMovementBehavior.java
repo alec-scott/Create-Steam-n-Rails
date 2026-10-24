@@ -22,7 +22,7 @@ import com.zurrtum.create.api.behaviour.movement.MovementBehaviour;
 import com.zurrtum.create.content.contraptions.behaviour.MovementContext;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-public class FuelTankMovementBehavior implements MovementBehaviour {
+public class FuelTankMovementBehavior extends MovementBehaviour {
     @Override
     public boolean mustTickWhileDisabled() {
         return true;

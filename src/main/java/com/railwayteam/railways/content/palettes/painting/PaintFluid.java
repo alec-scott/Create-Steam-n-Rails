@@ -15,39 +15,31 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.railwayteam.railways.content.palettes.painting;
 
-import com.mojang.datafixers.util.Pair;
-import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.content.palettes.PalettesColor;
-import net.minecraft.util.Util;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
-import org.jetbrains.annotations.Contract;
+import com.railwayteam.railways.registry.CRDataComponents;
+import net.minecraft.core.component.DataComponentHolder;
+import net.minecraft.core.component.DataComponentPatch;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
+/**
+ * Paint fluid color helpers.
+ *
+ * <p>PORT-NOTE(fabric): the color was a {@code Color} key in the fluid's NBT; it's the {@code railways:paint_color}
+ * component now, read from fluid variants or Create Fly fluid stacks alike.</p>
+ */
 public class PaintFluid {
     public static final String LANG_PREFIX = "fluid.railways.paint.";
 
-    public static Optional<PalettesColor> getColor(CompoundTag nbt) {
-        if (nbt == null) return Optional.empty();
-        Tag colorTag = nbt.get("Color");
-        if (colorTag == null) return Optional.empty();
-
-        return PalettesColor.CODEC.decode(NbtOps.INSTANCE, colorTag)
-            .resultOrPartial(Util.prefix("Failed to decode color from NBT: ", Railways.LOGGER::error))
-            .map(Pair::getFirst);
+    public static Optional<PalettesColor> getColor(DataComponentHolder components) {
+        return Optional.ofNullable(components.get(CRDataComponents.PAINT_COLOR));
     }
 
-    @Contract("_, !null -> param1")
-    public static CompoundTag setColor(CompoundTag nbt, PalettesColor color) {
-        if (color == null) return nbt;
-        PalettesColor.CODEC.encodeStart(NbtOps.INSTANCE, color)
-            .resultOrPartial(Util.prefix("Failed to encode color to NBT: ", Railways.LOGGER::error))
-            .ifPresent(encoded -> nbt.put("Color", encoded));
-        return nbt;
+    public static DataComponentPatch colorPatch(@Nullable PalettesColor color) {
+        if (color == null) return DataComponentPatch.EMPTY;
+        return DataComponentPatch.builder().set(CRDataComponents.PAINT_COLOR, color).build();
     }
 }

@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.conductor.whistle;
 
+import net.minecraft.world.item.component.TooltipDisplay;
+
+import java.util.function.Consumer;
+
 import com.railwayteam.railways.config.CRConfigs;
 import com.railwayteam.railways.content.conductor.ConductorEntity;
 import com.railwayteam.railways.mixin.AccessorCarriage;
@@ -100,8 +104,8 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        super.appendHoverText(stack, level, tooltip, flag);
+    public void appendHoverText(@NotNull ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, context, display, tooltip, flag);
         CompoundTag tag = stack.getTag();
         if (tag != null && tag.hasUUID("SelectedTrain") && tag.hasUUID("SelectedConductor")) {
             UUID trainId = tag.getUUID("SelectedTrain");
@@ -112,20 +116,20 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
                 trainName = railways.trains.get(trainId).name.getString();
 
             if (CRConfigs.client().modernWhistleTooltip.get()) {
-                tooltip.add(TextUtils.translateWithFormatting("railways.whistle.tool.bound2", conductorId.toString().substring(0, 5), trainName, trainId.toString().substring(0, 5)));
+                tooltip.accept(TextUtils.translateWithFormatting("railways.whistle.tool.bound2", conductorId.toString().substring(0, 5), trainName, trainId.toString().substring(0, 5)));
             } else {
-                tooltip.add(Component.translatable("railways.whistle.tool.bound").withStyle(ChatFormatting.DARK_GREEN));
-                tooltip.add(TextUtils.translateWithFormatting("railways.whistle.tool.conductor_id", conductorId.toString().substring(0, 5)));
-                tooltip.add(TextUtils.translateWithFormatting("railways.whistle.tool.train_id", trainName, trainId.toString().substring(0, 5)));
-                tooltip.add(Component.translatable("railways.whistle.tool.bound_usage"));
-                tooltip.add(Component.translatable("railways.whistle.tool.bound_auto_usage"));
-                tooltip.add(Component.translatable("railways.whistle.tool.bound_auto_clear"));
+                tooltip.accept(Component.translatable("railways.whistle.tool.bound").withStyle(ChatFormatting.DARK_GREEN));
+                tooltip.accept(TextUtils.translateWithFormatting("railways.whistle.tool.conductor_id", conductorId.toString().substring(0, 5)));
+                tooltip.accept(TextUtils.translateWithFormatting("railways.whistle.tool.train_id", trainName, trainId.toString().substring(0, 5)));
+                tooltip.accept(Component.translatable("railways.whistle.tool.bound_usage"));
+                tooltip.accept(Component.translatable("railways.whistle.tool.bound_auto_usage"));
+                tooltip.accept(Component.translatable("railways.whistle.tool.bound_auto_clear"));
             }
         } else {
             if (CRConfigs.client().modernWhistleTooltip.get()) {
-                tooltip.add(TextUtils.translateWithFormatting("railways.whistle.tool.not_bound2"));
+                tooltip.accept(TextUtils.translateWithFormatting("railways.whistle.tool.not_bound2"));
             } else {
-                tooltip.add(Component.translatable("railways.whistle.tool.not_bound").withStyle(ChatFormatting.DARK_RED));
+                tooltip.accept(Component.translatable("railways.whistle.tool.not_bound").withStyle(ChatFormatting.DARK_RED));
             }
         }
     }

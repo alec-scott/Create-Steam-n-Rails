@@ -62,10 +62,10 @@ class PaintPitcherFluidStorage implements SingleSlotStorage<FluidVariant> {
         if (Fluids.WATER.isSame(resource.getFluid()))
             return PitcherColor.SANDY_WATER;
 
-        if (!CRFluids.PAINT.get().isSame(resource.getFluid()))
+        if (!CRFluids.PAINT.isSame(resource.getFluid()))
             return null;
 
-        PalettesColor fluidColor = PaintFluid.getColor(resource.getNbt()).orElse(null);
+        PalettesColor fluidColor = PaintFluid.getColor(resource).orElse(null);
         if (fluidColor == null)
             return null;
 
@@ -146,8 +146,8 @@ class PaintPitcherFluidStorage implements SingleSlotStorage<FluidVariant> {
 
         PalettesColor color = item.getColor();
         return color == null ? FluidVariant.of(Fluids.WATER) : FluidVariant.of(
-            CRFluids.PAINT.get().getSource(),
-            PaintFluid.setColor(new CompoundTag(), item.getColor())
+            CRFluids.PAINT.getSource(),
+            PaintFluid.colorPatch(item.getColor())
         );
     }
 

@@ -89,7 +89,7 @@ public class PalettesSlidingDoorBlock extends SlidingDoorBlock implements IWrenc
 
     @Override
     public InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (EntityUtils.isHolding(player, AllItems.WRENCH::isIn)) {
+        if (EntityUtils.isHolding(player, s -> s.is(AllItems.WRENCH))) {
             return InteractionResult.PASS;
         }
         return super.useItemOn(stack, state, level, pos, player, hand, hit);

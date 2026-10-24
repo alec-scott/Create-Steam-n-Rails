@@ -154,7 +154,7 @@ public class CRItems {
     }
 
     public static final ItemEntry<? extends PaintBrushItem> PAINT_BRUSH = REGISTRATE.item("paint_brush", PaintBrushItem::new)
-        .properties(p -> p.durability(250))
+        .properties(p -> p.durability(250).repairable(CRTags.AllItemTags.PAINT_BRUSH_REPAIR_ITEMS.tag)) // PORT-NOTE(fabric): was PaintBrushItem.isValidRepairItem
         .lang("Paint Brush")
         .register();
 

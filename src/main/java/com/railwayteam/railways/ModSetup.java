@@ -43,6 +43,7 @@ public class ModSetup {
     CRBogeyStyles.register();
     CRCreativeModeTabs.register();
     CRItems.register();
+    CRDataComponents.register();
     CRFluids.register();
     CRSpriteShifts.register();
     CRDisplaySources.register();

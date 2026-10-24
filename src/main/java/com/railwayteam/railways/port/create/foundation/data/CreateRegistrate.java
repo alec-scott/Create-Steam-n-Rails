@@ -10,6 +10,8 @@ import com.railwayteam.railways.port.registrate.util.nullness.NonNullFunction;
 import com.railwayteam.railways.port.registrate.util.nullness.NonNullSupplier;
 import com.zurrtum.create.api.behaviour.display.DisplaySource;
 import com.zurrtum.create.api.behaviour.display.DisplayTarget;
+import com.zurrtum.create.api.contraption.storage.fluid.MountedFluidStorageType;
+import com.zurrtum.create.api.contraption.storage.item.MountedItemStorageType;
 import com.zurrtum.create.api.registry.CreateRegistries;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -80,6 +82,16 @@ public class CreateRegistrate extends Registrate {
     public <T extends DisplaySource> NoConfigBuilder<DisplaySource, T, CreateRegistrate> displaySource(
             String name, NonNullSupplier<T> supplier) {
         return generic(self(), name, (net.minecraft.resources.ResourceKey) CreateRegistries.DISPLAY_SOURCE.key(), supplier);
+    }
+
+    public <T extends MountedFluidStorageType<?>> NoConfigBuilder<MountedFluidStorageType<?>, T, CreateRegistrate> mountedFluidStorage(
+            String name, NonNullSupplier<T> supplier) {
+        return generic(self(), name, (net.minecraft.resources.ResourceKey) CreateRegistries.MOUNTED_FLUID_STORAGE_TYPE.key(), supplier);
+    }
+
+    public <T extends MountedItemStorageType<?>> NoConfigBuilder<MountedItemStorageType<?>, T, CreateRegistrate> mountedItemStorage(
+            String name, NonNullSupplier<T> supplier) {
+        return generic(self(), name, (net.minecraft.resources.ResourceKey) CreateRegistries.MOUNTED_ITEM_STORAGE_TYPE.key(), supplier);
     }
 
     public <T extends DisplayTarget> NoConfigBuilder<DisplayTarget, T, CreateRegistrate> displayTarget(

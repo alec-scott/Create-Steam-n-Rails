@@ -24,7 +24,6 @@ import com.railwayteam.railways.mixin_interfaces.IHasCustomOutline;
 import com.railwayteam.railways.registry.CRShapes;
 import com.zurrtum.create.content.equipment.extendoGrip.ExtendoGripItem;
 import com.zurrtum.create.content.equipment.wrench.IWrenchable;
-import com.simibubi.create.foundation.block.IHaveBigOutline;
 import com.zurrtum.create.foundation.placement.PoleHelper;
 import com.zurrtum.create.infrastructure.config.AllConfigs;
 import com.zurrtum.create.catnip.data.Iterate;
@@ -39,8 +38,8 @@ import net.minecraft.core.Direction.Axis;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -65,7 +64,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
 
-public class BoilerBlock extends Block implements IWrenchable, IHasCustomOutline, IHaveBigOutline {
+public class BoilerBlock extends Block implements IWrenchable, IHasCustomOutline {
     public static final int placementHelperId = PlacementHelpers.register(new PlacementHelper());
     public static final EnumProperty<Style> STYLE = EnumProperty.create("style", Style.class);
     public static final EnumProperty<Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;
@@ -108,7 +107,7 @@ public class BoilerBlock extends Block implements IWrenchable, IHasCustomOutline
 
     @SuppressWarnings("deprecation")
     @Override
-    public @NotNull VoxelShape getOcclusionShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos) {
+    public @NotNull VoxelShape getOcclusionShape(@NotNull BlockState state) {
         return Shapes.empty();
     }
 
@@ -150,7 +149,7 @@ public class BoilerBlock extends Block implements IWrenchable, IHasCustomOutline
         IPlacementHelper helper = PlacementHelpers.get(placementHelperId);
         if (helper.matchesItem(heldItem))
             return helper.getOffset(player, level, state, pos, hit)
-                    .placeInWorld(level, (BlockItem) heldItem.getItem(), player, hand, hit);
+                    .placeInWorld(level, (BlockItem) heldItem.getItem(), player, hand);
 
         return InteractionResult.PASS;
     }
@@ -270,8 +269,8 @@ public class BoilerBlock extends Block implements IWrenchable, IHasCustomOutline
                 dir = dir.getOpposite();
                 int range = AllConfigs.server().equipment.placementAssistRange.get();
                 if (player != null) {
-                    AttributeInstance reach = player.getAttribute(getAttribute());
-                    if (reach != null && reach.hasModifier(ExtendoGripItem.singleRangeAttributeModifier))
+                    AttributeInstance reach = player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
+                    if (reach != null && reach.hasModifier(ExtendoGripItem.singleRangeAttributeModifier.id()))
                         range += 4;
                 }
                 int poles = attachedPoles(level, pos, dir);
@@ -293,8 +292,5 @@ public class BoilerBlock extends Block implements IWrenchable, IHasCustomOutline
             return offset;
         }
 
-        public static Attribute getAttribute() {
-            return com.railwayteam.railways.content.palettes.boiler.fabric.BoilerBlockPlacementHelperImpl.getAttribute();
-        }
     }
 }

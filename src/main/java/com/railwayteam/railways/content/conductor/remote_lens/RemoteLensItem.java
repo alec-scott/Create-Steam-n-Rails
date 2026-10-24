@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.conductor.remote_lens;
 
+import net.minecraft.world.item.component.TooltipDisplay;
+
+import java.util.function.Consumer;
+
 import com.railwayteam.railways.content.conductor.ConductorEntity;
 import com.railwayteam.railways.util.TextUtils;
 import com.zurrtum.create.AllSoundEvents;
@@ -48,17 +52,17 @@ public class RemoteLensItem extends Item {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        super.appendHoverText(stack, level, tooltip, flag);
+    public void appendHoverText(@NotNull ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, context, display, tooltip, flag);
         CompoundTag tag = stack.getTag();
         if (tag != null && tag.hasUUID("SelectedConductor")) {
             UUID conductorId = tag.getUUID("SelectedConductor");
 
-            tooltip.add(Component.translatable("railways.whistle.tool.bound").withStyle(ChatFormatting.DARK_GREEN));
-            tooltip.add(TextUtils.translateWithFormatting("railways.whistle.tool.conductor_id", conductorId.toString().substring(0, 5)));
-            tooltip.add(Component.translatable("railways.remote_lens.tool.bound_usage"));
+            tooltip.accept(Component.translatable("railways.whistle.tool.bound").withStyle(ChatFormatting.DARK_GREEN));
+            tooltip.accept(TextUtils.translateWithFormatting("railways.whistle.tool.conductor_id", conductorId.toString().substring(0, 5)));
+            tooltip.accept(Component.translatable("railways.remote_lens.tool.bound_usage"));
         } else {
-            tooltip.add(Component.translatable("railways.remote_lens.tool.not_bound").withStyle(ChatFormatting.DARK_RED));
+            tooltip.accept(Component.translatable("railways.remote_lens.tool.not_bound").withStyle(ChatFormatting.DARK_RED));
         }
     }
 

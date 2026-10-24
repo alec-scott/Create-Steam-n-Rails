@@ -85,7 +85,7 @@ public class SemaphoreBlock extends HorizontalDirectionalBlock implements IBE<Se
 
         if (helper.matchesItem(itemInHand))
             return helper.getOffset(player, world, state, pos, ray)
-                            .placeInWorld(world, (BlockItem) itemInHand.getItem(), player, hand, ray);
+                            .placeInWorld(world, (BlockItem) itemInHand.getItem(), player, hand);
         return InteractionResult.PASS;
     }
     @Override

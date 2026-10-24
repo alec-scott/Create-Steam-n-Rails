@@ -51,6 +51,10 @@ public class TrackMaterialFactory {
 		this.id = id;
 	}
 
+	public Identifier getId() {
+		return id;
+	}
+
 	public static TrackMaterialFactory make(Identifier id) {  // Convenience function for static import
 		return new TrackMaterialFactory(id);
 	}

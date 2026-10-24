@@ -26,7 +26,7 @@ import net.minecraft.resources.Identifier;
 
 public class CRPonderTags {
     public static void register(PonderTagRegistrationHelper<Identifier> helper) {
-        PonderTagRegistrationHelper<RegistryEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
+        PonderTagRegistrationHelper<RegistryEntry<?, ?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
 
         HELPER.addToTag(AllCreatePonderTags.DISPLAY_SOURCES)
             .add(AllBlocks.TRACK_SIGNAL)

@@ -118,7 +118,7 @@ public abstract class TrackBufferBlock<BE extends TrackBufferBlockEntity> extend
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+	public VoxelShape getOcclusionShape(BlockState state) {
 		return Shapes.empty();
 	}
 

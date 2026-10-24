@@ -53,7 +53,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class SmokeStackMovementBehaviour implements MovementBehaviour {
+public class SmokeStackMovementBehaviour extends MovementBehaviour {
 
     private static class TemporaryData {
         @NotNull
