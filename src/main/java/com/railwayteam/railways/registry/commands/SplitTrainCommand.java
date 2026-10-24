@@ -35,7 +35,7 @@ import java.util.UUID;
 public class SplitTrainCommand {
     public static ArgumentBuilder<CommandSourceStack, ?> register() {
         return Commands.literal("split_train")
-          .requires(cs -> cs.hasPermission(2))
+          .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
           .then(Commands.argument("train_id", UuidArgument.uuid())
               .executes(ctx -> {
                   UUID trainId = UuidArgument.getUuid(ctx, "train_id");

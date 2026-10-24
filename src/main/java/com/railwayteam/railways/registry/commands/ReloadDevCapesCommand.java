@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.registry.commands;
 
+import net.minecraft.commands.Commands;
+
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.railwayteam.railways.multiloader.Env;
 import com.railwayteam.railways.util.DevCapeUtils;
@@ -30,7 +32,7 @@ import static com.railwayteam.railways.multiloader.ClientCommands.sendSuccess;
 public class ReloadDevCapesCommand {
   public static ArgumentBuilder<SharedSuggestionProvider, ?> register() {
     return literal("reload_dev_capes")
-        .requires(cs -> cs.hasPermission(0))
+        .requires(Commands.hasPermission(Commands.LEVEL_ALL))
         .executes(ctx -> {
           Env.CLIENT.runIfCurrent(() -> DevCapeUtils.INSTANCE::refresh);
 

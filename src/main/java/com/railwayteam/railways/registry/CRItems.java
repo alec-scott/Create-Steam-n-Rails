@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.registry;
 
+import net.minecraft.world.entity.EntityType;
+
 import com.railwayteam.railways.port.create.track.TrackMaterialData;
 
 import com.zurrtum.create.AllItemTags;
@@ -26,7 +28,6 @@ import com.google.common.collect.ImmutableList;
 import com.railwayteam.railways.ModSetup;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.base.data.BuilderTransformers;
-import com.railwayteam.railways.base.data.recipe.RailwaysRecipeProvider.Ingredients;
 import com.railwayteam.railways.content.conductor.ConductorCapItem;
 import com.railwayteam.railways.content.conductor.remote_lens.RemoteLensItem;
 import com.railwayteam.railways.content.minecarts.MinecartJukebox;
@@ -60,6 +61,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static com.railwayteam.railways.util.TextUtils.snakeCaseToTitleCase;
 
@@ -72,8 +74,9 @@ public class CRItems {
         return TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(mod, path));
     }
 
-    private static ItemBuilder<? extends Item, ?> makeMinecart(String name, AbstractMinecart.Type type) {
-        return REGISTRATE.item(name, (props) -> new MinecartItem(type, props))
+    // PORT-NOTE(fabric): minecart items take the entity type since 1.21.2 (no AbstractMinecart.Type); CREntities registers first.
+    private static ItemBuilder<? extends Item, ?> makeMinecart(String name, Supplier<? extends EntityType<? extends AbstractMinecart>> type) {
+        return REGISTRATE.item(name, (props) -> new MinecartItem(type.get(), props))
             .model((ctx,prov)-> prov.withExistingParent(name, prov.mcLoc("item/minecart")).texture("layer0", prov.modLoc("item/" + name)));
     }
 
@@ -98,12 +101,12 @@ public class CRItems {
         };
     }
 
-    public static final ItemEntry<? extends Item> ITEM_BENCHCART = makeMinecart("benchcart", MinecartWorkbench.TYPE)
+    public static final ItemEntry<? extends Item> ITEM_BENCHCART = makeMinecart("benchcart", CREntities.CART_BLOCK)
         .recipe((ctx,prov)-> ShapelessRecipeBuilder.shapeless(RecipeCategory.TRANSPORTATION, ctx.get()).requires(Items.MINECART).requires(CommonTags.WORKBENCH.tag)
             .unlockedBy("hasitem", InventoryChangeTrigger.TriggerInstance.hasItems(Items.MINECART)).save(prov))
         .lang("Minecart with Workbench")
         .register();
-    public static final ItemEntry<? extends Item> ITEM_JUKEBOXCART = makeMinecart("jukeboxcart", MinecartJukebox.TYPE)
+    public static final ItemEntry<? extends Item> ITEM_JUKEBOXCART = makeMinecart("jukeboxcart", CREntities.CART_JUKEBOX)
         .recipe((ctx,prov)-> ShapelessRecipeBuilder.shapeless(RecipeCategory.TRANSPORTATION, ctx.get()).requires(Items.MINECART).requires(Items.JUKEBOX)
             .unlockedBy("hasitem", InventoryChangeTrigger.TriggerInstance.hasItems(Items.MINECART)).save(prov))
         .lang("Minecart with Jukebox")
@@ -135,7 +138,7 @@ public class CRItems {
                 .properties(p -> p.stacksTo(1))
                 .recipe((ctx, prov)-> ShapelessRecipeBuilder.shapeless(RecipeCategory.COMBAT, ctx.get()) // combat because of armor
                     .requires(CONDUCTOR_CAPS)
-                    .requires(Ingredients.dye(color))
+                    .requires(CommonTags.DYES.get(color).tag)
                     .unlockedBy("hasitem", RegistrateRecipeProvider.has(CONDUCTOR_CAPS))
                     .save(prov, Railways.asResource("dying_existing_cap_" + colorReg)))
                 .register());

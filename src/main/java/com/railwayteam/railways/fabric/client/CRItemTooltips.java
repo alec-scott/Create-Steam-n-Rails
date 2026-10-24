@@ -18,6 +18,7 @@
 package com.railwayteam.railways.fabric.client;
 
 import com.railwayteam.railways.Railways;
+import com.railwayteam.railways.port.create.ItemDescriptionKeys;
 import com.railwayteam.railways.port.registrate.util.entry.RegistryEntry;
 import com.zurrtum.create.client.catnip.lang.FontHelper;
 import com.zurrtum.create.client.foundation.item.ItemDescription;
@@ -35,6 +36,7 @@ import net.minecraft.world.item.Item;
  */
 public class CRItemTooltips {
 	public static void register() {
+		ItemDescriptionKeys.all().forEach(ItemDescription::useKey);
 		for (RegistryEntry<Item, Item> entry : Railways.registrate().<Item, Item>getAll(Registries.ITEM)) {
 			Item item = entry.get();
 			if (TooltipModifier.REGISTRY.get(item) != null)

@@ -39,7 +39,7 @@ import java.util.Set;
 public class ConductorDemoCommand {
     public static ArgumentBuilder<CommandSourceStack, ?> register() {
         return Commands.literal("conductor_demo")
-            .requires(cs -> cs.hasPermission(2))
+            .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
             .then(Commands.argument("pos", BlockPosArgument.blockPos())
                 .executes(ctx -> {
                     BlockPos origin = BlockPosArgument.getLoadedBlockPos(ctx, "pos");

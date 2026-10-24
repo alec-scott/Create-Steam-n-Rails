@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.registry;
 
+import net.minecraft.commands.Commands;
+
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -34,7 +36,6 @@ import com.railwayteam.railways.registry.commands.SplitTrainCommand;
 import com.railwayteam.railways.registry.commands.TrackDemoCommand;
 import com.railwayteam.railways.registry.commands.TrainInfoCommand;
 import com.railwayteam.railways.util.Utils;
-import net.createmod.catnip.command.CatnipCommands;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 
@@ -46,7 +47,7 @@ public class CRCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, boolean dedicated, CommandBuildContext context) {
 
         var railwaysCommand = literal(Railways.MOD_ID)
-            .requires(cs -> cs.hasPermission(0))
+            .requires(Commands.hasPermission(Commands.LEVEL_ALL))
             //.then(ClearCasingCacheCommand.register())
             .then(SplitTrainCommand.register())
             .then(TrainInfoCommand.register())
@@ -69,6 +70,7 @@ public class CRCommands {
         if (snr != null)
             return;
 
-        CatnipCommands.createOrAddToShortcut(dispatcher, "snr", railwaysRoot);
+        // PORT-NOTE(fabric): was CatnipCommands.createOrAddToShortcut (Create Fly has no catnip command helpers)
+        dispatcher.register(literal("snr").requires(Commands.hasPermission(Commands.LEVEL_ALL)).redirect(railwaysRoot));
     }
 }

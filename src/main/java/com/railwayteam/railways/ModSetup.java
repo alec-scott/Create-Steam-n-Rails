@@ -42,10 +42,10 @@ public class ModSetup {
     CRTrackMaterials.register();
     CRBogeyStyles.register();
     CRCreativeModeTabs.register();
+    CREntities.register(); // PORT-NOTE(fabric): before items, minecart items need the entity types
     CRItems.register();
     CRDataComponents.register();
     CRFluids.register();
-    CRSpriteShifts.register();
     CRDisplaySources.register();
     CRDisplayTargets.register();
     CRBlockEntities.register();
@@ -53,7 +53,6 @@ public class ModSetup {
     Railways.platformBasedRegistration();
     CRPalettes.register();
     CRContainerTypes.register();
-    CREntities.register();
     CRSounds.register();
     CRTags.register();
     CREdgePointTypes.register();

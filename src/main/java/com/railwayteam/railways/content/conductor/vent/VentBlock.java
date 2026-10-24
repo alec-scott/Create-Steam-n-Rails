@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.conductor.vent;
 
+import net.minecraft.world.level.BlockAndLightGetter;
+
 import net.minecraft.world.item.ItemStack;
 
 import com.railwayteam.railways.config.CRConfigs;
@@ -32,6 +34,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
@@ -84,7 +87,7 @@ public abstract class VentBlock extends CopycatBlock implements IWrenchable {
     }*/
 
     @Override
-    public boolean canConnectTexturesToward(BlockAndTintGetter reader, BlockPos fromPos, BlockPos toPos, BlockState state) {
+    public boolean canConnectTexturesToward(BlockAndLightGetter reader, BlockPos fromPos, BlockPos toPos, BlockState state) {
         return true;
     }
 
@@ -158,7 +161,7 @@ public abstract class VentBlock extends CopycatBlock implements IWrenchable {
     protected boolean teleportConductorInternal(Level level, BlockPos start, ConductorEntity conductor, @Nullable Direction prevDirection) {
         if (prevDirection == null) {
             BlockPos normal = conductor.blockPosition().subtract(start);
-            prevDirection = Direction.fromDelta(normal.getX(), normal.getY(), normal.getZ());
+            prevDirection = Direction.getNearest(normal.getX(), normal.getY(), normal.getZ(), null);
             if (prevDirection == null)
                 prevDirection = Direction.NORTH;
             else
@@ -186,7 +189,7 @@ public abstract class VentBlock extends CopycatBlock implements IWrenchable {
                 if (!level.getBlockState(end.above()).isAir())
                     end = end.below();
                 //serverPlayer.connection.teleport(end.getX(), end.getY(), end.getZ(), serverPlayer.getYRot(), serverPlayer.getXRot());
-                serverPlayer.teleportTo(serverLevel, end.getX() + 0.5, end.getY() + 0.0, end.getZ() + 0.5, serverPlayer.getYRot(), serverPlayer.getXRot());
+                serverPlayer.teleportTo(serverLevel, end.getX() + 0.5, end.getY() + 0.0, end.getZ() + 0.5, java.util.Set.of(), serverPlayer.getYRot(), serverPlayer.getXRot(), true);
                 //conductor.teleportToForce(end.getX() + 0.5, end.getY() + 0.0, end.getZ() + 0.5);
                 return InteractionResult.SUCCESS;
             }
@@ -196,8 +199,8 @@ public abstract class VentBlock extends CopycatBlock implements IWrenchable {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void entityInside(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity) {
-        super.entityInside(state, level, pos, entity);
+    public void entityInside(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
+        super.entityInside(state, level, pos, entity, effectApplier, isPrecise);
         teleportConductor(level, pos, entity, null);
     }
 

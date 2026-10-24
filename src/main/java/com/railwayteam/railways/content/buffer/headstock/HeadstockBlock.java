@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.buffer.headstock;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.world.level.ScheduledTickAccess;
 
 import net.minecraft.world.level.LevelReader;
@@ -60,6 +62,14 @@ import org.jetbrains.annotations.Nullable;
 
 
 public class HeadstockBlock extends HorizontalDirectionalBlock implements IBE<HeadstockBlockEntity>, IWrenchable, ProperWaterloggedBlock, BlockStateBlockItemGroup.GroupedBlock {
+
+    // PORT-NOTE(fabric): blocks need a codec since 1.20.5
+    public static final MapCodec<HeadstockBlock> CODEC = simpleCodec(HeadstockBlock::new);
+
+    @Override
+    protected MapCodec<? extends HeadstockBlock> codec() {
+        return CODEC;
+    }
     public static final EnumProperty<HeadstockStyle> STYLE = EnumProperty.create("style", HeadstockStyle.class);
     public static final BooleanProperty UPSIDE_DOWN = BooleanProperty.create("upside_down");
 

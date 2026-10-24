@@ -19,6 +19,8 @@
 
 package com.railwayteam.railways.content.custom_bogeys.special.monobogey;
 
+import net.minecraft.resources.Identifier;
+
 import net.minecraft.world.level.LevelReader;
 
 import com.railwayteam.railways.port.create.track.TrackType;
@@ -63,8 +65,8 @@ public abstract class AbstractMonoBogeyBlock<T extends MonoBogeyBlockEntity> ext
     }
 
     @Override
-    public TrackType getTrackType(BogeyStyle style) {
-        return CRTrackMaterials.CRTrackType.MONORAIL;
+    public Identifier getTrackType(BogeyStyle style) {
+        return CRTrackMaterials.CRTrackType.MONORAIL.id;
     }
 
     @Override

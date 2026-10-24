@@ -43,7 +43,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.RecordItem;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.JukeboxPlayable;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -52,8 +55,6 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
 
 public class MinecartJukebox extends MinecartBlock {
-  public static final Type TYPE = Type.valueOf("RAILWAY_JUKEBOX");
-
   private static final int COOLDOWN = 100; // ticks
   private int cooldownCount = 0;
 
@@ -70,15 +71,9 @@ public class MinecartJukebox extends MinecartBlock {
   }
 
   public int getComparatorOutput() {
-    if (disc.getItem() instanceof RecordItem record) {
-      return record.getAnalogOutput();
-    }
-    return 0;
-  }
-
-  @Override
-  public Type getMinecartType() {
-    return TYPE;
+    // PORT-NOTE(fabric): music discs are the jukebox_playable component since 1.21
+    JukeboxPlayable playable = disc.get(DataComponents.JUKEBOX_PLAYABLE);
+    return playable == null ? 0 : playable.song().value().comparatorOutput();
   }
 
   @Override
@@ -104,15 +99,15 @@ public class MinecartJukebox extends MinecartBlock {
 
   @NotNull
   @Override
-  public InteractionResult interact (@NotNull Player player, @NotNull InteractionHand hand) {
-    InteractionResult ret = super.interact(player, hand);
+  public InteractionResult interact (@NotNull Player player, @NotNull InteractionHand hand, Vec3 location) {
+    InteractionResult ret = super.interact(player, hand, location);
     if (ret.consumesAction()) return ret;
 
     if (!level.isClientSide()) {
       if (disc.isEmpty()) { // no disc inserted
         // get the disc from the player, if they have one
         ItemStack handStack = player.getItemInHand(hand);
-        if (handStack.getItem() instanceof RecordItem) {
+        if (handStack.has(DataComponents.JUKEBOX_PLAYABLE)) {
           __insertRecord(handStack);
           if (!player.isCreative()) player.setItemInHand(hand, ItemStack.EMPTY);
           player.awardStat(Stats.PLAY_RECORD);
@@ -129,15 +124,14 @@ public class MinecartJukebox extends MinecartBlock {
   @Override
   protected void readAdditionalSaveData(ValueInput compound) {
     super.readAdditionalSaveData(compound);
-    if (compound.contains("Disc", Tag.TAG_COMPOUND)) {
-      disc = ItemStack.of(compound.childOrEmpty("Disc"));
-    }
+    compound.read("Disc", ItemStack.CODEC).ifPresent(stack -> disc = stack);
   }
 
   @Override
   protected void addAdditionalSaveData(ValueOutput compound) {
     super.addAdditionalSaveData(compound);
-    compound.put("Disc", disc.save(new CompoundTag()));
+    if (!disc.isEmpty())
+      compound.store("Disc", ItemStack.CODEC, disc);
   }
 
   // clientside
@@ -180,8 +174,9 @@ public class MinecartJukebox extends MinecartBlock {
   @Environment(EnvType.CLIENT)
   // clientside
   private void startPlaying () {
-    if (!this.disc.isEmpty()) {
-      sound = new JukeboxCartSoundInstance(((RecordItem)this.disc.getItem()).getSound());
+    JukeboxPlayable playable = this.disc.get(DataComponents.JUKEBOX_PLAYABLE);
+    if (playable != null) {
+      sound = new JukeboxCartSoundInstance(playable.song().value().soundEvent().value());
       Minecraft.getInstance().getSoundManager().play(sound);
     }
   }
@@ -207,10 +202,10 @@ public class MinecartJukebox extends MinecartBlock {
   }
 
   @Override
-  public void destroy(@NotNull DamageSource source) {
-    super.destroy(source);
-    if (!source.is(DamageTypeTags.IS_EXPLOSION) && this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS) && this.disc != null && !this.disc.isEmpty()) {
-      this.spawnAtLocation(this.disc.copy());
+  protected void destroy(ServerLevel level, @NotNull DamageSource source) {
+    super.destroy(level, source);
+    if (!source.is(DamageTypeTags.IS_EXPLOSION) && level.getGameRules().get(GameRules.ENTITY_DROPS) && this.disc != null && !this.disc.isEmpty()) {
+      this.spawnAtLocation(level, this.disc.copy());
       this.disc = ItemStack.EMPTY;
     }
   }

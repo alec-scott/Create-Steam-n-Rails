@@ -35,7 +35,6 @@
     "MixinAbstractBogeyBlock",
     "MixinAbstractContainerMenu",
     "MixinAbstractMinecart",
-    "MixinAbstractMinecart_Type",
     "MixinBasingRecipe",
     "MixinBezierConnection",
     "MixinBiome",

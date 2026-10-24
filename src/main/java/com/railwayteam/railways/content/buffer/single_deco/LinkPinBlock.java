@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.buffer.single_deco;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.world.level.LevelReader;
 
 import com.railwayteam.railways.Railways;
@@ -40,6 +42,14 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import java.util.Locale;
 
 public class LinkPinBlock extends AbstractDyeableSingleBufferBlock implements BlockStateBlockItemGroup.GroupedBlock {
+
+    // PORT-NOTE(fabric): blocks need a codec since 1.20.5
+    public static final MapCodec<LinkPinBlock> CODEC = simpleCodec(LinkPinBlock::new);
+
+    @Override
+    protected MapCodec<? extends LinkPinBlock> codec() {
+        return CODEC;
+    }
     public static final EnumProperty<Style> STYLE = EnumProperty.create("style", Style.class);
 
     public LinkPinBlock(Properties properties) {

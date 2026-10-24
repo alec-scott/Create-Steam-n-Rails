@@ -86,7 +86,7 @@ public class SmokeStackBlockEntity extends SmartBlockEntity implements IHaveGogg
     @Override
     protected void read(ValueInput tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        if (tag.contains("color", Tag.TAG_INT)) {
+        if (tag.getInt("color").isPresent()) {
             int colorOrdinal = tag.getIntOr("color", 0);
             color = DyeColor.byId(colorOrdinal);
         } else {

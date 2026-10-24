@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.buffer;
 
+import net.minecraft.core.component.DataComponents;
+
 import net.minecraft.world.level.storage.ValueOutput;
 
 import net.minecraft.world.level.storage.ValueInput;
@@ -86,9 +88,10 @@ public class DyeableBlockEntity extends SmartBlockEntity implements IDyedBuffer 
     }
 
     public InteractionResult applyDyeIfValid(ItemStack stack) {
-        if (!(stack.getItem()instanceof DyeItem dyeItem))
+        // PORT-NOTE(fabric): dye items carry a dye component now
+        DyeColor color = stack.get(DataComponents.DYE);
+        if (color == null)
             return InteractionResult.PASS;
-        DyeColor color = dyeItem.getDyeColor();
         if (color == this.color)
             return InteractionResult.PASS;
         if (level.isClientSide() && !isVirtual())

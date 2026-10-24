@@ -18,30 +18,19 @@
 
 package com.railwayteam.railways.registry;
 
-import com.google.common.collect.Sets;
 import com.railwayteam.railways.registry.advancement.CRAdvancement;
 import com.railwayteam.railways.registry.advancement.CRAdvancement.Builder;
 import com.zurrtum.create.AllItems;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataProvider;
-import net.minecraft.data.PackOutput;
-import net.minecraft.data.PackOutput.PathProvider;
-import net.minecraft.resources.Identifier;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import static com.railwayteam.railways.registry.advancement.CRAdvancement.TaskType.SECRET;
 import static com.railwayteam.railways.registry.advancement.CRAdvancement.TaskType.SILENT;
 
-public class CRAdvancements implements DataProvider {
+public class CRAdvancements {
 
 	public static final List<CRAdvancement> ENTRIES = new ArrayList<>();
 	public static final CRAdvancement START = null,
@@ -73,39 +62,7 @@ public class CRAdvancements implements DataProvider {
 		return new CRAdvancement(id, b);
 	}
 
-	// Datagen
-
-	private final PackOutput output;
-
-	public CRAdvancements(PackOutput output) {
-		this.output = output;
-	}
-
-	@Override
-	public CompletableFuture<?> run(CachedOutput cache) {
-		PathProvider pathProvider = output.createPathProvider(PackOutput.Target.DATA_PACK, "advancements");
-		List<CompletableFuture<?>> futures = new ArrayList<>();
-
-		Set<Identifier> set = Sets.newHashSet();
-		Consumer<Advancement> consumer = (advancement) -> {
-			Identifier id = advancement.getId();
-			if (!set.add(id))
-				throw new IllegalStateException("Duplicate advancement " + id);
-			Path path = pathProvider.json(id);
-			futures.add(DataProvider.saveStable(cache, advancement.deconstruct()
-				.serializeToJson(), path));
-		};
-
-		for (CRAdvancement advancement : ENTRIES)
-			advancement.save(consumer);
-
-		return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
-	}
-
-	@Override
-	public String getName() {
-		return "Steam 'n' Rails' Advancements";
-	}
+	// PORT-NOTE(fabric): the datagen provider half was removed (datagen is stubbed; the JSON is committed).
 
 	public static void provideLang(BiConsumer<String, String> consumer) {
 		for (CRAdvancement advancement : ENTRIES)

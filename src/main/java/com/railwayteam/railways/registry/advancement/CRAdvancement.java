@@ -15,25 +15,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.railwayteam.railways.registry.advancement;
 
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.registry.CRAdvancements;
 import com.railwayteam.railways.registry.CRTriggers;
 import com.railwayteam.railways.port.registrate.util.entry.ItemProviderEntry;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.advancements.DisplayInfo;
-import net.minecraft.advancements.AdvancementType;
-import net.minecraft.advancements.criterion.EnchantmentPredicate;
-import net.minecraft.advancements.criterion.InventoryChangeTrigger;
-import net.minecraft.advancements.criterion.ItemPredicate;
-import net.minecraft.advancements.criterion.ItemUsedOnLocationTrigger;
-import net.minecraft.advancements.criterion.MinMaxBounds;
-import net.minecraft.advancements.criterion.NbtPredicate;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
@@ -44,44 +32,37 @@ import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+/**
+ * A Railways advancement.
+ *
+ * <p>PORT-NOTE(fabric): upstream also built the advancement JSON here (datagen). Datagen is stubbed on the 26.1
+ * branch, so only the runtime half is kept: the built-in trigger, awarding, and the progress check. The builder methods
+ * keep their signatures so {@code CRAdvancements} reads the same; the advancements themselves come from the committed
+ * generated JSON.</p>
+ */
 public class CRAdvancement {
 
-	static final Identifier BACKGROUND = Railways.asResource("textures/gui/advancements.png");
 	static final String LANG = "advancement." + Railways.MOD_ID + ".";
-	static final String SECRET_SUFFIX = "\n\u00A77(Hidden Advancement)";
+	static final String SECRET_SUFFIX = "\n§7(Hidden Advancement)";
 
-	private final Advancement.Builder builder;
-	private final Supplier<DisplayInfo> displayInfo;
 	private SimpleRailwaysTrigger builtinTrigger;
 	private CRAdvancement parent;
-
-	Advancement datagenResult;
 
 	private final String id;
 	private String title;
 	private String description;
 
 	public CRAdvancement(String id, UnaryOperator<Builder> b) {
-		this.builder = Advancement.Builder.advancement();
 		this.id = id;
 
 		Builder t = new Builder();
 		b.apply(t);
 
-		if (!t.externalTrigger) {
+		if (!t.externalTrigger)
 			builtinTrigger = CRTriggers.addSimple(id + "_builtin");
-			builder.addCriterion("0", builtinTrigger.instance());
-		}
-
-		this.displayInfo = () -> new DisplayInfo(
-			t.icon.get(), Component.translatable(titleKey()),
-			Component.translatable(descriptionKey()).withStyle(s -> s.withColor(0xDBA213)),
-			id.equals("root") ? BACKGROUND : null, t.type.frame, t.type.toast, t.type.announce, t.type.hide
-		);
 
 		if (t.type == TaskType.SECRET)
 			description += SECRET_SUFFIX;
@@ -100,9 +81,9 @@ public class CRAdvancement {
 	public boolean isAlreadyAwardedTo(Player player) {
 		if (!(player instanceof ServerPlayer sp))
 			return true;
-		Advancement advancement = sp.getServer()
+		AdvancementHolder advancement = sp.level().getServer()
 			.getAdvancements()
-			.getAdvancement(Railways.asResource(id));
+			.get(Railways.asResource(id));
 		if (advancement == null)
 			return true;
 		return sp.getAdvancements()
@@ -120,15 +101,6 @@ public class CRAdvancement {
 	}
 
 	@ApiStatus.Internal
-	public void save(Consumer<Advancement> t) {
-		builder.display(displayInfo.get());
-		if (parent != null)
-			builder.parent(parent.datagenResult);
-		datagenResult = builder.save(t, Railways.asResource(id)
-			.toString());
-	}
-
-	@ApiStatus.Internal
 	public void provideLang(BiConsumer<String, String> consumer) {
 		consumer.accept(titleKey(), title);
 		consumer.accept(descriptionKey(), description);
@@ -136,26 +108,7 @@ public class CRAdvancement {
 
 	@ApiStatus.Internal
 	public enum TaskType {
-
-		SILENT(AdvancementType.TASK, false, false, false),
-		NORMAL(AdvancementType.TASK, true, false, false),
-		NOISY(AdvancementType.TASK, true, true, false),
-		EXPERT(AdvancementType.GOAL, true, true, false),
-		SECRET(AdvancementType.GOAL, true, true, true),
-
-		;
-
-		private AdvancementType frame;
-		private boolean toast;
-		private boolean announce;
-		private boolean hide;
-
-		TaskType(AdvancementType frame, boolean toast, boolean announce, boolean hide) {
-			this.frame = frame;
-			this.toast = toast;
-			this.announce = announce;
-			this.hide = hide;
-		}
+		SILENT, NORMAL, NOISY, EXPERT, SECRET
 	}
 
 	@ApiStatus.Internal
@@ -163,95 +116,71 @@ public class CRAdvancement {
 
 		private TaskType type = TaskType.NORMAL;
 		private boolean externalTrigger;
-		private int keyIndex;
-		private Supplier<ItemStack> icon;
 
-		@ApiStatus.Internal
 		public Builder special(TaskType type) {
 			this.type = type;
 			return this;
 		}
 
-		@ApiStatus.Internal
 		public Builder after(CRAdvancement other) {
 			CRAdvancement.this.parent = other;
 			return this;
 		}
 
-		@ApiStatus.Internal
 		public Builder icon(ItemProviderEntry<?, ?> item) {
-			return icon(() -> item.asStack());
-		}
-
-		@ApiStatus.Internal
-		public Builder icon(ItemLike item) {
-			return icon(() -> new ItemStack(item));
-		}
-
-		@ApiStatus.Internal
-		public Builder icon(ItemStack stack) {
-			return icon(() -> stack);
-		}
-
-		@ApiStatus.Internal
-		public Builder icon(Supplier<ItemStack> stackSupplier) {
-			icon = stackSupplier;
 			return this;
 		}
 
-		@ApiStatus.Internal
+		public Builder icon(ItemLike item) {
+			return this;
+		}
+
+		public Builder icon(ItemStack stack) {
+			return this;
+		}
+
+		public Builder icon(Supplier<ItemStack> stackSupplier) {
+			return this;
+		}
+
 		public Builder title(String title) {
 			CRAdvancement.this.title = title;
 			return this;
 		}
 
-		@ApiStatus.Internal
 		public Builder description(String description) {
 			CRAdvancement.this.description = description;
 			return this;
 		}
 
-		@ApiStatus.Internal
 		public Builder whenBlockPlaced(Block block) {
-			return externalTrigger(ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(block));
+			return externalTrigger();
 		}
 
-		@ApiStatus.Internal
 		public Builder whenIconCollected() {
-			return externalTrigger(InventoryChangeTrigger.TriggerInstance.hasItems(icon.get().getItem()));
+			return externalTrigger();
 		}
 
-		@ApiStatus.Internal
 		public Builder whenItemCollected(ItemProviderEntry<?, ?> item) {
-			return whenItemCollected(item.asStack()
-				.getItem());
+			return externalTrigger();
 		}
 
-		@ApiStatus.Internal
 		public Builder whenItemCollected(ItemLike itemProvider) {
-			return externalTrigger(InventoryChangeTrigger.TriggerInstance.hasItems(itemProvider));
+			return externalTrigger();
 		}
 
-		@ApiStatus.Internal
 		public Builder whenItemCollected(TagKey<Item> tag) {
-			return externalTrigger(InventoryChangeTrigger.TriggerInstance
-				.hasItems(new ItemPredicate(tag, null, MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY,
-					EnchantmentPredicate.NONE, EnchantmentPredicate.NONE, null, NbtPredicate.ANY)));
+			return externalTrigger();
 		}
 
-		@ApiStatus.Internal
 		public Builder awardedForFree() {
-			return externalTrigger(InventoryChangeTrigger.TriggerInstance.hasItems(new ItemLike[] {}));
+			return externalTrigger();
 		}
 
-		@ApiStatus.Internal
-		public Builder externalTrigger(CriterionTriggerInstance trigger) {
-			builder.addCriterion(String.valueOf(keyIndex), trigger);
+		/** The advancement's criteria are vanilla triggers defined in its JSON. */
+		public Builder externalTrigger() {
 			externalTrigger = true;
-			keyIndex++;
 			return this;
 		}
-
 	}
-
 }

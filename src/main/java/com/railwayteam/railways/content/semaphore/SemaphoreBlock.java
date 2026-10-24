@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.semaphore;
 
+import com.mojang.serialization.MapCodec;
+
 import com.railwayteam.railways.config.CRConfigs;
 import com.railwayteam.railways.registry.CRBlockEntities;
 import com.railwayteam.railways.registry.CRBlocks;
@@ -56,6 +58,14 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import java.util.function.Predicate;
 
 public class SemaphoreBlock extends HorizontalDirectionalBlock implements IBE<SemaphoreBlockEntity>, IWrenchable {
+
+    // PORT-NOTE(fabric): blocks need a codec since 1.20.5
+    public static final MapCodec<SemaphoreBlock> CODEC = simpleCodec(SemaphoreBlock::new);
+
+    @Override
+    protected MapCodec<? extends SemaphoreBlock> codec() {
+        return CODEC;
+    }
 
     public static final int placementHelperId = PlacementHelpers.register(new PlacementHelper());
     public static final int girderPlacementHelperId = PlacementHelpers.register(new GirderPlacementHelper());
@@ -243,15 +253,7 @@ public class SemaphoreBlock extends HorizontalDirectionalBlock implements IBE<Se
             return PlacementOffset.fail();
         }
 
-        @Override
-        public void displayGhost(PlacementOffset offset) {
-            if (!offset.hasGhostState())
-                return;
-
-            GhostBlocks.getInstance().showGhostState(this, offset.getTransform().apply(offset.getGhostState().setValue(FULL,true)))
-                    .at(offset.getBlockPos())
-                    .breathingAlpha();
-        }
+        // PORT-NOTE(fabric): Create Fly shows placement ghosts on the client generically; the custom ghost (FULL=true) is dropped.
     }
 
     public static class GirderPlacementHelper implements IPlacementHelper {

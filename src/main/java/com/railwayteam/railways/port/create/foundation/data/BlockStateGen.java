@@ -28,6 +28,10 @@ public final class BlockStateGen {
                                                                              Function<BlockState, ModelFile> models) {
     }
 
+    public static <T extends Block> void horizontalAxisBlock(DataGenContext<Block, T> ctx, RegistrateBlockstateProvider prov,
+                                                             Function<BlockState, ModelFile> models) {
+    }
+
     public static <T extends Block> void axisBlock(DataGenContext<Block, T> ctx, RegistrateBlockstateProvider prov,
                                                    Function<BlockState, ModelFile> models) {
     }

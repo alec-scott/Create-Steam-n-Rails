@@ -26,10 +26,12 @@ import com.zurrtum.create.content.trains.schedule.condition.ScheduleWaitConditio
 import com.zurrtum.create.content.trains.schedule.destination.ScheduleInstruction;
 import com.zurrtum.create.catnip.data.Pair;
 
-import java.util.function.Supplier;
+import net.minecraft.resources.Identifier;
 
-import static com.zurrtum.create.content.trains.schedule.Schedule.CONDITION_TYPES;
-import static com.zurrtum.create.content.trains.schedule.Schedule.INSTRUCTION_TYPES;
+import java.util.function.Function;
+
+import static com.zurrtum.create.AllSchedules.CONDITION_TYPES;
+import static com.zurrtum.create.AllSchedules.INSTRUCTION_TYPES;
 
 public class CRSchedule {
     static {
@@ -38,11 +40,11 @@ public class CRSchedule {
         registerCondition("loaded", StationLoadedCondition::new);
     }
 
-    private static void registerInstruction(String name, Supplier<? extends ScheduleInstruction> factory) {
+    private static void registerInstruction(String name, Function<Identifier, ? extends ScheduleInstruction> factory) {
         INSTRUCTION_TYPES.add(Pair.of(Railways.asResource(name), factory));
     }
 
-    private static void registerCondition(String name, Supplier<? extends ScheduleWaitCondition> factory) {
+    private static void registerCondition(String name, Function<Identifier, ? extends ScheduleWaitCondition> factory) {
         CONDITION_TYPES.add(Pair.of(Railways.asResource(name), factory));
     }
 

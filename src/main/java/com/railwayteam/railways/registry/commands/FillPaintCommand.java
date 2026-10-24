@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.registry.commands;
 
+import net.minecraft.commands.Commands;
+
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
@@ -50,7 +52,7 @@ public class FillPaintCommand {
 
     public static ArgumentBuilder<CommandSourceStack, ?> register(CommandBuildContext context) {
         return literal("fill_paint")
-            .requires(cs -> cs.hasPermission(2))
+            .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
             .then(argument("from", BlockPosArgument.blockPos())
                 .then(argument("to", BlockPosArgument.blockPos())
                     .then(argument("color", enumArgument(PalettesColor.class))

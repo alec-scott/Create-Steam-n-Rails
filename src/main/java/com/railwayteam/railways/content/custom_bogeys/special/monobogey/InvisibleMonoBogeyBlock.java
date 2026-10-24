@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.custom_bogeys.special.monobogey;
 
+import net.minecraft.resources.Identifier;
+
 import com.railwayteam.railways.port.create.track.TrackMaterialData;
 
 import com.railwayteam.railways.port.create.track.TrackType;
@@ -67,15 +69,15 @@ public class InvisibleMonoBogeyBlock extends AbstractMonoBogeyBlock<InvisibleMon
     public boolean isOnIncompatibleTrack(Carriage carriage, boolean leading) {
         TravellingPoint point = leading ? carriage.getLeadingPoint() : carriage.getTrailingPoint();
         CarriageBogey bogey = leading ? carriage.leadingBogey() : carriage.trailingBogey();
-        return TrackMaterialData.of(point.edge.getTrackMaterial()).trackType != getTrackType(bogey.getStyle())
-            && TrackMaterialData.of(point.edge.getTrackMaterial()).trackType != CRTrackType.WIDE_GAUGE
-            && TrackMaterialData.of(point.edge.getTrackMaterial()).trackType != CRTrackType.NARROW_GAUGE
-            && TrackMaterialData.of(point.edge.getTrackMaterial()).trackType != CRTrackType.STANDARD;
+        return TrackMaterialData.typeId(point.edge.getTrackMaterial()) != getTrackType(bogey.getStyle())
+            && TrackMaterialData.typeId(point.edge.getTrackMaterial()) != CRTrackType.WIDE_GAUGE.id
+            && TrackMaterialData.typeId(point.edge.getTrackMaterial()) != CRTrackType.NARROW_GAUGE.id
+            && TrackMaterialData.typeId(point.edge.getTrackMaterial()) != CRTrackType.STANDARD.id;
     }
 
     @Override
-    public Set<TrackType> getValidPathfindingTypes(BogeyStyle style) {
-        return ImmutableSet.of(getTrackType(style), CRTrackType.WIDE_GAUGE, CRTrackType.NARROW_GAUGE, CRTrackType.STANDARD);
+    public Set<Identifier> getValidPathfindingTypes(BogeyStyle style) {
+        return ImmutableSet.of(getTrackType(style), CRTrackType.WIDE_GAUGE.id, CRTrackType.NARROW_GAUGE.id, CRTrackType.STANDARD.id);
     }
 
     @Override

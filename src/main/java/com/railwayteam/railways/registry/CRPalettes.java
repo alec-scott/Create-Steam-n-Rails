@@ -26,7 +26,6 @@ import com.railwayteam.railways.ModSetup;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.base.EnumFilledList;
 import com.railwayteam.railways.base.data.BuilderTransformers;
-import com.railwayteam.railways.base.data.compat.emi.EmiRecipeDefaultsGen;
 import com.railwayteam.railways.content.animated_flywheel.FlywheelMovementBehaviour;
 import com.railwayteam.railways.content.palettes.FloatingMetalLadderBlock;
 import com.railwayteam.railways.content.palettes.PalettesColor;
@@ -49,7 +48,7 @@ import com.zurrtum.create.content.decoration.slidingDoor.SlidingDoorMovementBeha
 import com.zurrtum.create.content.kinetics.flywheel.FlywheelBlock;
 import com.zurrtum.create.client.foundation.block.connected.SimpleCTBehaviour;
 import com.railwayteam.railways.port.create.foundation.data.CreateRegistrate;
-import com.zurrtum.create.client.foundation.item.ItemDescription;
+import com.railwayteam.railways.port.create.ItemDescriptionKeys;
 import com.railwayteam.railways.port.registrate.builders.BlockBuilder;
 import com.railwayteam.railways.port.registrate.providers.ProviderType;
 import com.railwayteam.railways.port.registrate.providers.loot.RegistrateBlockLootTables;
@@ -236,14 +235,7 @@ public class CRPalettes {
                 : registrar.register(transformer, palettesColor, dyeGroupTag);
 
             blocks.put(palettesColor, registered);
-
-            if (palettesColor.isNetherite()) {
-                EmiRecipeDefaultsGen.TAG_DEFAULTS.put(dyeGroupTag, blocks.get(PalettesColor.NETHERITE).getId());
-            }
-
-            if (cycleGroupCategory != null && cycleGroupCategory.baseStyle.get() == this) {
-                EmiRecipeDefaultsGen.TAG_DEFAULTS.put(CYCLE_GROUPS.get(Pair.of(palettesColor, cycleGroupCategory)), registered.getId());
-            }
+            // PORT-NOTE(fabric): EMI recipe-default bookkeeping (datagen only) removed with the EMI compat.
         }
 
         public BlockEntry<?> get(PalettesColor color) {
@@ -304,7 +296,7 @@ public class CRPalettes {
             .item()
             .transform(BuilderTransformers.locoMetalItem(color))
             .tag(tags)
-            .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.generic_radial"))
+            .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.generic_radial"))
             .build()
             .register();
     }
@@ -319,7 +311,7 @@ public class CRPalettes {
             .item()
             .transform(BuilderTransformers.locoMetalItem(color))
             .tag(tags)
-            .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.generic_radial"))
+            .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.generic_radial"))
             .build()
             .register();
     }
@@ -334,7 +326,7 @@ public class CRPalettes {
             .item()
             .transform(BuilderTransformers.locoMetalItem(color))
             .tag(tags)
-            .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.generic_radial"))
+            .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.generic_radial"))
             .build()
             .register();
     }
@@ -349,7 +341,7 @@ public class CRPalettes {
             .item()
             .transform(BuilderTransformers.locoMetalItem(color))
             .tag(tags)
-            .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.generic_radial"))
+            .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.generic_radial"))
             .build()
             .register();
     }
@@ -373,7 +365,7 @@ public class CRPalettes {
             .item()
             .transform(BuilderTransformers.locoMetalItem(color))
             .tag(tags)
-            .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.generic_radial"))
+            .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.generic_radial"))
             .build()
             .register();
     }
@@ -387,7 +379,7 @@ public class CRPalettes {
             .item()
             .transform(BuilderTransformers.locoMetalItem(color))
             .tag(tags)
-            .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.generic_radial"))
+            .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.generic_radial"))
             .build()
             .register();
     }
@@ -401,7 +393,7 @@ public class CRPalettes {
             .item()
             .transform(BuilderTransformers.locoMetalItem(color))
             .tag(tags)
-            .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.generic_radial"))
+            .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.generic_radial"))
             .build()
             .register();
     }
@@ -415,7 +407,7 @@ public class CRPalettes {
             .item()
             .transform(BuilderTransformers.locoMetalItem(color))
             .tag(tags)
-            .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.generic_radial"))
+            .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.generic_radial"))
             .build()
             .register();
     }
@@ -617,7 +609,7 @@ public class CRPalettes {
                 .item()
                 .transform(BuilderTransformers.locoMetalItem(color))
                 .tag(tags)
-                .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.generic_radial"))
+                .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.generic_radial"))
                 .build()
                 .register();
     }

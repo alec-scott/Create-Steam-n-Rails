@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.smokestack;
 
+import net.minecraft.util.ARGB;
+
 import com.railwayteam.railways.config.CRConfigs;
 import com.railwayteam.railways.content.smokestack.particles.legacy.SmokeParticleData;
 import com.railwayteam.railways.content.smokestack.particles.puffs.PuffSmokeParticle;
@@ -72,8 +74,8 @@ public record SmokeEmissionParams(
             case OLD -> {
                 ParticleOptions particleType;
                 if (color != null) {
-                    float[] c = color.getTextureDiffuseColors();
-                    particleType = new SmokeParticleData(stationary, c[0], c[1], c[2]);
+                    int c = color.getTextureDiffuseColor();
+                    particleType = new SmokeParticleData(stationary, ARGB.redFloat(c), ARGB.greenFloat(c), ARGB.blueFloat(c));
                 } else {
                     particleType = new SmokeParticleData(stationary);
                 }

@@ -44,9 +44,10 @@ public abstract class MinecartBlock extends AbstractMinecart {
     return content;
   }
 
+  // PORT-NOTE(fabric): 1.21.2+ minecarts drop one combined item (like the chest minecart), which is also the pick result.
   @Override
   protected @NotNull Item getDropItem() {
-    return content.getBlock().asItem();
+    return getPickResult().getItem();
   }
 
   /*@Override

@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.buffer.single_deco;
 
+import com.mojang.serialization.MapCodec;
+
 import com.railwayteam.railways.port.registrate.util.nullness.NonNullFunction;
 import com.zurrtum.create.catnip.math.VoxelShaper;
 import net.minecraft.core.BlockPos;
@@ -33,6 +35,12 @@ public class GenericDyeableSingleBufferBlock extends AbstractDyeableSingleBuffer
     public GenericDyeableSingleBufferBlock(Properties properties, VoxelShaper shaper) {
         super(properties);
         this.shaper = shaper;
+    }
+
+    // PORT-NOTE(fabric): blocks need a codec since 1.20.5; the shaper isn't data, so the codec captures this block's
+    @Override
+    protected MapCodec<? extends GenericDyeableSingleBufferBlock> codec() {
+        return simpleCodec(properties -> new GenericDyeableSingleBufferBlock(properties, shaper));
     }
 
     public static NonNullFunction<Properties, GenericDyeableSingleBufferBlock> createFactory(VoxelShaper shaper) {

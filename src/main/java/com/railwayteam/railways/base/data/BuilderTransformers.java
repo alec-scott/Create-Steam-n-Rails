@@ -61,9 +61,12 @@ import com.railwayteam.railways.util.FusedSupplier;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.content.contraptions.behaviour.DoorMovingInteraction;
 import com.zurrtum.create.content.decoration.MetalLadderBlock;
+import com.zurrtum.create.content.decoration.copycat.CopycatBlock;
+import com.railwayteam.railways.port.create.foundation.data.TagGen;
+import com.railwayteam.railways.util.client.CopycatTints;
 import com.zurrtum.create.content.kinetics.flywheel.FlywheelBlock;
 import com.railwayteam.railways.port.create.foundation.data.SharedProperties;
-import com.zurrtum.create.client.foundation.item.ItemDescription;
+import com.railwayteam.railways.port.create.ItemDescriptionKeys;
 import com.railwayteam.railways.port.registrate.builders.BlockBuilder;
 import com.railwayteam.railways.port.registrate.builders.ItemBuilder;
 import com.railwayteam.railways.port.registrate.providers.DataGenContext;
@@ -105,6 +108,18 @@ import static com.railwayteam.railways.port.create.CreateTransforms.interactionB
 import static com.railwayteam.railways.port.create.foundation.data.TagGen.pickaxeOnly;
 
 public class BuilderTransformers {
+    // PORT-NOTE(fabric): was Create's BuilderTransformers.copycat(), which Create Fly doesn't have (it registers its
+    // copycats by hand). Same properties as Create Fly's copycat step; the blockstate (air) is in the committed resources.
+    public static <B extends CopycatBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> copycat() {
+        return b -> b.initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.forceSolidOn()
+                .noOcclusion()
+                .mapColor(MapColor.NONE)
+                .isValidSpawn((state, level, pos, type) -> false))
+            .color(() -> CopycatTints::wrapped)
+            .transform(TagGen.axeOrPickaxe());
+    }
+
     public static <B extends MonoBogeyBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> monobogey() {
         return com.railwayteam.railways.base.data.fabric.BuilderTransformersImpl.monobogey();
     }
@@ -245,7 +260,7 @@ public class BuilderTransformers {
             .tag(CRTags.AllBlockTags.LOCOMETAL_BOILERS.tag)
             .tag(AllBlockTags.COPYCAT_DENY)
             .transform(pickaxeOnly())
-            .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.boiler"))
+            .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.boiler"))
             .blockstate(BoilerGenerator.create(color, wrapping)::generate);
     }
 

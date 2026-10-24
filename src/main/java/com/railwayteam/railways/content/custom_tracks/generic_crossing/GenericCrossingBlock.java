@@ -151,17 +151,7 @@ public class GenericCrossingBlock extends Block implements IBE<GenericCrossingBl
         return false;
     }
 
-    @Override
-    @Environment(EnvType.CLIENT)
-    public <Self extends Affine<Self>> PartialModel prepareTrackOverlay(Affine<Self> affine, BlockGetter blockGetter, BlockPos blockPos, BlockState blockState, BezierTrackPointLocation bezierTrackPointLocation, AxisDirection axisDirection, RenderedTrackOverlayType renderedTrackOverlayType) {
-        return AllBlocks.TRACK.prepareTrackOverlay(affine, blockGetter, blockPos, blockState, bezierTrackPointLocation, axisDirection, renderedTrackOverlayType);
-    }
-
-    @Override
-    @Environment(EnvType.CLIENT)
-    public PartialModel prepareAssemblyOverlay(BlockGetter world, BlockPos pos, BlockState state, Direction direction, PoseStack ms) {
-        return AllBlocks.TRACK.prepareAssemblyOverlay(world, pos, state, direction, ms);
-    }
+    // PORT-NOTE(fabric): track/assembly overlays are client renderers in Create Fly (AllTrackRenders, see CRBlockExtensions)
 
     @Override
     public TrackMaterial getMaterial() {
@@ -299,15 +289,16 @@ public class GenericCrossingBlock extends Block implements IBE<GenericCrossingBl
     }
 
     @Override
-    public void playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
-        super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
+    public BlockState playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
+        BlockState result = super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
         if (pLevel.isClientSide())
-            return;
+            return result;
         if (!pPlayer.isCreative())
-            return;
+            return result;
         withBlockEntityDo(pLevel, pPos, be -> {
             be.cancelDrops = true;
         });
+        return result;
     }
 
     @Override
@@ -330,20 +321,11 @@ public class GenericCrossingBlock extends Block implements IBE<GenericCrossingBl
         return IWrenchable.super.onSneakWrenched(state, context);
     }
 
-    @SuppressWarnings("deprecation")
+    // PORT-NOTE(fabric): onRemove is split in 1.21.5+: the drops happen in GenericCrossingBlockEntity.preRemoveSideEffects,
+    // the track graph update here (as Create Fly's TrackBlock does).
     @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!state.is(newState.getBlock())) {
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof GenericCrossingBlockEntity crossingBE && !crossingBE.cancelDrops) {
-                Item a = crossingBE.getPrimary().getBlock().asItem();
-                Item b = crossingBE.getSecondary().getBlock().asItem();
-                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(a));
-                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(b));
-            }
-
-            TrackPropagator.onRailRemoved(level, pos, state);
-            super.onRemove(state, level, pos, newState, isMoving);
-        }
+    public void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean isMoving) {
+        TrackPropagator.onRailRemoved(level, pos, state);
+        super.affectNeighborsAfterRemoval(state, level, pos, isMoving);
     }
 }

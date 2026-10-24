@@ -55,6 +55,6 @@ public class HandcarBlock extends CRBogeyBlock {
 
     @Override
     public double getWheelRadius() {
-        return super.wheelRadius() * 2;
+        return super.getWheelRadius() * 2;
     }
 }

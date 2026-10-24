@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.registry.commands;
 
+import net.minecraft.commands.Commands;
+
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -48,7 +50,7 @@ import static net.minecraft.commands.Commands.literal;
 public class ShadowRealmCommand {
     public static ArgumentBuilder<CommandSourceStack, ?> register() {
         return literal("shadow_realm")
-            .requires(cs -> cs.hasPermission(2))
+            .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
             .then(banish())
             .then(restore())
             .then(kill());

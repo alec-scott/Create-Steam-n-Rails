@@ -81,8 +81,8 @@ public class CREntities {
     }
 
     @Environment(EnvType.CLIENT)
-    private static EntityRenderer<AbstractMinecart> cartRenderer(Context ctx) {
-        return new MinecartRenderer<>(ctx, ModelLayers.MINECART);
+    private static MinecartRenderer cartRenderer(Context ctx) {
+        return new MinecartRenderer(ctx, ModelLayers.MINECART);
     }
 
     @SuppressWarnings("EmptyMethod")

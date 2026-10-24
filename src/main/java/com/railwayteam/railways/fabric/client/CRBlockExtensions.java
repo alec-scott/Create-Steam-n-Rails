@@ -22,6 +22,9 @@ import com.railwayteam.railways.content.custom_tracks.generic_crossing.GenericCr
 import com.railwayteam.railways.content.palettes.boiler.BoilerBlock;
 import com.railwayteam.railways.port.registrate.util.entry.RegistryEntry;
 import com.zurrtum.create.client.AllExtensions;
+import com.zurrtum.create.client.AllTrackRenders;
+import com.zurrtum.create.client.content.trains.track.StandardTrackBlockRenderer;
+import com.zurrtum.create.content.trains.track.ITrackBlock;
 import com.zurrtum.create.client.foundation.block.render.MultiPosDestructionHandler;
 import com.zurrtum.create.content.decoration.slidingDoor.SlidingDoorBlock;
 import com.zurrtum.create.content.trains.track.TrackBlock;
@@ -57,6 +60,10 @@ public final class CRBlockExtensions {
             } else if (block instanceof GenericCrossingBlock || block instanceof BoilerBlock || block instanceof SlidingDoorBlock) {
                 AllExtensions.BIG_OUTLINE.add(block);
             }
+            // Track and assembly overlays (upstream: ITrackBlock methods). Monorail and phantom tracks had their own
+            // overlays upstream; TODO(port): give them custom TrackBlockRenderers in the rendering pass.
+            if (block instanceof ITrackBlock trackBlock && AllTrackRenders.get(trackBlock) == null)
+                AllTrackRenders.register(trackBlock, StandardTrackBlockRenderer::new);
         }
     }
 }

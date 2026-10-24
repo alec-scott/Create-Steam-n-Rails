@@ -54,10 +54,8 @@ public class BlockStateBlockItem<T extends Comparable<T>> extends BlockItem {
         return (p) -> new BlockStateBlockItem<>(blockSupplier.get(), p, property, value, primary);
     }
 
-    @Override
-    public @NotNull String getDescriptionId() {
-        return this.getOrCreateDescriptionId();
-    }
+    // PORT-NOTE(fabric): the description id comes from the item's own id (Item.Properties) in 26.1, as the removed
+    // getDescriptionId override intended.
 
     /*@Override
     public void fillItemCategory(@NotNull CreativeModeTab category, @NotNull NonNullList<ItemStack> items) {

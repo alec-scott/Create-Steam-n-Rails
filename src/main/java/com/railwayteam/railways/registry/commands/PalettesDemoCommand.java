@@ -57,7 +57,7 @@ public class PalettesDemoCommand {
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     public static ArgumentBuilder<CommandSourceStack, ?> register() {
         return Commands.literal("palettes_demo")
-            .requires(cs -> cs.hasPermission(2))
+            .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
             .then(Commands.argument("pos", BlockPosArgument.blockPos())
                 .executes(ctx -> {
                     final BlockPos origin0 = BlockPosArgument.getLoadedBlockPos(ctx, "pos");

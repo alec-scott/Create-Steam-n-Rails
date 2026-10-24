@@ -26,7 +26,6 @@ import com.railwayteam.railways.content.buffer.DyeableBlockEntity;
 import com.railwayteam.railways.content.buffer.IMaterialAdaptingBuffer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
@@ -72,10 +71,11 @@ public class HeadstockBlockEntity extends DyeableBlockEntity implements IMateria
     protected void read(ValueInput compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         BlockState prevMaterial = material;
-        if (!compound.contains("Material"))
+        var stored = compound.read("Material", BlockState.CODEC);
+        if (stored.isEmpty())
             return;
 
-        material = NbtUtils.readBlockState(blockHolderGetter(), compound.childOrEmpty("Material"));
+        material = stored.get();
         if (material.isAir())
             material = Blocks.SPRUCE_PLANKS.defaultBlockState();
 
@@ -86,6 +86,6 @@ public class HeadstockBlockEntity extends DyeableBlockEntity implements IMateria
     @Override
     public void write(ValueOutput compound, boolean clientPacket) {
         super.write(compound, clientPacket);
-        compound.put("Material", NbtUtils.writeBlockState(material));
+        compound.store("Material", BlockState.CODEC, material);
     }
 }

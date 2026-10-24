@@ -177,7 +177,7 @@ public non-sealed class SmokeStackExtenderBlock extends Block implements ProperW
         BlockPos rootPos = findRoot(level, pos);
         BlockState rootState = level.getBlockState(rootPos);
         if (rootState.getBlock() instanceof VariableSmokeStackBlock rootBlock)
-            return rootBlock.use(rootState, level, rootPos, player, hand, new BlockHitResult(
+            return rootBlock.useItemOn(stack, rootState, level, rootPos, player, hand, new BlockHitResult(
                 hit.getLocation(),
                 hit.getDirection(),
                 rootPos,
@@ -226,11 +226,10 @@ public non-sealed class SmokeStackExtenderBlock extends Block implements ProperW
             VariableSmokeStackBlock.queueHeightUpdate(level, findRoot(level, pos));
     }
 
+    // PORT-NOTE(fabric): was onRemove (only when the block changed); 1.21.5+ calls this when the block is removed
     @Override
-    @SuppressWarnings("deprecation")
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (newState.getBlock() != this)
-            VariableSmokeStackBlock.queueHeightUpdate(level, findRoot(level, pos));
+    public void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+        VariableSmokeStackBlock.queueHeightUpdate(level, findRoot(level, pos));
     }
 
     @Override

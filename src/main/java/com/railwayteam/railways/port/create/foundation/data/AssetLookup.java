@@ -18,6 +18,14 @@ public final class AssetLookup {
         return state -> prov.models().getExistingFile(prov.modLoc("block/" + ctx.getName() + "/block"));
     }
 
+    /** Upstream signature: the model at {@code block/<name>/block[_suffix...]} (datagen only). */
+    public static ModelFile partialBaseModel(DataGenContext<?, ?> ctx, RegistrateBlockstateProvider prov, String... suffix) {
+        StringBuilder path = new StringBuilder("block/" + ctx.getName() + "/block");
+        for (String s : suffix)
+            path.append("_").append(s);
+        return prov.models().getExistingFile(prov.modLoc(path.toString()));
+    }
+
     public static <T extends Block> Function<BlockState, ModelFile> forPowered(DataGenContext<Block, T> ctx, RegistrateBlockstateProvider prov) {
         return state -> prov.models().getExistingFile(prov.modLoc("block/" + ctx.getName() + "/block" + (state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED) ? "_powered" : "")));
     }

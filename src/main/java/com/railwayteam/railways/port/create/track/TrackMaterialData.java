@@ -87,6 +87,14 @@ public final class TrackMaterialData {
 		return of(material).trackType.id;
 	}
 
+	/** Upstream Create's {@code TrackMaterial.deserialize}: blank (data from Create 0.5) or unknown ids give Andesite. */
+	public static TrackMaterial deserialize(String serializedName) {
+		if (serializedName.isBlank())
+			return AllTrackMaterials.ANDESITE;
+		Identifier id = Identifier.tryParse(serializedName);
+		return id == null ? AllTrackMaterials.ANDESITE : TrackMaterial.fromId(id);
+	}
+
 	public Optional<Ingredient> sleeperIngredient() {
 		return sleeperIngredient.get();
 	}

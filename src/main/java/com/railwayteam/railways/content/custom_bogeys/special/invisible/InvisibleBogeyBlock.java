@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.custom_bogeys.special.invisible;
 
+import net.minecraft.resources.Identifier;
+
 import net.minecraft.world.level.LevelReader;
 
 import com.railwayteam.railways.port.create.track.TrackMaterialData;
@@ -58,8 +60,8 @@ public class InvisibleBogeyBlock extends AbstractBogeyBlock<InvisibleBogeyBlockE
 	}
 
 	@Override
-	public TrackType getTrackType(BogeyStyle style) {
-		return CRTrackType.STANDARD;
+	public Identifier getTrackType(BogeyStyle style) {
+		return CRTrackType.STANDARD.id;
 	}
 
 	@Override
@@ -70,15 +72,15 @@ public class InvisibleBogeyBlock extends AbstractBogeyBlock<InvisibleBogeyBlockE
 		if (point.edge == null)
 			return false;
 		
-		return TrackMaterialData.of(point.edge.getTrackMaterial()).trackType != getTrackType(bogey.getStyle())
-			&& TrackMaterialData.of(point.edge.getTrackMaterial()).trackType != CRTrackType.WIDE_GAUGE
-			&& TrackMaterialData.of(point.edge.getTrackMaterial()).trackType != CRTrackType.NARROW_GAUGE
-			&& TrackMaterialData.of(point.edge.getTrackMaterial()).trackType != CRTrackType.MONORAIL;
+		return TrackMaterialData.typeId(point.edge.getTrackMaterial()) != getTrackType(bogey.getStyle())
+			&& TrackMaterialData.typeId(point.edge.getTrackMaterial()) != CRTrackType.WIDE_GAUGE.id
+			&& TrackMaterialData.typeId(point.edge.getTrackMaterial()) != CRTrackType.NARROW_GAUGE.id
+			&& TrackMaterialData.typeId(point.edge.getTrackMaterial()) != CRTrackType.MONORAIL.id;
 	}
 
 	@Override
-	public Set<TrackType> getValidPathfindingTypes(BogeyStyle style) {
-		return ImmutableSet.of(getTrackType(style), CRTrackType.WIDE_GAUGE, CRTrackType.NARROW_GAUGE, CRTrackType.MONORAIL);
+	public Set<Identifier> getValidPathfindingTypes(BogeyStyle style) {
+		return ImmutableSet.of(getTrackType(style), CRTrackType.WIDE_GAUGE.id, CRTrackType.NARROW_GAUGE.id, CRTrackType.MONORAIL.id);
 	}
 
 	@Override

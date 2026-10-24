@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin;
 
+import net.minecraft.resources.Identifier;
+
 import com.railwayteam.railways.port.create.track.TrackMaterialData;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -156,12 +158,12 @@ public abstract class MixinNavigation implements IWaypointableNavigation, IGener
 
         // Cache the list of track types that the train can travel on
         boolean skipValidCheck = false;
-        Set<TrackType> validTypes = new HashSet<>();
+        Set<Identifier> validTypes = new HashSet<>();
         for (int i = 0; i < train.carriages.size(); i++) {
             Carriage carriage = train.carriages.get(i);
             AbstractBogeyBlock<?> leadingType = ((AccessorCarriageBogey) carriage.leadingBogey()).getType();
             AbstractBogeyBlock<?> trailingType = ((AccessorCarriageBogey) carriage.trailingBogey()).getType();
-            if (leadingType.getTrackType(carriage.leadingBogey().getStyle()) == CRTrackType.UNIVERSAL) { // todo PR this into Create
+            if (leadingType.getTrackType(carriage.leadingBogey().getStyle()) == CRTrackType.UNIVERSAL.id) { // todo PR this into Create
                 if (i == 0) {
                     skipValidCheck = true;
                 }
@@ -174,7 +176,7 @@ public abstract class MixinNavigation implements IWaypointableNavigation, IGener
                 skipValidCheck = false;
             }
             if (carriage.isOnTwoBogeys()) {
-                if (trailingType.getTrackType(carriage.trailingBogey().getStyle()) != CRTrackType.UNIVERSAL) {
+                if (trailingType.getTrackType(carriage.trailingBogey().getStyle()) != CRTrackType.UNIVERSAL.id) {
                     if (skipValidCheck) {
                         validTypes.addAll(trailingType.getValidPathfindingTypes(carriage.trailingBogey().getStyle()));
                     } else {
@@ -309,7 +311,7 @@ public abstract class MixinNavigation implements IWaypointableNavigation, IGener
                 continue;
 
             for (Map.Entry<TrackNode, TrackEdge> target : validTargets) {
-                if (!(skipValidCheck || validTypes.contains(TrackMaterialData.of(target.getValue().getTrackMaterial()).trackType) || TrackMaterialData.of(target.getValue().getTrackMaterial()).trackType == CRTrackType.UNIVERSAL))
+                if (!(skipValidCheck || validTypes.contains(TrackMaterialData.typeId(target.getValue().getTrackMaterial())) || TrackMaterialData.of(target.getValue().getTrackMaterial()).trackType == CRTrackType.UNIVERSAL))
                     continue;
                 TrackNode newNode = target.getKey();
                 TrackEdge newEdge = target.getValue();

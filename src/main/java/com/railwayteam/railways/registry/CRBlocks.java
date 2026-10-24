@@ -103,7 +103,7 @@ import com.zurrtum.create.content.trains.track.TrackMaterial;
 import com.railwayteam.railways.port.create.ItemUseOverrides;
 import com.railwayteam.railways.port.create.foundation.data.CreateRegistrate;
 import com.railwayteam.railways.port.create.foundation.data.SharedProperties;
-import com.zurrtum.create.client.foundation.item.ItemDescription;
+import com.railwayteam.railways.port.create.ItemDescriptionKeys;
 import com.railwayteam.railways.port.registrate.providers.DataGenContext;
 import com.railwayteam.railways.port.registrate.providers.RegistrateBlockstateProvider;
 import com.railwayteam.railways.port.registrate.util.DataIngredient;
@@ -143,7 +143,7 @@ import static com.railwayteam.railways.port.create.CreateTransforms.displaySourc
 import static com.railwayteam.railways.port.create.CreateTransforms.displayTarget;
 import static com.railwayteam.railways.port.create.CreateTransforms.interactionBehaviour;
 import static com.railwayteam.railways.port.create.CreateTransforms.movementBehaviour;
-import static com.simibubi.create.foundation.data.BuilderTransformers.copycat;
+import static com.railwayteam.railways.base.data.BuilderTransformers.copycat;
 import static com.railwayteam.railways.port.create.foundation.data.ModelGen.customItemModel;
 import static com.railwayteam.railways.port.create.foundation.data.TagGen.*;
 
@@ -249,9 +249,9 @@ public class CRBlocks {
                 .tag(cycleTag)
             .onRegisterAfter(Registries.ITEM, v -> {
                 if (styled)
-                    ItemDescription.useKey(v, "block.railways.smokestack");
+                    ItemDescriptionKeys.useKey(v, "block.railways.smokestack");
                 else
-                    ItemDescription.useKey(v, "block.railways.smokestack_caboosestyle");
+                    ItemDescriptionKeys.useKey(v, "block.railways.smokestack_caboosestyle");
             })
             .build()
             .register();
@@ -303,7 +303,7 @@ public class CRBlocks {
             ))
             .tag(cycleTag)
             .build()
-            .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.smokestack"))
+            .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.smokestack"))
             .register();
 
         BlockEntry<SmokeStackExtenderBlock> EXTENDER = REGISTRATE.block("smokestack_" + variant + "_extension", p -> new SmokeStackExtenderBlock(p, rotType, shape, cycleGroupSupplier, baseSupplier, variationType.property, variationType.defaultPart))
@@ -791,7 +791,7 @@ public class CRBlocks {
         .item(TrackBufferBlockItem.ofType(CREdgePointTypes.BUFFER))
         .transform(BuilderTransformers.variantBufferItem())
         .transform(customItemModel())
-        .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.track_buffer"))
+        .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.track_buffer"))
         .register();
 
     public static final BlockEntry<NarrowTrackBufferBlock> TRACK_BUFFER_NARROW = REGISTRATE.block("buffer_narrow", NarrowTrackBufferBlock::new)
@@ -864,7 +864,7 @@ public class CRBlocks {
         .item()
         .transform(BuilderTransformers.variantBufferItem())
         .model((c, p) -> p.withExistingParent("item/" + c.getName(), Railways.asResource("block/buffer/single_deco/big_buffer")))
-        .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.buffer"))
+        .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.buffer"))
         .build()
         .register();
 
@@ -878,7 +878,7 @@ public class CRBlocks {
         .item()
         .transform(BuilderTransformers.variantBufferItem())
         .model((c, p) -> p.withExistingParent("item/" + c.getName(), Railways.asResource("block/buffer/single_deco/small_buffer")))
-        .onRegisterAfter(Registries.ITEM, v -> ItemDescription.useKey(v, "block.railways.buffer"))
+        .onRegisterAfter(Registries.ITEM, v -> ItemDescriptionKeys.useKey(v, "block.railways.buffer"))
         .build()
         .register();
 

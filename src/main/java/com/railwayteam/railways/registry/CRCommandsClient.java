@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.registry;
 
+import net.minecraft.commands.Commands;
+
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.CommandNode;
@@ -40,7 +42,7 @@ public class CRCommandsClient {
 
     public static void register(CommandDispatcher<SharedSuggestionProvider> dispatcher) {
         var railwaysCommand = literal("railways_client")
-            .requires(cs -> cs.hasPermission(0))
+            .requires(Commands.hasPermission(Commands.LEVEL_ALL))
             .then(ClearCasingCacheCommand.register())
             .then(ClearCapCacheCommand.register())
             .then(ReloadDevCapesCommand.register())

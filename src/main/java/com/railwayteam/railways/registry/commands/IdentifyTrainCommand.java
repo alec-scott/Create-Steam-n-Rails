@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.registry.commands;
 
+import net.minecraft.commands.Commands;
+
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.railwayteam.railways.util.UsernameUtils;
 import com.zurrtum.create.client.content.contraptions.ContraptionHandlerClient;
@@ -43,7 +45,7 @@ import static com.railwayteam.railways.multiloader.ClientCommands.*;
 public class IdentifyTrainCommand {
     public static ArgumentBuilder<SharedSuggestionProvider, ?> register() {
         return literal("identify_train")
-            .requires(cs -> cs.hasPermission(0))
+            .requires(Commands.hasPermission(Commands.LEVEL_ALL))
             .executes(ctx -> $identify(ctx.getSource()));
     }
 

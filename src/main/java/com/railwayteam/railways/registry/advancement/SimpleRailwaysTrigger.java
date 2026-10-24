@@ -15,47 +15,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.railwayteam.railways.registry.advancement;
 
-import com.google.gson.JsonObject;
-import net.minecraft.advancements.criterion.ContextAwarePredicate;
-import net.minecraft.advancements.criterion.DeserializationContext;
-import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerPlayer;
+import com.railwayteam.railways.Railways;
+import com.zurrtum.create.foundation.advancement.CreateTrigger;
 
-import org.jetbrains.annotations.Nullable;
-import java.util.List;
-import java.util.function.Supplier;
-
-public class SimpleRailwaysTrigger extends CriterionTriggerBase<SimpleRailwaysTrigger.Instance> {
-
+/**
+ * A trigger fired directly by Railways code (an advancement's built-in criterion).
+ *
+ * <p>PORT-NOTE(fabric): upstream copied Create's trigger base classes; Create Fly's {@link CreateTrigger} is the 26.1
+ * equivalent (a unit-codec condition).</p>
+ */
+public class SimpleRailwaysTrigger extends CreateTrigger {
 	public SimpleRailwaysTrigger(String id) {
-		super(id);
+		super(Railways.asResource(id));
 	}
 
-	@Override
-	public Instance createInstance(JsonObject json, DeserializationContext context) {
-		return new Instance(getId());
-	}
-
-	public void trigger(ServerPlayer player) {
-		super.trigger(player, null);
-	}
-
-	public Instance instance() {
-		return new Instance(getId());
-	}
-
-	public static class Instance extends CriterionTriggerBase.Instance {
-
-		public Instance(Identifier idIn) {
-			super(idIn, ContextAwarePredicate.ANY);
-		}
-
-		@Override
-		protected boolean test(@Nullable List<Supplier<Object>> suppliers) {
-			return true;
-		}
+	public Conditions instance() {
+		return new Conditions();
 	}
 }

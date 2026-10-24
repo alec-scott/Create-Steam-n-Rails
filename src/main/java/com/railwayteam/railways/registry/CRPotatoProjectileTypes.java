@@ -19,11 +19,12 @@
 package com.railwayteam.railways.registry;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.zurrtum.create.api.registry.CreateRegistryKeys;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.content.palettes.painting.PaintPitcherItem;
 import com.zurrtum.create.api.equipment.potatoCannon.PotatoCannonProjectileType;
 import com.zurrtum.create.api.equipment.potatoCannon.PotatoProjectileBlockHitAction;
-import com.simibubi.create.api.registry.CreateBuiltInRegistries;
 import com.zurrtum.create.api.registry.CreateRegistries;
 import com.zurrtum.create.content.equipment.potatoCannon.AllPotatoProjectileEntityHitActions.PotionEffect;
 import com.railwayteam.railways.port.registrate.util.entry.ItemEntry;
@@ -55,13 +56,13 @@ public class CRPotatoProjectileTypes {
     }
 
     private static void register(BootstrapContext<PotatoCannonProjectileType> ctx, String name, PotatoCannonProjectileType.Builder builder) {
-        ctx.register(ResourceKey.create(CreateRegistries.POTATO_PROJECTILE_TYPE, Railways.asResource(name)), builder.build());
+        ctx.register(ResourceKey.create(CreateRegistryKeys.POTATO_PROJECTILE_TYPE, Railways.asResource(name)), builder.build());
     }
 
     public enum PaintAction implements PotatoProjectileBlockHitAction {
         INSTANCE;
 
-        public static final Codec<PaintAction> CODEC = Codec.unit(INSTANCE);
+        public static final MapCodec<PaintAction> CODEC = MapCodec.unit(INSTANCE);
 
         @Override
         public boolean execute(LevelAccessor level, ItemStack projectile, BlockHitResult ray) {
@@ -73,13 +74,13 @@ public class CRPotatoProjectileTypes {
         }
 
         @Override
-        public Codec<? extends PotatoProjectileBlockHitAction> codec() {
+        public MapCodec<? extends PotatoProjectileBlockHitAction> codec() {
             return CODEC;
         }
     }
 
-    private static void registerAction(String name, Codec<? extends PotatoProjectileBlockHitAction> codec) {
-        Registry.register(CreateBuiltInRegistries.POTATO_PROJECTILE_BLOCK_HIT_ACTION, Railways.asResource(name), codec);
+    private static void registerAction(String name, MapCodec<? extends PotatoProjectileBlockHitAction> codec) {
+        Registry.register(CreateRegistries.POTATO_PROJECTILE_BLOCK_HIT_ACTION, Railways.asResource(name), codec);
     }
 
     public static void register() {

@@ -46,7 +46,7 @@ public class TrackBufferBlockEntity extends DyeableBlockEntity implements Transf
 
     @Override
     protected AABB createRenderBoundingBox() {
-        return new AABB(worldPosition, edgePoint.getGlobalPosition()).inflate(2);
+        return AABB.encapsulatingFullBlocks(worldPosition, edgePoint.getGlobalPosition()).inflate(2);
     }
 
     @Override

@@ -19,8 +19,8 @@
 package com.railwayteam.railways.content.custom_tracks.casing.fabric;
 
 import com.railwayteam.railways.content.custom_tracks.casing.CasingCollisionBlock;
-import io.github.fabricators_of_create.porting_lib.block.CustomLandingEffectsBlock;
-import io.github.fabricators_of_create.porting_lib.block.CustomRunningEffectsBlock;
+import com.zurrtum.create.foundation.block.LandingEffectControlBlock;
+import com.zurrtum.create.foundation.block.RunningEffectControlBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -29,7 +29,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 
-public class CasingCollisionBlockImpl extends CasingCollisionBlock implements CustomLandingEffectsBlock, CustomRunningEffectsBlock {
+public class CasingCollisionBlockImpl extends CasingCollisionBlock implements LandingEffectControlBlock, RunningEffectControlBlock {
     public CasingCollisionBlockImpl(Properties properties) {
         super(properties);
     }
@@ -39,7 +39,7 @@ public class CasingCollisionBlockImpl extends CasingCollisionBlock implements Cu
     }
 
     @Override
-    public boolean addLandingEffects(BlockState state1, ServerLevel level, BlockPos pos, BlockState state2, LivingEntity entity, int numberOfParticles) {
+    public boolean addLandingEffects(BlockState state, ServerLevel level, BlockPos pos, LivingEntity entity, double distance) {
         return true;
     }
 

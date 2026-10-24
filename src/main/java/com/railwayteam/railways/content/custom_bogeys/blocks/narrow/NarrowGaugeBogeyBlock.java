@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.custom_bogeys.blocks.narrow;
 
+import net.minecraft.resources.Identifier;
+
 import com.railwayteam.railways.content.custom_bogeys.blocks.base.CRBogeyBlock;
 import com.railwayteam.railways.registry.CRBogeyStyles;
 import com.railwayteam.railways.registry.CRTrackMaterials.CRTrackType;
@@ -44,8 +46,8 @@ public class NarrowGaugeBogeyBlock extends CRBogeyBlock {
     }
 
     @Override
-    public TrackType getTrackType(BogeyStyle style) {
-        return CRTrackType.NARROW_GAUGE;
+    public Identifier getTrackType(BogeyStyle style) {
+        return CRTrackType.NARROW_GAUGE.id;
     }
 
     @Override

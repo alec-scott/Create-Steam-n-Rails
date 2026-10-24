@@ -1,6 +1,6 @@
 package com.railwayteam.railways.port.create.foundation.data;
 
-import com.railwayteam.railways.port.registrate.Registrate;
+import com.railwayteam.railways.port.registrate.AbstractRegistrate;
 import com.railwayteam.railways.port.registrate.builders.Builder;
 import com.railwayteam.railways.port.registrate.builders.NoConfigBuilder;
 import com.railwayteam.railways.port.porting_lib.util.DeferredHolder;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-public class CreateRegistrate extends Registrate {
+public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
     private static final Map<RegistryEntry<?, ?>, ResourceKey<CreativeModeTab>> TAB_LOOKUP = new IdentityHashMap<>();
 
     @Nullable
@@ -60,9 +60,20 @@ public class CreateRegistrate extends Registrate {
         return block -> BLOCK_MODELS.put(block, factory);
     }
 
+    /** Connected texture behaviours by block, turned into Create Fly CT models on the client. */
+    private static final Map<Block, Supplier<? extends com.zurrtum.create.client.foundation.block.connected.ConnectedTextureBehaviour>> CONNECTED_TEXTURES = new LinkedHashMap<>();
+
+    /** Upstream Create's {@code CreateRegistrate.connectedTextures} (client resolved, like {@link #blockModel}). */
+    public static <T extends Block> NonNullConsumer<? super T> connectedTextures(
+            Supplier<? extends com.zurrtum.create.client.foundation.block.connected.ConnectedTextureBehaviour> behaviour) {
+        return block -> CONNECTED_TEXTURES.put(block, behaviour);
+    }
+
     /** Client only: call once during client init. */
     public static void registerBlockModels() {
         BLOCK_MODELS.forEach((block, factory) -> com.zurrtum.create.client.AllModels.register(block, factory.get()));
+        CONNECTED_TEXTURES.forEach((block, behaviour) -> com.zurrtum.create.client.AllModels.register(block,
+            com.zurrtum.create.client.infrastructure.model.CTModel.of(behaviour.get())));
     }
 
     public static boolean isInCreativeTab(RegistryEntry<?, ?> entry, ResourceKey<CreativeModeTab> tab) {

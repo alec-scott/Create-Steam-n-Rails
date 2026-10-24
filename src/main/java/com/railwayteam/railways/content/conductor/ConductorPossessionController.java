@@ -20,7 +20,6 @@ package com.railwayteam.railways.content.conductor;
 
 import com.railwayteam.railways.annotation.multiloader.MultiLoaderEvent;
 import com.railwayteam.railways.compat.Mods;
-import com.railwayteam.railways.compat.tweakeroo.TweakerooCompat;
 import com.railwayteam.railways.registry.CRPackets;
 import com.railwayteam.railways.util.packet.CameraMovePacket;
 import com.railwayteam.railways.util.packet.DismountCameraPacket;
@@ -185,7 +184,7 @@ public class ConductorPossessionController {
                             new ServerboundMovePlayerPacket.PosRot(cam.getX(), cam.getY(), cam.getZ(),
                                     cam.getYRot(), cam.getXRot(), cam.onGround())));
             }
-        } else if (wasMounted && !Mods.TWEAKEROO.runIfInstalled(() -> TweakerooCompat::inFreecam).orElse(false)) { // catch in case we didn't want to dismount
+        } else if (wasMounted /* PORT-NOTE(fabric): Tweakeroo freecam check dropped with the Tweakeroo compat */) { // catch in case we didn't want to dismount
             wasMounted = false;
             dismount();
             mc.levelRenderer.allChanged();

@@ -15,31 +15,30 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.railwayteam.railways.registry;
 
-import com.railwayteam.railways.registry.advancement.CriterionTriggerBase;
 import com.railwayteam.railways.registry.advancement.SimpleRailwaysTrigger;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public class CRTriggers {
 
-	private static final List<CriterionTriggerBase<?>> triggers = new LinkedList<>();
+	private static final List<SimpleRailwaysTrigger> triggers = new LinkedList<>();
 
 	public static SimpleRailwaysTrigger addSimple(String id) {
 		return add(new SimpleRailwaysTrigger(id));
 	}
 
-	private static <T extends CriterionTriggerBase<?>> T add(T instance) {
+	private static <T extends SimpleRailwaysTrigger> T add(T instance) {
 		triggers.add(instance);
 		return instance;
 	}
 
 	public static void register() {
-		triggers.forEach(CriteriaTriggers::register);
+		triggers.forEach(trigger -> Registry.register(BuiltInRegistries.TRIGGER_TYPES, trigger.id, trigger));
 	}
 
 }

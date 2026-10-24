@@ -32,7 +32,7 @@ import net.minecraft.network.chat.Style;
 public class TrainInfoCommand {
   public static ArgumentBuilder<CommandSourceStack, ?> register() {
     return Commands.literal("train_uuid")
-      .requires(cs -> cs.hasPermission(2))
+      .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
       .then(Commands.argument("name", StringArgumentType.string())
         .executes(ctx -> {
           String trainName = StringArgumentType.getString(ctx, "name");

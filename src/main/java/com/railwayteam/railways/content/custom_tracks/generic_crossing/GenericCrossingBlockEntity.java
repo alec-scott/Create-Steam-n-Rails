@@ -18,6 +18,12 @@
 
 package com.railwayteam.railways.content.custom_tracks.generic_crossing;
 
+import net.minecraft.world.item.ItemStack;
+
+import net.minecraft.world.Containers;
+
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+
 import net.minecraft.world.level.storage.ValueOutput;
 
 import net.minecraft.world.level.storage.ValueInput;
@@ -46,6 +52,16 @@ import java.util.List;
 public class GenericCrossingBlockEntity extends SmartBlockEntity implements IMergeableBE, IGenericCrossingTrackBE {
 
     boolean cancelDrops = false;
+
+    /** PORT-NOTE(fabric): was GenericCrossingBlock.onRemove; drops both tracks unless cancelled. */
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState oldState) {
+        super.preRemoveSideEffects(pos, oldState);
+        if (cancelDrops || level == null)
+            return;
+        Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(getPrimary().getBlock().asItem()));
+        Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(getSecondary().getBlock().asItem()));
+    }
     private Couple<TrackMaterial> materials = null;
 
     public GenericCrossingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -80,8 +96,8 @@ public class GenericCrossingBlockEntity extends SmartBlockEntity implements IMer
         super.read(tag, clientPacket);
 
         boolean updateMesh = false;
-        TrackMaterial primary = TrackMaterial.deserialize(tag.getStringOr("PrimaryMaterial", ""));
-        TrackMaterial secondary = TrackMaterial.deserialize(tag.getStringOr("SecondaryMaterial", ""));
+        TrackMaterial primary = TrackMaterialData.deserialize(tag.getStringOr("PrimaryMaterial", ""));
+        TrackMaterial secondary = TrackMaterialData.deserialize(tag.getStringOr("SecondaryMaterial", ""));
 
         if (primary != getPrimary() || secondary != getSecondary()) updateMesh = true;
 
@@ -100,8 +116,8 @@ public class GenericCrossingBlockEntity extends SmartBlockEntity implements IMer
     protected void write(ValueOutput tag, boolean clientPacket) {
         super.write(tag, clientPacket);
 
-        tag.putString("PrimaryMaterial", getPrimary().id.toString());
-        tag.putString("SecondaryMaterial", getSecondary().id.toString());
+        tag.putString("PrimaryMaterial", getPrimary().getId().toString());
+        tag.putString("SecondaryMaterial", getSecondary().getId().toString());
     }
 
     @Override

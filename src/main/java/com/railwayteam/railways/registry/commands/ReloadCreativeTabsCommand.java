@@ -28,7 +28,7 @@ import net.minecraft.network.chat.Component;
 public class ReloadCreativeTabsCommand {
     public static ArgumentBuilder<CommandSourceStack, ?> register() {
         return Commands.literal("reload_creative_tabs")
-            .requires(cs -> cs.hasPermission(2))
+            .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
             .executes(ctx -> {
                 AccessorCreativeModeTabs.setCACHED_PARAMETERS(null);
                 ctx.getSource().sendSuccess(() -> Component.literal("Reloaded Creative Tabs"), true);

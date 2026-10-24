@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.buffer.headstock;
 
+import net.minecraft.world.level.BlockAndLightGetter;
+
 import net.minecraft.world.level.LevelReader;
 
 import com.railwayteam.railways.content.buffer.BlockStateBlockItemGroup;
@@ -25,7 +27,6 @@ import com.railwayteam.railways.registry.CRBlockEntities;
 import com.railwayteam.railways.registry.CRBlocks;
 import com.railwayteam.railways.registry.CRShapes;
 import com.railwayteam.railways.util.AdventureUtils;
-import com.railwayteam.railways.util.client.OcclusionTestLevel;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.content.decoration.copycat.CopycatBlockEntity;
 import com.zurrtum.create.content.decoration.copycat.CopycatSpecialCases;
@@ -35,7 +36,6 @@ import com.zurrtum.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import com.zurrtum.create.content.kinetics.base.KineticBlockEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -90,7 +90,7 @@ public class CopycatHeadstockBlock extends WaterloggedCopycatBlock implements Bl
     }
 
     @Override
-    public boolean isIgnoredConnectivitySide(BlockAndTintGetter reader, BlockState state, Direction face,
+    public boolean isIgnoredConnectivitySide(BlockAndLightGetter reader, BlockState state, Direction face,
                                              BlockPos fromPos, BlockPos toPos) {
         Direction facing = state.getValue(FACING);
         BlockState toState = reader.getBlockState(toPos);
@@ -110,7 +110,7 @@ public class CopycatHeadstockBlock extends WaterloggedCopycatBlock implements Bl
     }
 
     @Override
-    public boolean canConnectTexturesToward(BlockAndTintGetter reader, BlockPos fromPos, BlockPos toPos, BlockState state) {
+    public boolean canConnectTexturesToward(BlockAndLightGetter reader, BlockPos fromPos, BlockPos toPos, BlockState state) {
         Direction facing = state.getValue(FACING);
         boolean upsideDown = state.getValue(UPSIDE_DOWN);
         BlockState toState = reader.getBlockState(toPos);
@@ -130,7 +130,7 @@ public class CopycatHeadstockBlock extends WaterloggedCopycatBlock implements Bl
                 .getStep();
 
 //        if (isOccluded(state, toState, facing.getOpposite()))
-        Direction delta = Direction.fromDelta(diff.getX(), diff.getY(), diff.getZ());
+        Direction delta = unitDirection(diff);
         if (isOccluded(state, toState, delta == null ? Direction.UP : delta))
             return true;
         if ((state.getValue(UPSIDE_DOWN) ? Direction.UP : Direction.DOWN) == delta)
@@ -155,47 +155,16 @@ public class CopycatHeadstockBlock extends WaterloggedCopycatBlock implements Bl
         return face.getAxis().isVertical() && (face == Direction.DOWN ^ state.getValue(UPSIDE_DOWN));
     }
 
-    // Can't use @Override because PortingLib's interface injection doesn't exist in common, but this method is supported cross-platform because of it anyway
-    @SuppressWarnings("unused")
-    public boolean supportsExternalFaceHiding(BlockState state) {
-        return true;
-    }
+    // PORT-NOTE(fabric): supportsExternalFaceHiding/hidesNeighborFace came from Porting Lib. Create Fly has no
+    // equivalent hook (its own copycat step face hiding is commented out too), so neighbour face culling between
+    // copycat headstocks is dropped.
 
-    // Can't use @Override because PortingLib's interface injection doesn't exist in common, but this method is supported cross-platform because of it anyway
-    @SuppressWarnings("unused")
-    public boolean hidesNeighborFace(BlockGetter level, BlockPos pos, BlockState state, BlockState neighborState,
-                                     Direction dir) {
-        pos = pos.immutable();
-        BlockPos otherPos = pos.relative(dir);
-        BlockState material = getMaterial(level, pos);
-        BlockState otherMaterial = getMaterial(level, otherPos);
-
-        // should hopefully never happen, but just in case
-        if (material == null) material = AllBlocks.COPYCAT_BASE.defaultBlockState();
-        if (otherMaterial == null) otherMaterial = AllBlocks.COPYCAT_BASE.defaultBlockState();
-
-        if (state.is(this) == neighborState.is(this)) {
-            if (CopycatSpecialCases.isBarsMaterial(material)
-                && CopycatSpecialCases.isBarsMaterial(otherMaterial))
-                return state.getValue(FACING) == neighborState.getValue(FACING)
-                    && state.getValue(UPSIDE_DOWN) == neighborState.getValue(UPSIDE_DOWN);
-            if (material.skipRendering(otherMaterial, dir.getOpposite()))
-                return isOccluded(state, neighborState, dir.getOpposite());
-            
-            OcclusionTestLevel occlusionTestLevel = new OcclusionTestLevel(level);
-            occlusionTestLevel.setBlock(pos, material);
-            occlusionTestLevel.setBlock(otherPos, otherMaterial);
-            if (material.isSolidRender(occlusionTestLevel, pos) && otherMaterial.isSolidRender(occlusionTestLevel, otherPos))
-                if(!Block.shouldRenderFace(otherMaterial, occlusionTestLevel, pos, dir.getOpposite(), otherPos)) {
-                    occlusionTestLevel.clear();
-                    return isOccluded(state, neighborState, dir.getOpposite());
-                }
-            
-            occlusionTestLevel.clear();
-        }
-
-        return state.getValue(FACING) == dir.getOpposite()
-            && material.skipRendering(neighborState, dir.getOpposite());
+    // PORT-NOTE(fabric): Direction.fromDelta was removed; same behaviour (null unless diff is a unit vector)
+    private static @Nullable Direction unitDirection(BlockPos diff) {
+        for (Direction d : Direction.values())
+            if (d.getUnitVec3i().equals(diff))
+                return d;
+        return null;
     }
 
     private static boolean isOccluded(BlockState state, BlockState other, Direction pDirection) {
@@ -323,20 +292,7 @@ public class CopycatHeadstockBlock extends WaterloggedCopycatBlock implements Bl
         return super.useItemOn(stack, pState, pLevel, pPos, pPlayer, pHand, pHit);
     }
 
-    @Environment(EnvType.CLIENT)
-    public static ItemColor wrappedItemColor() {
-        return new WrappedItemColor();
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static class WrappedItemColor implements ItemColor {
-
-        @Override
-        public int getColor(ItemStack itemStack, int i) {
-            return GrassColor.get(0.5D, 1.0D);
-        }
-
-    }
+    // PORT-NOTE(fabric): the item tint (GrassColor.get(0.5, 1.0)) moved to the item model definition (tints).
 
     @Override
     public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {

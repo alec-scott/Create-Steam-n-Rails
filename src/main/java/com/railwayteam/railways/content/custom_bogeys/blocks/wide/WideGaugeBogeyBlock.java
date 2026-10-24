@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.custom_bogeys.blocks.wide;
 
+import net.minecraft.resources.Identifier;
+
 import com.railwayteam.railways.content.custom_bogeys.blocks.base.CRBogeyBlock;
 import com.railwayteam.railways.registry.CRBogeyStyles;
 import com.railwayteam.railways.registry.CRTrackMaterials.CRTrackType;
@@ -42,8 +44,8 @@ public class WideGaugeBogeyBlock extends CRBogeyBlock {
     }
 
     @Override
-    public TrackType getTrackType(BogeyStyle style) {
-        return CRTrackType.WIDE_GAUGE;
+    public Identifier getTrackType(BogeyStyle style) {
+        return CRTrackType.WIDE_GAUGE.id;
     }
 
     @Override

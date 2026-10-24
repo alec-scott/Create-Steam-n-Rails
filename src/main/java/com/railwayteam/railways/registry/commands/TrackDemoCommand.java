@@ -43,7 +43,7 @@ import java.util.Optional;
 public class TrackDemoCommand {
     public static ArgumentBuilder<CommandSourceStack, ?> register() {
         return Commands.literal("track_demo")
-            .requires(cs -> cs.hasPermission(2))
+            .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
             .then(Commands.argument("pos", BlockPosArgument.blockPos())
                 .executes(ctx -> {
                     BlockPos origin = BlockPosArgument.getLoadedBlockPos(ctx, "pos");

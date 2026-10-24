@@ -120,7 +120,7 @@ public abstract class AbstractSmokeStackBlock<T extends SmartBlockEntity> extend
     @SuppressWarnings("deprecation")
     public InteractionResult useItemOn(ItemStack stack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
                                  BlockHitResult pHit) {
-        if (pPlayer.getItemInHand(pHand).is(AllItemTags.WRENCH)) {
+        if (pPlayer.getItemInHand(pHand).is(AllItemTags.TOOLS_WRENCH)) {
             return super.useItemOn(stack, pState, pLevel, pPos, pPlayer, pHand, pHit);
         }
         pState = pState.cycle(ENABLED);

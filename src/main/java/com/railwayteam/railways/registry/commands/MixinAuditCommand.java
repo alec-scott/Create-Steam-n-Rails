@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.registry.commands;
 
+import net.minecraft.commands.Commands;
+
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
@@ -29,7 +31,7 @@ import static com.railwayteam.railways.multiloader.ClientCommands.sendSuccess;
 public class MixinAuditCommand {
     public static ArgumentBuilder<SharedSuggestionProvider, ?> register() {
         return literal("mixin_audit")
-            .requires(cs -> cs.hasPermission(0))
+            .requires(Commands.hasPermission(Commands.LEVEL_ALL))
             .executes(ctx -> {
                 MixinEnvironment.getCurrentEnvironment().audit();
                 sendSuccess(ctx.getSource(), Component.literal("Audited mixins (see log for details)"));

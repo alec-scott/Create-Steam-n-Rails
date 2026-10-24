@@ -23,7 +23,7 @@ import com.railwayteam.railways.content.cycle_menu.TagCycleHandlerClient;
 import com.railwayteam.railways.content.cycle_menu.TagCycleHandlerServer;
 import com.railwayteam.railways.multiloader.Env;
 import com.railwayteam.railways.port.create.foundation.data.CreateRegistrate;
-import com.zurrtum.create.client.foundation.item.ItemDescription;
+import com.railwayteam.railways.port.create.ItemDescriptionKeys;
 import com.railwayteam.railways.port.registrate.builders.ItemBuilder;
 import com.railwayteam.railways.port.registrate.util.entry.BlockEntry;
 import com.railwayteam.railways.port.registrate.util.entry.ItemEntry;
@@ -124,7 +124,7 @@ public class BlockStateBlockItemGroup<C, T extends BlockStateBlockItemGroup.ISty
 
             items.put(v, REGISTRATE.item(v.getBlockId(context), BlockStateBlockItem.create(blockEntry::get, property, v, primary))
                 .lang(v.getLangName(context))
-                .onRegisterAfter(Registries.ITEM, i -> ItemDescription.useKey(i, tooltipKey))
+                .onRegisterAfter(Registries.ITEM, i -> ItemDescriptionKeys.useKey(i, tooltipKey))
                 .transform(itemTransformer)
                 .tag(cycleTag)
                 .model((c, p) -> p.withExistingParent("item/" + c.getName(), v.getModel(context)))

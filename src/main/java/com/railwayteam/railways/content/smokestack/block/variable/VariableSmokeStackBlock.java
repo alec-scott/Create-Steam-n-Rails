@@ -174,7 +174,7 @@ public non-sealed class VariableSmokeStackBlock extends StyledSmokeStackBlock im
     @Override
     public InteractionResult useItemOn(ItemStack stack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
         ItemStack heldItem = pPlayer.getItemInHand(pHand);
-        if (heldItem.is(getCloneItemStack(pLevel, pPos, pState).getItem())) {
+        if (heldItem.is(getCloneItemStack(pLevel, pPos, pState, false).getItem())) {
             incrementSize(pLevel, pPos);
             return InteractionResult.SUCCESS;
         }

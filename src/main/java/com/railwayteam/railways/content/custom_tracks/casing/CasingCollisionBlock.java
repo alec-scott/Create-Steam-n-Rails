@@ -74,7 +74,7 @@ public abstract class CasingCollisionBlock extends Block implements EntityBlock,
     @SuppressWarnings("deprecation")
     @Override
     public RenderShape getRenderShape(BlockState pState) {
-        return RenderShape.ENTITYBLOCK_ANIMATED;
+        return RenderShape.INVISIBLE;
     }
 
     @Override

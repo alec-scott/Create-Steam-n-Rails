@@ -191,7 +191,7 @@ public abstract class MixinCarriage implements ICarriageConductors, ICarriageBuf
             return false;
         if (TrackMaterialData.of(point.edge.getTrackMaterial()).trackType == CRTrackMaterials.CRTrackType.UNIVERSAL)
             return false;
-        if (CarriageBogeyUtils.getType(bogey).getTrackType(bogey.getStyle()) == CRTrackMaterials.CRTrackType.UNIVERSAL)
+        if (CarriageBogeyUtils.getType(bogey).getTrackType(bogey.getStyle()) == CRTrackMaterials.CRTrackType.UNIVERSAL.id)
             return false;
         return original;
     }

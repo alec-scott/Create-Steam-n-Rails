@@ -32,6 +32,7 @@ import com.railwayteam.railways.registry.CREdgePointTypes;
 import com.railwayteam.railways.registry.CRFluids;
 import com.railwayteam.railways.registry.CRKeys;
 import com.railwayteam.railways.registry.CRPackets;
+import com.railwayteam.railways.registry.CRSpriteShifts;
 import com.railwayteam.railways.util.CustomTrackOverlayRendering;
 import com.railwayteam.railways.util.DevCapeUtils;
 import com.railwayteam.railways.port.create.track.TrackMaterialModels;
@@ -67,6 +68,7 @@ public class RailwaysClient {
 
     CRKeys.register();
     CRBlockPartials.init();
+    CRSpriteShifts.register(); // PORT-NOTE(fabric): moved from ModSetup, sprite shifts are client only in Create Fly
 
     CustomTrackOverlayRendering.register(CREdgePointTypes.COUPLER, CRBlockPartials.COUPLER_BOTH);
     CustomTrackOverlayRendering.register(CREdgePointTypes.SWITCH, CRBlockPartials.SWITCH_RIGHT_TURN);

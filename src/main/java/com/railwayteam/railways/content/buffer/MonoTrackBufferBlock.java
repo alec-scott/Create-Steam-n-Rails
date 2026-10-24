@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.buffer;
 
+import com.mojang.serialization.MapCodec;
+
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.content.custom_bogeys.special.monobogey.MonoBogeyBlock;
 import net.minecraft.core.Direction;
@@ -34,6 +36,14 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 
 public class MonoTrackBufferBlock extends WoodVariantTrackBufferBlock {
+
+    // PORT-NOTE(fabric): blocks need a codec since 1.20.5
+    public static final MapCodec<MonoTrackBufferBlock> CODEC = simpleCodec(MonoTrackBufferBlock::new);
+
+    @Override
+    protected MapCodec<? extends MonoTrackBufferBlock> codec() {
+        return CODEC;
+    }
     public static final EnumProperty<Style> STYLE = EnumProperty.create("style", Style.class);
     public static final BooleanProperty UPSIDE_DOWN = MonoBogeyBlock.UPSIDE_DOWN;
 

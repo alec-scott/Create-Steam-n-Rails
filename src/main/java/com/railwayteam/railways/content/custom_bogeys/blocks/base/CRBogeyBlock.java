@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.custom_bogeys.blocks.base;
 
+import net.minecraft.resources.Identifier;
+
 import net.minecraft.world.level.LevelReader;
 
 import com.railwayteam.railways.port.create.track.TrackType;
@@ -54,8 +56,8 @@ public class CRBogeyBlock extends AbstractBogeyBlock<CRBogeyBlockEntity>
 	}
 
 	@Override
-	public TrackType getTrackType(BogeyStyle style) {
-		return TrackType.STANDARD;
+	public Identifier getTrackType(BogeyStyle style) {
+		return TrackType.STANDARD.id;
 	}
 
 	@Override
