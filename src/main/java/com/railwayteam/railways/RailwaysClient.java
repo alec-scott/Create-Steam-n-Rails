@@ -80,6 +80,9 @@ public class RailwaysClient {
     com.railwayteam.railways.fabric.client.CRItemTooltips.register();
     com.railwayteam.railways.fabric.client.CRBlockEntityBehaviours.register();
     com.railwayteam.railways.fabric.client.CRBlockExtensions.register();
+    com.railwayteam.railways.fabric.client.CRMovementRenders.register();
+    com.zurrtum.create.client.AllMenuScreens.register(com.railwayteam.railways.registry.CRContainerTypes.MOUNTED_TOOLBOX,
+        com.railwayteam.railways.content.conductor.toolbox.MountedToolboxScreen::create);
 
     DevCapeUtils.INSTANCE.init();
   }

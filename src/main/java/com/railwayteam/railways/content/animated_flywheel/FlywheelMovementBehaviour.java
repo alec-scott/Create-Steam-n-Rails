@@ -23,16 +23,11 @@ import com.railwayteam.railways.mixin_interfaces.ICarriageFlywheel;
 import com.railwayteam.railways.mixin_interfaces.IDistanceTravelled;
 import com.zurrtum.create.api.behaviour.movement.MovementBehaviour;
 import com.zurrtum.create.content.contraptions.behaviour.MovementContext;
-import com.simibubi.create.content.contraptions.render.ContraptionMatrices;
 import com.zurrtum.create.content.kinetics.flywheel.FlywheelBlockEntity;
 import com.zurrtum.create.content.trains.entity.CarriageContraption;
 import com.zurrtum.create.content.trains.entity.CarriageContraptionEntity;
-import com.zurrtum.create.client.foundation.virtualWorld.VirtualRenderWorld;
-import com.zurrtum.create.client.catnip.animation.AnimationTickHolder;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 public class FlywheelMovementBehaviour extends MovementBehaviour {
@@ -41,9 +36,10 @@ public class FlywheelMovementBehaviour extends MovementBehaviour {
         return context.world.isClientSide();
     }
 
-    private static class TemporaryData {
-        float wheelAngle0 = Float.NaN;
-        float wheelAngle1 = Float.NaN;
+    // PORT-NOTE(fabric): read by client/FlywheelMovementRender (was renderInContraption)
+    public static class TemporaryData {
+        public float wheelAngle0 = Float.NaN;
+        public float wheelAngle1 = Float.NaN;
     }
 
     @Override
@@ -84,17 +80,5 @@ public class FlywheelMovementBehaviour extends MovementBehaviour {
         float currentAngle = Float.isNaN(td.wheelAngle1) ? flywheel.railways$getAngle() : td.wheelAngle1;
         td.wheelAngle0 = (currentAngle + 360) % 360;
         td.wheelAngle1 = (float) (td.wheelAngle0 + angleDiff);
-    }
-
-    @Override
-    public void renderInContraption(MovementContext context, VirtualRenderWorld renderWorld, ContraptionMatrices matrices, MultiBufferSource buffer) {
-        if (!(context.contraption.getOrCreateClientContraptionLazy().getBlockEntity(context.localPos) instanceof FlywheelBlockEntity flywheelBlockEntity)) return;
-        if (!(context.temporaryData instanceof TemporaryData temporaryData)) return;
-
-        ((ICarriageFlywheel) flywheelBlockEntity).railways$setAngle(Mth.lerp(
-            AnimationTickHolder.getPartialTicks(),
-            temporaryData.wheelAngle0,
-            temporaryData.wheelAngle1
-        ));
     }
 }

@@ -15,36 +15,34 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.railwayteam.railways.content.fuel.fabric;
 
 import com.railwayteam.railways.content.fuel.LiquidFuelTrainHandler;
 import com.zurrtum.create.api.contraption.storage.fluid.MountedFluidStorageWrapper;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import com.zurrtum.create.infrastructure.fluids.FluidStack;
 
 public class LiquidFuelTrainHandlerImpl {
+    /** 100 mB (a tenth of a bucket) in droplets. */
+    private static final int FUEL_PER_BURN = 8100;
+
+    /**
+     * PORT-NOTE(fabric): Create Fly's mounted fluid storage is a plain {@code FluidInventory} without transactions, so
+     * the fuel and amount are checked before extracting instead of rolling a transaction back.
+     */
     public static int handleFuelDraining(MountedFluidStorageWrapper fuelFluids) {
-        try (Transaction t = TransferUtil.getTransaction()) {
-            for (StorageView<FluidVariant> view : fuelFluids.nonEmptyViews()) {
-                FluidVariant held = view.getResource();
+        for (int slot = 0; slot < fuelFluids.size(); slot++) {
+            FluidStack held = fuelFluids.getStack(slot);
+            if (held.isEmpty() || held.getAmount() < FUEL_PER_BURN)
+                continue;
 
-                // Extract 100 Mb worth of fluid (1/10th of a bucket)
-                if (view.extract(held, 8100, t) != 8100)
-                    continue;
+            int burnTime = LiquidFuelTrainHandler.handleFuelChecking(held);
+            if (burnTime <= 0)
+                continue;
 
-                int burnTime = LiquidFuelTrainHandler.handleFuelChecking(held);
-
-                if (burnTime <= 0)
-                    continue;
-
-                t.commit();
-                return burnTime;
-            }
+            if (fuelFluids.extract(held.copyWithAmount(FUEL_PER_BURN), FUEL_PER_BURN, null) != FUEL_PER_BURN)
+                continue;
+            return burnTime;
         }
-
         return 0;
     }
 }

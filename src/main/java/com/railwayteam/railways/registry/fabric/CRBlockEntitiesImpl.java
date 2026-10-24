@@ -24,6 +24,7 @@ import com.railwayteam.railways.content.fuel.tank.FuelTankBlockEntity;
 import com.railwayteam.railways.content.fuel.tank.FuelTankRenderer;
 import com.zurrtum.create.client.content.contraptions.actors.psi.PSIVisual;
 import com.zurrtum.create.client.content.contraptions.actors.psi.PortableStorageInterfaceRenderer;
+import com.railwayteam.railways.port.create.CRTransfer;
 import com.railwayteam.railways.port.create.foundation.data.CreateRegistrate;
 import com.railwayteam.railways.port.registrate.util.entry.BlockEntityEntry;
 
@@ -34,6 +35,12 @@ public class CRBlockEntitiesImpl {
             .blockEntity("fuel_tank", FuelTankBlockEntity::new)
             .validBlocks(CRBlocksImpl.FUEL_TANK)
             .renderer(() -> FuelTankRenderer::new)
+            // PORT-NOTE(fabric): was SidedStorageBlockEntity on the block entity
+            .onRegister(type -> CRTransfer.registerFluidSide(type, be -> {
+                if (be.fluidCapability == null)
+                    be.refreshCapability();
+                return be.fluidCapability;
+            }))
             .register();
 
     public static final BlockEntityEntry<PortableFuelInterfaceBlockEntity> PORTABLE_FUEL_INTERFACE = REGISTRATE
@@ -41,6 +48,7 @@ public class CRBlockEntitiesImpl {
             .visual(() -> PSIVisual::new)
             .validBlocks(CRBlocksImpl.PORTABLE_FUEL_INTERFACE)
             .renderer(() -> PortableStorageInterfaceRenderer::new)
+            .onRegister(type -> CRTransfer.registerFluidSide(type, be -> be.capability))
             .register();
 
     public static void init() {}

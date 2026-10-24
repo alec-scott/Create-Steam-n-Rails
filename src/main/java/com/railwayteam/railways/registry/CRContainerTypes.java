@@ -15,35 +15,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.railwayteam.railways.registry;
 
 import com.railwayteam.railways.Railways;
+import com.railwayteam.railways.content.conductor.toolbox.MountedToolbox;
 import com.railwayteam.railways.content.conductor.toolbox.MountedToolboxContainer;
-import com.railwayteam.railways.content.conductor.toolbox.MountedToolboxScreen;
-import com.railwayteam.railways.port.create.foundation.data.CreateRegistrate;
-import com.railwayteam.railways.port.registrate.builders.MenuBuilder;
-import com.railwayteam.railways.port.registrate.util.entry.MenuEntry;
-import com.railwayteam.railways.port.registrate.util.nullness.NonNullSupplier;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.MenuAccess;
-import net.minecraft.world.inventory.AbstractContainerMenu;
+import com.zurrtum.create.api.registry.CreateRegistries;
+import com.zurrtum.create.content.equipment.toolbox.ToolboxBlockEntity;
+import com.zurrtum.create.foundation.gui.menu.MenuType;
+import net.minecraft.core.Registry;
 
+/**
+ * PORT-NOTE(fabric): Create Fly menus use its own {@link MenuType} registry (opened with
+ * {@code MenuProvider.openHandledScreen}); the screen is registered on the client with {@code AllMenuScreens}.
+ */
 public class CRContainerTypes {
-    private static final CreateRegistrate REGISTRATE = Railways.registrate();
-
-    public static final MenuEntry<MountedToolboxContainer> MOUNTED_TOOLBOX = register(
-            "mounted_toolbox",
-            MountedToolboxContainer::new,
-            () -> MountedToolboxScreen::create
-    );
-
-    private static <C extends AbstractContainerMenu, S extends Screen & MenuAccess<C>> MenuEntry<C> register(
-            String name, MenuBuilder.ForgeMenuFactory<C> factory, NonNullSupplier<MenuBuilder.ScreenFactory<C, S>> screenFactory) {
-        return REGISTRATE
-                .menu(name, factory, screenFactory)
-                .register();
-    }
+    public static final MenuType<ToolboxBlockEntity> MOUNTED_TOOLBOX = Registry.register(CreateRegistries.MENU_TYPE,
+        Railways.asResource("mounted_toolbox"),
+        (id, inv, holder) -> new MountedToolboxContainer(id, inv, (MountedToolbox) holder));
 
     @SuppressWarnings("EmptyMethod")
     public static void register() {

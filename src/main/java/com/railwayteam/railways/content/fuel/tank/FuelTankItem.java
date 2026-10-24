@@ -15,149 +15,179 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.railwayteam.railways.content.fuel.tank;
 
 import com.railwayteam.railways.registry.fabric.CRBlockEntitiesImpl;
 import com.zurrtum.create.api.connectivity.ConnectivityHandler;
+import com.zurrtum.create.content.equipment.symmetryWand.SymmetryWandItem;
+import com.zurrtum.create.foundation.block.IBE;
+import com.zurrtum.create.foundation.item.ItemPlacementSoundContext;
 import com.zurrtum.create.infrastructure.fluids.FluidStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
+/** PORT-NOTE(fabric): re-derived from Create Fly's {@code FluidTankItem} (upstream Railways forked Create's). */
 public class FuelTankItem extends BlockItem {
-    // fabric: (https://github.com/Fabricators-of-Create/Create/issues/690) because of ordering differences, we need to delay connection by a tick when placing multiblocks with NBT.
-    // If the item has NBT, it needs to be applied to a controller. However, ordering is different on fabric.
-    // on forge, the block is placed, the data is set, and the tanks connect.
-    // on fabric, the block is placed, the tanks connect, and the data is set.
-    // However, now that the tank is not a controller, nothing happens.
-    // solution: hacky static state storage. If we're placing NBT, delay connection until next tick.
-    @ApiStatus.Internal
-    public static boolean IS_PLACING_NBT = false;
 
-    public FuelTankItem(Block block, Properties properties) {
-        super(block, properties);
+    public FuelTankItem(Block p_i48527_1_, Properties p_i48527_2_) {
+        super(p_i48527_1_, p_i48527_2_);
     }
 
     @Override
-    public @NotNull InteractionResult place(@NotNull BlockPlaceContext ctx) {
-        IS_PLACING_NBT = FuelTankItem.checkPlacingNbt(ctx);
+    public InteractionResult place(BlockPlaceContext ctx) {
         InteractionResult initialResult = super.place(ctx);
-        IS_PLACING_NBT = false;
-        if (!initialResult.consumesAction())
+        if (!initialResult.consumesAction()) {
             return initialResult;
+        }
         tryMultiPlace(ctx);
         return initialResult;
     }
 
     @Override
-    protected boolean updateCustomBlockEntityTag(@NotNull BlockPos blockPos, Level level, Player player,
-                                                 @NotNull ItemStack itemStack, @NotNull BlockState blockState) {
+    protected boolean updateCustomBlockEntityTag(
+        BlockPos blockPos,
+        Level level,
+        @Nullable Player player,
+        ItemStack itemStack,
+        BlockState blockState
+    ) {
         MinecraftServer minecraftserver = level.getServer();
-        if (minecraftserver == null)
+        if (minecraftserver == null) {
             return false;
-        CompoundTag nbt = itemStack.getTagElement("BlockEntityTag");
-        if (nbt != null) {
+        }
+        TypedEntityData<BlockEntityType<?>> data = itemStack.get(DataComponents.BLOCK_ENTITY_DATA);
+        if (data != null) {
+            CompoundTag nbt = data.copyTagWithoutId();
             nbt.remove("Luminosity");
             nbt.remove("Size");
             nbt.remove("Height");
             nbt.remove("Controller");
             nbt.remove("LastKnownPos");
             if (nbt.contains("TankContent")) {
-                FluidStack fluid = FluidStack.loadFluidStackFromNBT(nbt.getCompound("TankContent"));
+                FluidStack fluid = FluidStack.fromNbt(minecraftserver.registryAccess(), nbt.getCompound("TankContent"));
                 if (!fluid.isEmpty()) {
                     fluid.setAmount(Math.min(FuelTankBlockEntity.getCapacityMultiplier(), fluid.getAmount()));
-                    nbt.put("TankContent", fluid.writeToNBT(new CompoundTag()));
+                    nbt.put("TankContent", fluid.toNbt(minecraftserver.registryAccess()));
                 }
             }
+            itemStack.set(
+                DataComponents.BLOCK_ENTITY_DATA,
+                TypedEntityData.of(((IBE<?>) this.getBlock()).getBlockEntityType(), nbt)
+            );
         }
         return super.updateCustomBlockEntityTag(blockPos, level, player, itemStack, blockState);
     }
 
     private void tryMultiPlace(BlockPlaceContext ctx) {
         Player player = ctx.getPlayer();
-        if (player == null)
+        if (player == null) {
             return;
-        if (player.isShiftKeyDown())
+        }
+        if (player.isShiftKeyDown()) {
             return;
+        }
         Direction face = ctx.getClickedFace();
-        if (!face.getAxis()
-                .isVertical())
+        if (!face.getAxis().isVertical()) {
             return;
+        }
         ItemStack stack = ctx.getItemInHand();
         Level world = ctx.getLevel();
         BlockPos pos = ctx.getClickedPos();
         BlockPos placedOnPos = pos.relative(face.getOpposite());
         BlockState placedOnState = world.getBlockState(placedOnPos);
 
-        if (!FuelTankBlock.isTank(placedOnState))
+        if (!FuelTankBlock.isTank(placedOnState)) {
             return;
-        FuelTankBlockEntity tankAt = ConnectivityHandler.partAt(CRBlockEntitiesImpl.FUEL_TANK.get(), world, placedOnPos);
-        if (tankAt == null)
+        }
+        if (SymmetryWandItem.presentInHotbar(player)) {
             return;
+        }
+        FuelTankBlockEntity tankAt = ConnectivityHandler.partAt(
+            CRBlockEntitiesImpl.FUEL_TANK.get(),
+            world,
+            placedOnPos
+        );
+        if (tankAt == null) {
+            return;
+        }
         FuelTankBlockEntity controllerBE = tankAt.getControllerBE();
-        if (controllerBE == null)
+        if (controllerBE == null) {
             return;
+        }
 
         int width = controllerBE.width;
-        if (width == 1)
+        if (width == 1) {
             return;
+        }
 
         int tanksToPlace = 0;
-        BlockPos startPos = face == Direction.DOWN ? controllerBE.getBlockPos()
-                .below()
-                : controllerBE.getBlockPos()
-                .above(controllerBE.height);
+        BlockPos startPos = face == Direction.DOWN ? controllerBE.getBlockPos().below() : controllerBE.getBlockPos()
+            .above(controllerBE.height);
 
-        if (startPos.getY() != pos.getY())
+        if (startPos.getY() != pos.getY()) {
             return;
+        }
 
         for (int xOffset = 0; xOffset < width; xOffset++) {
             for (int zOffset = 0; zOffset < width; zOffset++) {
                 BlockPos offsetPos = startPos.offset(xOffset, 0, zOffset);
                 BlockState blockState = world.getBlockState(offsetPos);
-                if (FuelTankBlock.isTank(blockState))
+                if (FuelTankBlock.isTank(blockState)) {
                     continue;
-                if (!blockState.canBeReplaced())
+                }
+                if (!blockState.canBeReplaced()) {
                     return;
+                }
                 tanksToPlace++;
             }
         }
 
-        if (!player.isCreative() && stack.getCount() < tanksToPlace)
+        if (!player.isCreative() && stack.getCount() < tanksToPlace) {
             return;
+        }
 
+        ItemPlacementSoundContext context = new ItemPlacementSoundContext(
+            ctx,
+            0.1f,
+            1.5f,
+            SILENCED_METAL.getPlaceSound()
+        );
         for (int xOffset = 0; xOffset < width; xOffset++) {
             for (int zOffset = 0; zOffset < width; zOffset++) {
                 BlockPos offsetPos = startPos.offset(xOffset, 0, zOffset);
                 BlockState blockState = world.getBlockState(offsetPos);
-                if (FuelTankBlock.isTank(blockState))
+                if (FuelTankBlock.isTank(blockState)) {
                     continue;
-                BlockPlaceContext context = BlockPlaceContext.at(ctx, offsetPos, face);
-                player.getCustomData()
-                        .putBoolean("SilenceTankSound", true);
-                IS_PLACING_NBT = checkPlacingNbt(context);
-                super.place(context);
-                IS_PLACING_NBT = false;
-                player.getCustomData()
-                        .getBoolean("SilenceTankSound");
+                }
+                super.place(context.offset(offsetPos, face));
             }
         }
     }
 
-    public static boolean checkPlacingNbt(BlockPlaceContext ctx) {
-        ItemStack item = ctx.getItemInHand();
-        return BlockItem.getBlockEntityData(item) != null;
-    }
+    // Tanks are less noisy when placed in batch
+    public static final SoundType SILENCED_METAL = new SoundType(
+        0.1F,
+        1.5F,
+        SoundEvents.METAL_BREAK,
+        SoundEvents.METAL_STEP,
+        SoundEvents.METAL_PLACE,
+        SoundEvents.METAL_HIT,
+        SoundEvents.METAL_FALL
+    );
 }

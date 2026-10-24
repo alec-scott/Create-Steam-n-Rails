@@ -28,6 +28,8 @@ import com.railwayteam.railways.registry.fabric.CRBlocksImpl;
 import com.railwayteam.railways.registry.fabric.CRMountedStorageTypesImpl;
 import com.railwayteam.railways.registry.CRParticleTypes;
 import com.railwayteam.railways.util.ServerHolder;
+import com.zurrtum.create.AllBlocks;
+import com.zurrtum.create.api.behaviour.movement.MovementBehaviour;
 import com.zurrtum.create.api.connectivity.ConnectivityHandler;
 import com.zurrtum.create.api.contraption.BlockMovementChecks;
 import com.zurrtum.create.api.contraption.BlockMovementChecks.CheckResult;
@@ -60,6 +62,10 @@ public class RailwaysImpl implements ModInitializer {
 	}
 
 	public static void platformBasedRegistration() {
+		// PORT-NOTE(fabric): was MixinAllBlocks, which hooked Create's Registrate chain (Create Fly has none).
+		if (!com.railwayteam.railways.compat.Mods.EXTENDEDFLYWHEELS.isLoaded && MovementBehaviour.REGISTRY.get(AllBlocks.FLYWHEEL) == null)
+			MovementBehaviour.REGISTRY.register(AllBlocks.FLYWHEEL, new com.railwayteam.railways.content.animated_flywheel.FlywheelMovementBehaviour());
+
 		BlockMovementChecks.registerAttachedCheck((BlockState state, Level world, BlockPos pos, Direction direction) -> {
 			if (state.getBlock() instanceof FuelTankBlock && ConnectivityHandler.isConnected(world, pos, pos.relative(direction)))
 				return CheckResult.SUCCESS;

@@ -19,15 +19,14 @@
 package com.railwayteam.railways.content.conductor.toolbox;
 
 import com.railwayteam.railways.content.conductor.ConductorEntity;
-import com.railwayteam.railways.mixin.AccessorToolboxBlockEntity;
-import com.railwayteam.railways.mixin.AccessorToolboxInventory;
 import com.railwayteam.railways.multiloader.C2SPacket;
-import com.railwayteam.railways.util.EntityUtils;
 import com.zurrtum.create.content.equipment.toolbox.ToolboxHandler;
 import com.zurrtum.create.content.equipment.toolbox.ToolboxInventory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.entity.player.Inventory;
+import com.zurrtum.create.AllSynchedDatas;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -64,11 +63,11 @@ public class MountedToolboxEquipPacket implements C2SPacket {
 
 	@Override
 	public void handle(ServerPlayer player) {
-		Level world = player.level;
+		Level world = player.level();
 
 		if (toolboxCarrierId == null) {
 			ToolboxHandler.unequip(player, hotbarSlot, false);
-			ToolboxHandler.syncData(player);
+			ToolboxHandler.syncData(player, AllSynchedDatas.TOOLBOX.get(player));
 			return;
 		}
 
@@ -84,7 +83,7 @@ public class MountedToolboxEquipPacket implements C2SPacket {
 		ToolboxHandler.unequip(player, hotbarSlot, false);
 
 		if (slot < 0 || slot >= 8) {
-			ToolboxHandler.syncData(player);
+			ToolboxHandler.syncData(player, AllSynchedDatas.TOOLBOX.get(player));
 			return;
 		}
 
@@ -92,34 +91,34 @@ public class MountedToolboxEquipPacket implements C2SPacket {
 		if (toolbox == null)
 			return;
 
-		ItemStack held = player.getInventory().getItem(hotbarSlot);
-		if (!held.isEmpty()) {
-			ToolboxInventory inv = ((AccessorToolboxBlockEntity) toolbox).getInventory();
-			AccessorToolboxInventory invAccess = (AccessorToolboxInventory) inv;
-
-			ItemStack filterStack = invAccess.getFilters().get(slot);
-			if (!ToolboxInventory.canItemsShareCompartment(held, filterStack)) {
-				inv.inLimitedMode($ -> doEquip(player, hotbarSlot, held, inv));
-			}
+		Inventory playerInventory = player.getInventory();
+		ItemStack held = playerInventory.getItem(hotbarSlot);
+		if (!held.isEmpty() && !ToolboxInventory.canItemsShareCompartment(held, toolbox.inventory.filters.get(slot))) {
+			// PORT-NOTE(fabric): same as Create Fly's own toolbox equip (AllHandle.onToolboxEquip)
+			toolbox.inventory.inLimitedMode(inventory -> {
+				int count = held.getCount();
+				int insert = inventory.insertExist(held);
+				if (insert != count) {
+					count -= insert;
+					insert = playerInventory.insert(held, count, Inventory.getSelectionSize(), Inventory.INVENTORY_SIZE);
+				}
+				if (insert == count)
+					playerInventory.setItem(hotbarSlot, ItemStack.EMPTY);
+				else
+					held.setCount(count - insert);
+			});
 		}
 
-		CompoundTag playerData = EntityUtils.getPersistentData(player);
-		CompoundTag compound = playerData.getCompound("CreateToolboxData");
+		CompoundTag compound = AllSynchedDatas.TOOLBOX.get(player);
 		String key = String.valueOf(hotbarSlot);
 
 		CompoundTag data = new CompoundTag();
 		data.putInt("Slot", slot);
-		data.putUUID("EntityUUID", conductorEntity.getUUID());
-		data.put("Pos", NbtUtils.writeBlockPos(new BlockPos(0, 1000, 0)));
+		data.store("EntityUUID", UUIDUtil.CODEC, conductorEntity.getUUID());
+		data.store("Pos", BlockPos.CODEC, new BlockPos(0, 1000, 0));
 		compound.put(key, data);
 
-		playerData.put("CreateToolboxData", compound);
-
 		toolbox.connectPlayer(slot, player, hotbarSlot);
-		ToolboxHandler.syncData(player);
-	}
-
-	public static void doEquip(ServerPlayer player, int hotbarSlot, ItemStack held, ToolboxInventory inv) {
-		com.railwayteam.railways.content.conductor.toolbox.fabric.MountedToolboxEquipPacketImpl.doEquip(player, hotbarSlot, held, inv);
+		ToolboxHandler.syncData(player, compound);
 	}
 }

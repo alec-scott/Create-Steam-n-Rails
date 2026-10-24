@@ -31,16 +31,13 @@ import com.railwayteam.railways.mixin.client.AccessorLevelRenderer;
 import com.zurrtum.create.api.behaviour.movement.MovementBehaviour;
 import com.zurrtum.create.content.contraptions.TranslatingContraption;
 import com.zurrtum.create.content.contraptions.behaviour.MovementContext;
-import com.simibubi.create.content.contraptions.render.ContraptionMatrices;
 import com.zurrtum.create.content.trains.entity.CarriageContraption;
-import com.zurrtum.create.client.foundation.virtualWorld.VirtualRenderWorld;
 import com.zurrtum.create.client.catnip.animation.AnimationTickHolder;
 import com.zurrtum.create.catnip.animation.LerpedFloat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -55,7 +52,7 @@ import java.util.List;
 
 public class SmokeStackMovementBehaviour extends MovementBehaviour {
 
-    private static class TemporaryData {
+    public static class TemporaryData {
         @NotNull
         final LerpedFloat chanceChaser;
         @NotNull
@@ -84,7 +81,7 @@ public class SmokeStackMovementBehaviour extends MovementBehaviour {
         private List<ChimneyPushParticle> pushParticles;
 
         @Environment(EnvType.CLIENT)
-        void moveParticles(MovementContext context) {
+        public void moveParticles(MovementContext context) {
             if (pushParticles == null) return;
 
             SmokeEmissionParams type = ((SmokeStackBlock) context.state.getBlock()).emissionParams;
@@ -139,28 +136,19 @@ public class SmokeStackMovementBehaviour extends MovementBehaviour {
 
     @Override
     public void startMoving(MovementContext context) {
-        MovementBehaviour.super.startMoving(context);
+        super.startMoving(context);
         context.temporaryData = new TemporaryData(context);
     }
 
     @Override
     public void onSpeedChanged(MovementContext context, Vec3 oldMotion, Vec3 motion) {
-        MovementBehaviour.super.onSpeedChanged(context, oldMotion, motion);
+        super.onSpeedChanged(context, oldMotion, motion);
         boolean isStopped = Mth.equal(motion.lengthSqr(), 0);
         if (context.temporaryData instanceof TemporaryData temporaryData && isStopped != temporaryData.wasStopped) {
             if (!isStopped)
                 temporaryData.startMoving(context);
             temporaryData.wasStopped = isStopped;
         }
-    }
-
-    @Environment(EnvType.CLIENT)
-    @Override
-    public void renderInContraption(MovementContext context, VirtualRenderWorld renderWorld, ContraptionMatrices matrices, MultiBufferSource buffer) {
-        if (!(context.temporaryData instanceof TemporaryData temporaryData)) {
-            return;
-        }
-        temporaryData.moveParticles(context);
     }
 
     @Override

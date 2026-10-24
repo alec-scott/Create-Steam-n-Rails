@@ -15,11 +15,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.railwayteam.railways.content.conductor.toolbox;
 
+import com.railwayteam.railways.Railways;
+import com.railwayteam.railways.content.conductor.ConductorEntity;
+import com.railwayteam.railways.util.CRValueIO;
 import com.zurrtum.create.client.content.equipment.toolbox.ToolboxScreen;
-import com.zurrtum.create.client.foundation.gui.menu.AbstractSimiContainerScreen;
+import com.zurrtum.create.content.equipment.toolbox.ToolboxBlockEntity;
+import com.zurrtum.create.foundation.gui.menu.MenuType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -28,8 +33,16 @@ public class MountedToolboxScreen extends ToolboxScreen {
     super(container, inv, title);
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"}) // this should be safe
-  public static AbstractSimiContainerScreen<MountedToolboxContainer> create(MountedToolboxContainer container, Inventory inv, Component title) {
-    return (AbstractSimiContainerScreen) new MountedToolboxScreen(container, inv, title);
+  /** Create Fly screen factory: the opening data is the conductor's entity id and the toolbox data. */
+  public static MountedToolboxScreen create(Minecraft mc, MenuType<ToolboxBlockEntity> type, int syncId, Inventory inventory,
+                                            Component title, RegistryFriendlyByteBuf extraData) {
+    int conductorId = extraData.readVarInt();
+    if (mc.level == null || !(mc.level.getEntity(conductorId) instanceof ConductorEntity conductor)) {
+      Railways.LOGGER.error("Conductor with ID not found: " + conductorId);
+      return null;
+    }
+    MountedToolbox toolbox = conductor.getOrCreateToolboxHolder();
+    toolbox.readClient(CRValueIO.input(extraData.registryAccess(), extraData.readNbt()));
+    return type.create(MountedToolboxScreen::new, syncId, inventory, title, toolbox);
   }
 }
