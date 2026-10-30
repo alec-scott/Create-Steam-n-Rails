@@ -164,6 +164,7 @@
     "client.MixinTrackObserverVisual",
     "client.MixinTrackPlacement",
     "client.MixinTrackRenderer",
+    "client.MixinTrackRenderState",
     "client.MixinTrackTargetingClient",
     "client.MixinTrackVisual",
     "client.MixinTrainHUD",

@@ -21,37 +21,57 @@ package com.railwayteam.railways.content.conductor.whistle;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.registry.CRBlockPartials;
 import com.railwayteam.railways.util.CustomTrackOverlayRendering;
+import com.railwayteam.railways.util.CustomTrackOverlayRendering.OffsetOverlay;
 import com.zurrtum.create.client.AllPartialModels;
 import com.zurrtum.create.content.trains.station.GlobalStation;
 import com.zurrtum.create.content.trains.track.ITrackBlock;
 import com.zurrtum.create.content.trains.track.TrackTargetingBehaviour;
 import com.zurrtum.create.client.foundation.blockEntity.renderer.SmartBlockEntityRenderer;
+import com.zurrtum.create.client.foundation.blockEntity.renderer.SmartBlockEntityRenderer.SmartRenderState;
 import com.zurrtum.create.client.catnip.render.CachedBuffers;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import com.zurrtum.create.client.catnip.render.SuperByteBufferRenderState;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 
-public class ConductorWhistleFlagRenderer extends SmartBlockEntityRenderer<ConductorWhistleFlagBlockEntity> {
+public class ConductorWhistleFlagRenderer extends SmartBlockEntityRenderer<ConductorWhistleFlagBlockEntity, ConductorWhistleFlagRenderer.WhistleFlagRenderState> {
     public ConductorWhistleFlagRenderer(BlockEntityRendererProvider.Context context) {
         super(context);
     }
 
     @Override
-    protected void renderSafe(ConductorWhistleFlagBlockEntity te, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
-        super.renderSafe(te, partialTicks, ms, buffer, light, overlay);
-        renderEdgePoint(te, ms, buffer, light, overlay);
-
-        CachedBuffers.partial(CRBlockPartials.CONDUCTOR_WHISTLE_FLAGS.get(te.getColor()), Blocks.AIR.defaultBlockState())
-            .renderInto(ms, buffer.getBuffer(RenderType.cutout()));
+    public WhistleFlagRenderState createRenderState() {
+        return new WhistleFlagRenderState();
     }
 
-    private void renderEdgePoint(ConductorWhistleFlagBlockEntity te, PoseStack ms, MultiBufferSource buffer,
-                                 int light, int overlay) {
+    @Override
+    public void extractRenderState(ConductorWhistleFlagBlockEntity te, WhistleFlagRenderState state, float partialTicks, Vec3 cameraPos,
+                                   @Nullable CrumblingOverlay crumblingOverlay) {
+        super.extractRenderState(te, state, partialTicks, cameraPos, crumblingOverlay);
+        state.overlay = extractEdgePoint(te);
+
+        state.flag = CachedBuffers.partial(CRBlockPartials.CONDUCTOR_WHISTLE_FLAGS.get(te.getColor()), Blocks.AIR.defaultBlockState())
+            .extractRenderState();
+    }
+
+    @Override
+    public void submit(WhistleFlagRenderState state, PoseStack ms, SubmitNodeCollector queue, CameraRenderState cameraState) {
+        super.submit(state, ms, queue, cameraState);
+        if (state.overlay != null)
+            state.overlay.submit(ms, queue);
+        state.flag.submit(ms, queue);
+    }
+
+    private @Nullable OffsetOverlay extractEdgePoint(ConductorWhistleFlagBlockEntity te) {
         TrackTargetingBehaviour<GlobalStation> target = te.station;
         BlockPos pos = te.getBlockPos();
 
@@ -61,12 +81,15 @@ public class ConductorWhistleFlagRenderer extends SmartBlockEntityRenderer<Condu
         Block block = trackState.getBlock();
 
         if (!(block instanceof ITrackBlock))
-            return;
+            return null;
 
-        ms.pushPose();
-        ms.translate(-pos.getX(), -pos.getY(), -pos.getZ());
-        CustomTrackOverlayRendering.renderOverlay(level, targetPosition, target.getTargetDirection(), target.getTargetBezier(), ms,
-            buffer, light, overlay, AllPartialModels.TRACK_STATION_OVERLAY, 1, false);
-        ms.popPose();
+        SuperByteBufferRenderState overlay = CustomTrackOverlayRendering.extractOverlay(level, targetPosition, target.getTargetDirection(),
+            target.getTargetBezier(), AllPartialModels.TRACK_STATION_OVERLAY, 1, false);
+        return overlay == null ? null : new OffsetOverlay(BlockPos.ZERO.subtract(pos), overlay);
+    }
+
+    public static class WhistleFlagRenderState extends SmartRenderState {
+        public @Nullable OffsetOverlay overlay;
+        public @UnknownNullability SuperByteBufferRenderState flag;
     }
 }

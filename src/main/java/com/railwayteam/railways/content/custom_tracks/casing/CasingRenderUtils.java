@@ -22,7 +22,6 @@ import com.railwayteam.railways.port.create.track.TrackMaterialData;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.PoseStack.Pose;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.mixin.client.AccessorSegmentAngles;
 import com.railwayteam.railways.mixin_interfaces.IHasTrackCasing;
@@ -44,15 +43,18 @@ import com.zurrtum.create.client.flywheel.lib.transform.TransformStack;
 import com.zurrtum.create.catnip.data.Iterate;
 import com.zurrtum.create.catnip.data.Pair;
 import com.zurrtum.create.client.catnip.render.CachedBuffers;
+import com.zurrtum.create.client.catnip.render.SuperByteBufferRenderState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -87,29 +89,35 @@ public abstract class CasingRenderUtils {
         return reTexturedModels.get(key);
     }
 
-    public static void renderBezierCasings(PoseStack ms, Level level, PartialModel texturedPartial, BlockState state, VertexConsumer vb, BezierConnection bc) {
+    /**
+     * Casing parts along a curve, relative to the curve's first block entity.
+     *
+     * <p>PORT-NOTE(26.1): was {@code renderBezierCasings}, drawing into a buffer from Create's removed
+     * {@code TrackRenderer.renderBezierTurn}; parts are extracted for {@code MixinTrackRenderer} to submit.</p>
+     */
+    public static void extractBezierCasings(Level level, PartialModel texturedPartial, BlockState state, BezierConnection bc,
+                                            @Nullable CardinalLighting cardinalLighting, List<SuperByteBufferRenderState> out) {
         int heightDiff = Math.abs(bc.bePositions.get(false).getY() - bc.bePositions.get(true).getY());
         double shiftDown = ((IHasTrackCasing) bc).railways$isAlternate() && heightDiff > 0 ? -0.25 : 0;
         if (heightDiff / bc.getLength() <= 4 / 30d) {
             for (Vec3 pos : casingPositions(bc)) {
-                ms.pushPose();
                 BlockPos tePosition = bc.bePositions.getFirst();
                 int light = LevelRenderer.getLightCoords(level, BlockPos.containing(pos).offset(tePosition));
 
-                CachedBuffers.partial(texturedPartial, state)
+                out.add(CachedBuffers.partial(texturedPartial, state)
                         .translate(pos.x, pos.y, pos.z)
                         .translate(0, shiftDown, 0)
                         .scale(1.001f)
+                        .cardinalLighting(cardinalLighting)
                         .light(light)
-                        .renderInto(ms.last(), vb);
-                ms.popPose();
+                        .extractRenderState());
             }
         } else {
-            ms.pushPose();
             BlockPos tePosition = bc.bePositions.getFirst();
             SegmentAngles segments = bc.getBakedSegments(AccessorSegmentAngles::railways$create);
 
-            TransformStack.of(ms)
+            PoseStack nudge = new PoseStack();
+            TransformStack.of(nudge)
                     .nudge((int) tePosition.asLong());
 
             for (int i = 1; i < segments.length; i++) {
@@ -117,13 +125,15 @@ public abstract class CasingRenderUtils {
                 int light = LevelRenderer.getLightCoords(level, segments.lightPosition[i].offset(tePosition));
                 Matrix4f pose = copy(segments.tieTransform[i].pose());
                 pose.translate(new Vector3f(0, (i % 4) * 0.001f, 0));
-                CachedBuffers.partial(texturedPartial, state)
+                out.add(CachedBuffers.partial(texturedPartial, state)
+                        .transform(nudge.last())
                         .mulPose(pose)
                         .mulNormal(segments.tieTransform[i].normal())
                         .translate(0, shiftDown, 0)
                         .scale(1.02f)
+                        .cardinalLighting(cardinalLighting)
                         .light(light)
-                        .renderInto(ms.last(), vb);
+                        .extractRenderState());
 
                 TrackType trackType = TrackMaterialData.of(bc.getMaterial()).trackType;
                 if (trackType == WIDE_GAUGE) {
@@ -132,12 +142,14 @@ public abstract class CasingRenderUtils {
                             Pose transform = segments.railTransforms[i].get(first);
                             Matrix4f pose2 = copy(transform.pose());
                             pose2.translate(new Vector3f(0, (i % 4) * 0.001f, 0));
-                            CachedBuffers.partial(texturedPartial, state)
+                            out.add(CachedBuffers.partial(texturedPartial, state)
+                                    .transform(nudge.last())
                                     .mulPose(pose2)
                                     .mulNormal(transform.normal())
                                     .translate((first ? -(61 / 64.) : -(1 / 32.)) + (inner ? 0 : (first ? 1 : -1)), shiftDown, 0)
+                                    .cardinalLighting(cardinalLighting)
                                     .light(light)
-                                    .renderInto(ms.last(), vb);
+                                    .extractRenderState());
                         }
                     }
                 } else {
@@ -145,16 +157,17 @@ public abstract class CasingRenderUtils {
                         Pose transform = segments.railTransforms[i].get(first);
                         Matrix4f pose2 = copy(transform.pose());
                         pose2.translate(new Vector3f(0, (i % 4) * 0.001f, 0));
-                        CachedBuffers.partial(texturedPartial, state)
+                        out.add(CachedBuffers.partial(texturedPartial, state)
+                                .transform(nudge.last())
                                 .mulPose(pose2)
                                 .mulNormal(transform.normal())
                                 .translate(-0.5 + (trackType == NARROW_GAUGE ? (first ? 0.5 : -0.5) : 0), shiftDown, 0)
+                                .cardinalLighting(cardinalLighting)
                                 .light(light)
-                                .renderInto(ms.last(), vb);
+                                .extractRenderState());
                     }
                 }
             }
-            ms.popPose();
         }
     }
 

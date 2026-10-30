@@ -20,34 +20,53 @@ package com.railwayteam.railways.content.smokestack.block.diesel;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.registry.CRBlockPartials;
-import com.zurrtum.create.client.foundation.blockEntity.renderer.SmartBlockEntityRenderer;
 import com.zurrtum.create.client.catnip.render.CachedBuffers;
-import com.zurrtum.create.client.catnip.render.SuperByteBuffer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import com.zurrtum.create.client.catnip.render.SuperByteBufferRenderState;
+import com.zurrtum.create.client.foundation.blockEntity.renderer.SmartBlockEntityRenderer;
+import com.zurrtum.create.client.foundation.blockEntity.renderer.SmartBlockEntityRenderer.SmartRenderState;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 
-public class DieselSmokeStackRenderer extends SmartBlockEntityRenderer<DieselSmokeStackBlockEntity> {
+public class DieselSmokeStackRenderer extends SmartBlockEntityRenderer<DieselSmokeStackBlockEntity, DieselSmokeStackRenderer.DieselSmokeStackRenderState> {
     public DieselSmokeStackRenderer(BlockEntityRendererProvider.Context context) {
         super(context);
     }
 
     @Override
-    protected void renderSafe(DieselSmokeStackBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
-        super.renderSafe(be, partialTicks, ms, buffer, light, overlay);
+    public DieselSmokeStackRenderState createRenderState() {
+        return new DieselSmokeStackRenderState();
+    }
+
+    @Override
+    public void extractRenderState(DieselSmokeStackBlockEntity be, DieselSmokeStackRenderState state, float partialTicks,
+                                   Vec3 cameraPos, @Nullable CrumblingOverlay crumblingOverlay) {
+        super.extractRenderState(be, state, partialTicks, cameraPos, crumblingOverlay);
         Direction dir = be.getBlockState().getValue(DieselSmokeStackBlock.FACING);
 
-        SuperByteBuffer byteBuffer = CachedBuffers.partial(CRBlockPartials.DIESEL_STACK_FAN, be.getBlockState());
-
-        byteBuffer.light(light);
-
-        byteBuffer.translate(0.5, 0.5, 0.5)
+        state.fan = CachedBuffers.partial(CRBlockPartials.DIESEL_STACK_FAN, be.getBlockState())
+            .cardinalLighting(be.getLevel())
+            .light(state.lightCoords)
+            .translate(0.5, 0.5, 0.5)
             .rotateXDegrees(dir == Direction.DOWN ? 180 : dir.getAxis().isHorizontal() ? 90 : 0)
             .rotateZDegrees(dir.getAxis().isVertical() ? 0 : ((int) dir.toYRot()) % 360)
             .rotateYDegrees((float) be.getFanRotation(be.getRpm(partialTicks)))
-            .translate(-0.5, -0.5, -0.5);
+            .translate(-0.5, -0.5, -0.5)
+            .extractRenderState();
+    }
 
-        byteBuffer.renderInto(ms, buffer.getBuffer(RenderType.cutout()));
+    @Override
+    public void submit(DieselSmokeStackRenderState state, PoseStack ms, SubmitNodeCollector queue, CameraRenderState cameraState) {
+        super.submit(state, ms, queue, cameraState);
+        state.fan.submit(ms, queue);
+    }
+
+    public static class DieselSmokeStackRenderState extends SmartRenderState {
+        public @UnknownNullability SuperByteBufferRenderState fan;
     }
 }

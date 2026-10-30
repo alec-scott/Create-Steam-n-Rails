@@ -28,43 +28,79 @@ import com.railwayteam.railways.util.CustomTrackOverlayRendering;
 import com.zurrtum.create.content.trains.track.ITrackBlock;
 import com.zurrtum.create.content.trains.track.TrackTargetingBehaviour;
 import com.zurrtum.create.client.foundation.blockEntity.renderer.SmartBlockEntityRenderer;
+import com.zurrtum.create.client.foundation.blockEntity.renderer.SmartBlockEntityRenderer.SmartRenderState;
 import com.zurrtum.create.client.flywheel.lib.transform.TransformStack;
 import com.zurrtum.create.catnip.math.AngleHelper;
 import com.zurrtum.create.client.catnip.render.CachedBuffers;
 import com.zurrtum.create.client.catnip.render.SuperByteBuffer;
+import com.zurrtum.create.client.catnip.render.SuperByteBufferRenderState;
 import com.zurrtum.create.catnip.theme.Color;
 import com.zurrtum.create.client.ponder.api.level.PonderLevel;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-public class TrackSwitchRenderer extends SmartBlockEntityRenderer<TrackSwitchBlockEntity> {
+// PORT-NOTE(26.1): render-state renderer; flag parts and the track overlay are extracted, then submitted.
+public class TrackSwitchRenderer extends SmartBlockEntityRenderer<TrackSwitchBlockEntity, TrackSwitchRenderer.TrackSwitchRenderState> {
   public TrackSwitchRenderer(Context ctx) {
     super(ctx);
   }
 
   @Override
-  protected void renderSafe(TrackSwitchBlockEntity te, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
-    super.renderSafe(te, partialTicks, ms, buffer, light, overlay);
-    renderFlagState(te, partialTicks, ms, buffer, light);
-    renderTrackOverlay(te, ms, buffer, light, overlay, te.edgePoint);
+  public TrackSwitchRenderState createRenderState() {
+    return new TrackSwitchRenderState();
+  }
+
+  @Override
+  public void extractRenderState(TrackSwitchBlockEntity te, TrackSwitchRenderState state, float partialTicks, Vec3 cameraPos,
+                                 @Nullable CrumblingOverlay crumblingOverlay) {
+    super.extractRenderState(te, state, partialTicks, cameraPos, crumblingOverlay);
+    extractFlagState(te, state, partialTicks);
+    extractTrackOverlay(te, state, te.edgePoint);
 
     if (te.ponderData != null && te.getLevel() instanceof PonderLevel ponderWorld) {
-      renderPonderData(ponderWorld, te.getState(), te.ponderData, partialTicks, ms, buffer, light, overlay);
+      renderPonderData(ponderWorld, te.getState(), te.ponderData);
     }
   }
 
-  private void renderPonderData(PonderLevel ponderWorld, SwitchState state, PonderData ponderData, float partialTicks, PoseStack ms,
-                                MultiBufferSource buffer, int light, int overlay) {
+  @Override
+  public void submit(TrackSwitchRenderState state, PoseStack ms, SubmitNodeCollector queue, CameraRenderState cameraState) {
+    super.submit(state, ms, queue, cameraState);
+
     ms.pushPose();
+    TransformStack.of(ms)
+      .center()
+      .rotateYDegrees(state.yRot)
+      .uncenter();
+    if (state.automatic)
+      ms.translate(0, -2.0 / 16, 0);
+    for (SuperByteBufferRenderState part : state.flagParts)
+      part.submit(ms, queue);
+    ms.popPose();
+
+    if (state.overlay != null) {
+      ms.pushPose();
+      ms.translate(state.overlayOffset.getX(), state.overlayOffset.getY(), state.overlayOffset.getZ());
+      state.overlay.submit(ms, queue);
+      ms.popPose();
+    }
+  }
+
+  // Not rendering: the ponder outliner draws these lines.
+  private void renderPonderData(PonderLevel ponderWorld, SwitchState state, PonderData ponderData) {
     Vec3 offset = new Vec3(0, 0.4, 0);
     float width = 1 / 16f;
 
@@ -77,27 +113,21 @@ public class TrackSwitchRenderer extends SmartBlockEntityRenderer<TrackSwitchBlo
               .colored(active ? new Color(0, 203, 150) : new Color(255, 50, 150))
               .lineWidth(width);
     }
-    ms.popPose();
   }
 
-  private void renderFlagState(TrackSwitchBlockEntity te, float partialTicks, PoseStack ms, MultiBufferSource buffer,
-                               int light) {
+  private void extractFlagState(TrackSwitchBlockEntity te, TrackSwitchRenderState renderState, float partialTicks) {
     BlockState state = te.getBlockState();
-    ms.pushPose();
+    CardinalLighting cardinalLighting = getCardinalLighting(te.getLevel());
+    int light = renderState.lightCoords;
+    renderState.flagParts.clear();
 
-    float yRot = AngleHelper.horizontalAngle(state.getValue(TrackSwitchBlock.FACING));
-    
-    TransformStack.of(ms)
-      .center()
-      .rotateYDegrees(yRot)
-      .uncenter();
+    renderState.yRot = AngleHelper.horizontalAngle(state.getValue(TrackSwitchBlock.FACING));
+    renderState.automatic = te.isAutomatic();
 
     SuperByteBuffer buf;
     if (te.isAutomatic()) {
-      ms.pushPose();
-      ms.translate(0, -2.0 / 16, 0);
-
       buf = CachedBuffers.partial(CRBlockPartials.BRASS_SWITCH_FLAG, state)
+        .cardinalLighting(cardinalLighting)
         .light(light)
         .rotateCentered(1.5708f, Direction.UP)
         .translate(0.5, 8.5 / 16, 0.5);
@@ -112,13 +142,12 @@ public class TrackSwitchRenderer extends SmartBlockEntityRenderer<TrackSwitchBlo
       }
       buf = buf.rotate(te.lerpedAngle.getValue(partialTicks), Direction.NORTH);
 
-      buf
+      renderState.flagParts.add(buf
         .translate(-0.5, -7.5 / 16, -0.5)
-        .renderInto(ms, buffer.getBuffer(RenderType.solid()));
-
-      ms.popPose();
+        .extractRenderState());
     } else {
       buf = CachedBuffers.partial(CRBlockPartials.ANDESITE_SWITCH_FLAG, state)
+        .cardinalLighting(cardinalLighting)
         .light(light);
 
       if (te.isReverseLeft()) {
@@ -131,19 +160,19 @@ public class TrackSwitchRenderer extends SmartBlockEntityRenderer<TrackSwitchBlo
         te.lerpedAngle.updateChaseTarget(0.0f);
       }
       buf = buf.rotateCentered(te.lerpedAngle.getValue(partialTicks), Direction.UP);
-      buf.renderInto(ms, buffer.getBuffer(RenderType.solid()));
+      renderState.flagParts.add(buf.extractRenderState());
 
-      CachedBuffers.partial(CRBlockPartials.ANDESITE_SWITCH_HANDLE, state)
+      renderState.flagParts.add(CachedBuffers.partial(CRBlockPartials.ANDESITE_SWITCH_HANDLE, state)
+        .cardinalLighting(cardinalLighting)
         .light(light)
         .rotateCentered(-1.5708f, Direction.UP)  // 90°
-        .renderInto(ms, buffer.getBuffer(RenderType.solid()));
+        .extractRenderState());
     }
-
-    ms.popPose();
   }
 
-  private void renderTrackOverlay(TrackSwitchBlockEntity te, PoseStack ms, MultiBufferSource buffer,
-                                  int light, int overlay, TrackTargetingBehaviour<TrackSwitch> target) {
+  private void extractTrackOverlay(TrackSwitchBlockEntity te, TrackSwitchRenderState renderState,
+                                   TrackTargetingBehaviour<TrackSwitch> target) {
+    renderState.overlay = null;
     BlockPos pos = te.getBlockPos();
     boolean offsetToSide = CustomTrackOverlayRendering.overlayWillOverlap(target);
 
@@ -155,11 +184,16 @@ public class TrackSwitchRenderer extends SmartBlockEntityRenderer<TrackSwitchBlo
     if (!(block instanceof ITrackBlock))
       return;
 
-    ms.pushPose();
-    TransformStack.of(ms)
-            .translate(targetPosition.subtract(pos));
-    CustomTrackOverlayRendering.renderOverlay(level, targetPosition, target.getTargetDirection(), target.getTargetBezier(), ms,
-            buffer, light, overlay, TrackSwitchClientBehaviours.overlayModel(te), 1, offsetToSide);
-    ms.popPose();
+    renderState.overlayOffset = targetPosition.subtract(pos);
+    renderState.overlay = CustomTrackOverlayRendering.extractOverlay(level, targetPosition, target.getTargetDirection(),
+            target.getTargetBezier(), TrackSwitchClientBehaviours.overlayModel(te), 1, offsetToSide);
+  }
+
+  public static class TrackSwitchRenderState extends SmartRenderState {
+    public float yRot;
+    public boolean automatic;
+    public final List<SuperByteBufferRenderState> flagParts = new ArrayList<>();
+    public @Nullable SuperByteBufferRenderState overlay;
+    public BlockPos overlayOffset = BlockPos.ZERO;
   }
 }

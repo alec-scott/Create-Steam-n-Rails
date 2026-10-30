@@ -24,11 +24,9 @@ import com.railwayteam.railways.util.CustomTrackOverlayRendering;
 import com.zurrtum.create.content.trains.graph.EdgePointType;
 import com.zurrtum.create.infrastructure.component.BezierTrackPointLocation;
 import com.zurrtum.create.client.content.trains.track.TrackTargetingClient;
-import com.zurrtum.create.client.flywheel.lib.transform.TransformStack;
-import com.zurrtum.create.client.catnip.render.SuperRenderTypeBuffer;
+import com.zurrtum.create.client.catnip.render.SuperByteBufferRenderState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
@@ -58,26 +56,25 @@ public abstract class MixinTrackTargetingClient {
         target = "Lcom/zurrtum/create/client/content/trains/track/TrackTargetingClient;lastType:Lcom/zurrtum/create/content/trains/graph/EdgePointType;",
         ordinal = 0
     ), cancellable = true)
-    private static void renderCustom(PoseStack ms, SuperRenderTypeBuffer buffer, Vec3 camera, CallbackInfo ci) {
+    private static void renderCustom(Minecraft mc, PoseStack ms, SubmitNodeStorage queue, Vec3 camera, CallbackInfo ci) {
         if (CustomTrackOverlayRendering.CUSTOM_OVERLAYS.containsKey(lastType)) {
-            Minecraft mc = Minecraft.getInstance();
             BlockPos pos = lastHovered;
-            int light = LevelRenderer.getLightCoords(mc.level, pos);
             Direction.AxisDirection direction = lastDirection ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE;
 
-            ms.pushPose();
-            TransformStack.of(ms)
-                .translate(Vec3.atLowerCornerOf(pos)
-                    .subtract(camera));
-            CustomTrackOverlayRendering.renderOverlay(mc.level, pos, direction, lastHoveredBezierSegment, ms, buffer, light,
-                OverlayTexture.NO_OVERLAY, lastType, 1 + 1 / 16f);
-            ms.popPose();
+            SuperByteBufferRenderState overlay = CustomTrackOverlayRendering.extractOverlay(mc.level, pos, direction,
+                lastHoveredBezierSegment, lastType, 1 + 1 / 16f);
+            if (overlay != null) {
+                ms.pushPose();
+                ms.translate(pos.getX() - camera.x(), pos.getY() - camera.y(), pos.getZ() - camera.z());
+                overlay.submit(ms, queue);
+                ms.popPose();
+            }
             ci.cancel();
         }
     }
 
     @Inject(method = "render", at = @At("HEAD"))
-    private static void renderSwitchHints(PoseStack ms, SuperRenderTypeBuffer buffer, Vec3 camera, CallbackInfo ci) {
+    private static void renderSwitchHints(Minecraft mc, PoseStack ms, SubmitNodeStorage queue, Vec3 camera, CallbackInfo ci) {
         TrackSwitchDebugVisualizer.visualizePotentialLocations();
     }
 }

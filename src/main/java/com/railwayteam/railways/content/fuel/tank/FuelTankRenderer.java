@@ -19,22 +19,45 @@
 package com.railwayteam.railways.content.fuel.tank;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
-import com.zurrtum.create.infrastructure.fluids.FluidStack;
-import com.zurrtum.create.foundation.fluid.FluidTank;
 import com.zurrtum.create.catnip.animation.LerpedFloat;
-import net.createmod.catnip.platform.FabricCatnipServices;
+import com.zurrtum.create.client.catnip.render.FluidRenderHelper;
+import com.zurrtum.create.client.content.fluids.tank.FluidTankRenderer.FluidTankRenderState;
+import com.zurrtum.create.client.foundation.blockEntity.renderer.SmartBlockEntityRenderer;
+import com.zurrtum.create.infrastructure.fluids.FluidStack;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
-public class FuelTankRenderer extends SafeBlockEntityRenderer<FuelTankBlockEntity> {
-    public FuelTankRenderer(BlockEntityRendererProvider.Context context) {}
+// PORT-NOTE(26.1): render-state renderer modelled on Create Fly's FluidTankRenderer (window fluid only, no boiler).
+public class FuelTankRenderer implements BlockEntityRenderer<FuelTankBlockEntity, FluidTankRenderState> {
+    public FuelTankRenderer(BlockEntityRendererProvider.Context context) {
+    }
 
     @Override
-    protected void renderSafe(FuelTankBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer,
-                              int light, int overlay) {
+    public FluidTankRenderState createRenderState() {
+        return new FluidTankRenderState();
+    }
+
+    @Override
+    public boolean shouldRender(FuelTankBlockEntity be, Vec3 cameraPosition) {
+        return be.isController() && BlockEntityRenderer.super.shouldRender(be, cameraPosition);
+    }
+
+    @Override
+    public void extractRenderState(FuelTankBlockEntity be, FluidTankRenderState state, float partialTicks, Vec3 cameraPos,
+                                   @Nullable CrumblingOverlay crumblingOverlay) {
+        Level world = SmartBlockEntityRenderer.extractBase(be, state, crumblingOverlay);
+        state.fluid = null;
         if (!be.isController())
             return;
         if (!be.window) {
@@ -48,23 +71,22 @@ public class FuelTankRenderer extends SafeBlockEntityRenderer<FuelTankBlockEntit
         float capHeight = 1 / 4f;
         float tankHullWidth = 1 / 16f + 1 / 128f;
         float minPuddleHeight = 1 / 16f;
-        float totalHeight = be.height - 2 * capHeight - minPuddleHeight;
+        float totalHeight = be.getHeight() - 2 * capHeight - minPuddleHeight;
 
         float level = fluidLevel.getValue(partialTicks);
         if (level < 1 / (512f * totalHeight))
             return;
         float clampedLevel = Mth.clamp(level * totalHeight, 0, totalHeight);
 
-        FluidTank tank = be.tankInventory;
-        FluidStack fluidStack = tank.getFluid();
+        FluidStack fluidStack = be.getTankInventory().getFluid();
 
         if (fluidStack.isEmpty())
             return;
 
-        boolean top = FluidVariantAttributes.isLighterThanAir(fluidStack.getType());
+        boolean top = FluidVariantAttributes.isLighterThanAir(FluidVariant.of(fluidStack.getFluid()));
 
         float xMin = tankHullWidth;
-        float xMax = xMin + be.width - 2 * tankHullWidth;
+        float xMax = xMin + be.getWidth() - 2 * tankHullWidth;
         float yMin = totalHeight + capHeight + minPuddleHeight - clampedLevel;
         float yMax = yMin + clampedLevel;
 
@@ -74,16 +96,32 @@ public class FuelTankRenderer extends SafeBlockEntityRenderer<FuelTankBlockEntit
         }
 
         float zMin = tankHullWidth;
-        float zMax = zMin + be.width - 2 * tankHullWidth;
+        float zMax = zMin + be.getWidth() - 2 * tankHullWidth;
 
-        ms.pushPose();
-        ms.translate(0, clampedLevel - totalHeight, 0);
-        FabricCatnipServices.FLUID_RENDERER.renderFluidBox(fluidStack, xMin, yMin, zMin, xMax, yMax, zMax, buffer, ms, light, false, false);
-        ms.popPose();
+        state.translate = clampedLevel - totalHeight;
+        state.fluid = FluidRenderHelper.extractFluidRenderState(
+            world instanceof BlockAndTintGetter getter ? getter : null,
+            state.blockPos,
+            Minecraft.getInstance().getModelManager().getFluidStateModelSet(),
+            fluidStack.getFluid(),
+            fluidStack.getComponentChanges(),
+            xMin, yMin, zMin, xMax, yMax, zMax,
+            state.lightCoords,
+            false,
+            true
+        );
     }
 
     @Override
-    public boolean shouldRenderOffScreen(FuelTankBlockEntity be) {
-        return be.isController();
+    public void submit(FluidTankRenderState state, PoseStack ms, SubmitNodeCollector queue, CameraRenderState cameraState) {
+        if (state.fluid != null) {
+            ms.translate(0, state.translate, 0);
+            state.fluid.submit(ms, queue);
+        }
+    }
+
+    @Override
+    public boolean shouldRenderOffScreen() {
+        return true;
     }
 }

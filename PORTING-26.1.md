@@ -98,6 +98,20 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
   `MixinItemModelShaper` (name-based conductor cap item models; see TODO).
 - `AccessorSegmentAngles` invoker: Create Fly bakes track segments with `bc.getBakedSegments(SegmentAngles::new)` and
   the constructor is package-private.
+- **Bogeys**: `port/create/bogey/CRBogeyStyleBuilder` (lazy block suppliers resolved in `postRegistrationInit`,
+  renderers registered client side into Create Fly's `AllBogeyStyleRenders`). `UnifiedBogeyRenderer` extracts a
+  render state of `SuperByteBuffer` parts; entity-aware displays updated around `CarriageBogeyRenderState.create`.
+- **Mechanical batch**: Optional NBT getters (`getIntOr` etc.), `contains`/`getList` signatures, `NbtCompat`
+  (removed UUID/BlockPos NBT helpers, 1.20 formats kept), `ChunkPos.x()`, `getSelectedSlot()`, `getRandom()`,
+  `ResourceKey.identifier()`, `getUnitVec3i()`, `LevelRenderer.getLightCoords`, `Create.asResource` →
+  `Identifier.fromNamespaceAndPath("create", …)`.
+- **Particles**: data classes on `MapCodec`/`StreamCodec` + Fabric pending providers; particles `extract` into
+  `QuadParticleRenderState` (`TextureAtlasSprite.getU/getV` now take 0–1, not 0–16).
+- **Block entity renderers** (diesel stack, semaphore, fuel tank, track switch, coupler, whistle flag) on
+  extract/submit. `CustomTrackOverlayRendering.extractOverlay` returns a render state with the track transform folded
+  in; `MixinTrackTargetingClient` follows Create Fly's new `render` signature. Track casings: `MixinTrackRenderer`
+  extracts block and curve casings at every return of `extractRenderState` (Create Fly returns early without curves)
+  into `MixinTrackRenderState`/`ICasingRenderState`, submitted after the track.
 
 ## TODO (not compile errors)
 - **Item model definitions** (`assets/railways/items/*.json`, 1.21.4+): none exist yet, so items will render as

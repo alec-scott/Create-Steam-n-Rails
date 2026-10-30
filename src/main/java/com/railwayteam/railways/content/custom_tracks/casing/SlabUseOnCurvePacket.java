@@ -137,7 +137,7 @@ public class SlabUseOnCurvePacket implements C2SPacket {
                 hand = InteractionHand.OFF_HAND;
                 result = useOn(player, hand, level, (IHasTrackCasing) bezierConnection);
             }
-            if (result.shouldSwing())
+            if (result instanceof InteractionResult.Success success && success.swingSource() != InteractionResult.SwingSource.NONE)
                 player.swing(hand, true);
 
             te.notifyUpdate();

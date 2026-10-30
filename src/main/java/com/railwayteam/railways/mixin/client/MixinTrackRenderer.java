@@ -23,43 +23,61 @@ import com.railwayteam.railways.port.create.track.TrackMaterialData;
 import com.railwayteam.railways.port.create.track.TrackType;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.railwayteam.railways.mixin_interfaces.ICasingRenderState;
 import com.railwayteam.railways.mixin_interfaces.IHasTrackCasing;
 import com.railwayteam.railways.registry.CRBlockPartials;
-import com.railwayteam.railways.util.client.ClientTextUtils;
 import com.zurrtum.create.content.trains.track.BezierConnection;
 import com.zurrtum.create.content.trains.track.TrackBlock;
 import com.zurrtum.create.content.trains.track.TrackBlockEntity;
-import com.zurrtum.create.content.trains.track.TrackMaterial;
 import com.zurrtum.create.client.content.trains.track.TrackRenderer;
+import com.zurrtum.create.client.content.trains.track.TrackRenderer.TrackRenderState;
 import com.zurrtum.create.content.trains.track.TrackShape;
 import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
+import com.zurrtum.create.client.foundation.blockEntity.renderer.SmartBlockEntityRenderer;
 import com.zurrtum.create.client.flywheel.lib.transform.TransformStack;
 import com.zurrtum.create.client.catnip.render.CachedBuffers;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import com.zurrtum.create.client.catnip.render.SuperByteBufferRenderState;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static com.railwayteam.railways.content.custom_tracks.casing.CasingRenderUtils.reTexture;
-import static com.railwayteam.railways.content.custom_tracks.casing.CasingRenderUtils.renderBezierCasings;
+import java.util.List;
 
+import static com.railwayteam.railways.content.custom_tracks.casing.CasingRenderUtils.extractBezierCasings;
+import static com.railwayteam.railways.content.custom_tracks.casing.CasingRenderUtils.reTexture;
+
+/**
+ * Track casings: the block's own casing and casings along its curves.
+ *
+ * <p>PORT-NOTE(26.1): Create Fly's {@code TrackRenderer} extracts render state (and returns early, without a block
+ * position, when there are no curves), so casing parts are extracted at every return into {@link ICasingRenderState}
+ * and submitted after the track. 1.20's "No casing for shape" debug text is not drawn.</p>
+ */
 @Mixin(value = TrackRenderer.class, remap = false)
 public class MixinTrackRenderer {
-    @Inject(method = "renderSafe(Lcom/zurrtum/create/content/trains/track/TrackBlockEntity;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource;getBuffer(Lnet/minecraft/client/renderer/RenderType;)Lcom/mojang/blaze3d/vertex/VertexConsumer;"), remap = true)
-    private void renderCasing(TrackBlockEntity te, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay, CallbackInfo ci) {
+    @Inject(method = "extractRenderState(Lcom/zurrtum/create/content/trains/track/TrackBlockEntity;Lcom/zurrtum/create/client/content/trains/track/TrackRenderer$TrackRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V",
+        at = @At("RETURN"))
+    private void extractCasings(TrackBlockEntity te, TrackRenderState state, float partialTicks, Vec3 cameraPos,
+                                @Nullable CrumblingOverlay crumblingOverlay, CallbackInfo ci) {
+        List<SuperByteBufferRenderState> parts = ((ICasingRenderState) state).railways$getCasingParts();
+        parts.clear();
+        Level level = te.getLevel();
+        CardinalLighting cardinalLighting = SmartBlockEntityRenderer.getCardinalLighting(level);
+
         Block casingBlock = ((IHasTrackCasing) te).railways$getTrackCasing();
         if (casingBlock != null) {
             TrackShape shape = te.getBlockState().getValue(TrackBlock.SHAPE);
             if (CRBlockPartials.TRACK_CASINGS.containsKey(shape)) {
-                ms.pushPose();
+                PoseStack ms = new PoseStack();
                 if (te.isTilted()) {
                     double angle = te.tilt.smoothingAngle.get();
                     switch (te.getBlockState().getValue(TrackBlock.SHAPE)) {
@@ -82,32 +100,49 @@ public class MixinTrackRenderer {
                 CRBlockPartials.ModelTransform transform = spec.transform;
 
                 PartialModel texturedPartial = reTexture(spec.model, casingBlock);
+                int light = SmartBlockEntityRenderer.getLightCoords(level, te.getBlockPos());
 
-                CachedBuffers.partial(reTexture(spec.model, casingBlock), casingBlock.defaultBlockState())
+                parts.add(CachedBuffers.partial(texturedPartial, casingBlock.defaultBlockState())
+                    .transform(ms.last())
                     .rotateX(transform.rx()).rotateY(transform.ry()).rotateZ(transform.rz())
                     .translate(transform.x(), transform.y(), transform.z())
+                    .cardinalLighting(cardinalLighting)
                     .light(light)
-                    .renderInto(ms, buffer.getBuffer(RenderType.cutoutMipped()));
+                    .extractRenderState());
 
                 for (CRBlockPartials.ModelTransform additionalTransform : spec.additionalTransforms) {
-                    CachedBuffers.partial(texturedPartial, casingBlock.defaultBlockState())
+                    parts.add(CachedBuffers.partial(texturedPartial, casingBlock.defaultBlockState())
+                        .transform(ms.last())
                         .rotateX(additionalTransform.rx()).rotateY(additionalTransform.ry()).rotateZ(additionalTransform.rz())
                         .translate(additionalTransform.x(), additionalTransform.y(), additionalTransform.z())
+                        .cardinalLighting(cardinalLighting)
                         .light(light)
-                        .renderInto(ms, buffer.getBuffer(RenderType.cutoutMipped()));
+                        .extractRenderState());
                 }
-                ms.popPose();
-            } else {
-                ClientTextUtils.renderDebugText(ms, buffer, light, 1, true, "No casing for shape " + shape);
             }
+        }
+
+        for (BezierConnection bc : te.getConnections().values()) {
+            if (!bc.isPrimary())
+                continue;
+            Block curveCasing = ((IHasTrackCasing) bc).railways$getTrackCasing();
+            if (curveCasing != null) {
+                extractBezierCasings(level, reTexture(CRBlockPartials.TRACK_CASING_FLAT_THICK, curveCasing),
+                    curveCasing.defaultBlockState(), bc, cardinalLighting, parts);
+            }
+        }
+
+        if (!parts.isEmpty() && state.blockPos == null) {
+            state.blockPos = te.getBlockPos();
+            state.blockEntityType = te.getType();
         }
     }
 
-    @Inject(method = "renderBezierTurn", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", remap = true), remap = false)
-    private static void renderCurveCasings(Level level, BezierConnection bc, PoseStack ms, VertexConsumer vb, CallbackInfo ci) {
-        Block casingBlock = ((IHasTrackCasing) bc).railways$getTrackCasing();
-        if (casingBlock != null) {
-            renderBezierCasings(ms, level, reTexture(CRBlockPartials.TRACK_CASING_FLAT_THICK, casingBlock), casingBlock.defaultBlockState(), vb, bc);
-        }
+    @Inject(method = "submit(Lcom/zurrtum/create/client/content/trains/track/TrackRenderer$TrackRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+        at = @At("TAIL"))
+    private void submitCasings(TrackRenderState state, PoseStack ms, SubmitNodeCollector queue, CameraRenderState cameraState,
+                               CallbackInfo ci) {
+        for (SuperByteBufferRenderState part : ((ICasingRenderState) state).railways$getCasingParts())
+            part.submit(ms, queue);
     }
 }

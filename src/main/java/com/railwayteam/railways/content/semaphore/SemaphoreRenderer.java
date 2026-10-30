@@ -20,37 +20,49 @@ package com.railwayteam.railways.content.semaphore;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.registry.CRBlockPartials;
-import com.zurrtum.create.client.AllPartialModels;
-import com.zurrtum.create.content.redstone.nixieTube.NixieTubeBlock;
-import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
-import com.simibubi.create.foundation.render.RenderTypes;
-import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
-import com.zurrtum.create.client.flywheel.lib.transform.PoseTransformStack;
-import com.zurrtum.create.client.flywheel.lib.transform.TransformStack;
-import com.zurrtum.create.client.catnip.animation.AnimationTickHolder;
 import com.zurrtum.create.catnip.math.AngleHelper;
+import com.zurrtum.create.client.AllPartialModels;
+import com.zurrtum.create.client.catnip.animation.AnimationTickHolder;
 import com.zurrtum.create.client.catnip.render.CachedBuffers;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import com.zurrtum.create.client.catnip.render.SuperByteBufferRenderState;
+import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
+import com.zurrtum.create.client.flywheel.lib.transform.TransformStack;
+import com.zurrtum.create.client.foundation.blockEntity.renderer.SmartBlockEntityRenderer;
+import com.zurrtum.create.client.foundation.render.CreateRenderTypes;
+import com.zurrtum.create.content.redstone.nixieTube.NixieTubeBlock;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.Direction;
+import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.world.level.CardinalLighting;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 
-public class SemaphoreRenderer extends SafeBlockEntityRenderer<SemaphoreBlockEntity> {
+// PORT-NOTE(26.1): render-state renderer; lamps are drawn like Create Fly's nixie tube signals.
+public class SemaphoreRenderer implements BlockEntityRenderer<SemaphoreBlockEntity, SemaphoreRenderer.SemaphoreRenderState> {
 	public SemaphoreRenderer(BlockEntityRendererProvider.Context context) {
 	}
 
 	@Override
-	protected void renderSafe(SemaphoreBlockEntity te, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
-		ms.pushPose();
+	public SemaphoreRenderState createRenderState() {
+		return new SemaphoreRenderState();
+	}
+
+	@Override
+	public void extractRenderState(SemaphoreBlockEntity te, SemaphoreRenderState state, float partialTicks, Vec3 cameraPos,
+								   @Nullable CrumblingOverlay crumblingOverlay) {
+		Level level = SmartBlockEntityRenderer.extractBase(te, state, crumblingOverlay);
+		CardinalLighting cardinalLighting = SmartBlockEntityRenderer.getCardinalLighting(level);
 		BlockState blockState = te.getBlockState();
 
-		float yRot = AngleHelper.horizontalAngle(blockState.getValue(NixieTubeBlock.FACING)) + 180;
-
-		TransformStack<PoseTransformStack> msr = TransformStack.of(ms);
-		msr.center()
-				.rotateYDegrees(yRot)
-				.uncenter();
+		state.yRot = AngleHelper.horizontalAngle(blockState.getValue(NixieTubeBlock.FACING)) + 180;
 
 		boolean yellow = te.isDistantSignal;
 
@@ -90,59 +102,88 @@ public class SemaphoreRenderer extends SafeBlockEntityRenderer<SemaphoreBlockEnt
 					yellow ? CRBlockPartials.SEMAPHORE_ARM_YELLOW_FLIPPED : CRBlockPartials.SEMAPHORE_ARM_RED_FLIPPED :
 					yellow ? CRBlockPartials.SEMAPHORE_ARM_YELLOW : CRBlockPartials.SEMAPHORE_ARM_RED;
 		}
-		CachedBuffers.partial(arm, blockState)
-				.light(light)
+		state.arm = CachedBuffers.partial(arm, blockState)
+				.cardinalLighting(cardinalLighting)
+				.light(state.lightCoords)
 				.rotateCentered(angle * (upside_down ? -1 : 1), Direction.EAST)
-				.renderInto(ms, buffer.getBuffer(RenderType.solid()));
+				.extractRenderState();
 
-		float renderTime = AnimationTickHolder.getRenderTime(te.getLevel());
+		float renderTime = AnimationTickHolder.getRenderTime(level);
 
 		top = top && (renderTime % 40 < 3 || te.isValid);
 
-
+		state.lamp = null;
 		if ((top || bottom)) {
-			ms.pushPose();
 			if (upside_down) {
 				if (bottom)
-					ms.translate(8 / 16.0, 9 / 16.0, 15 / 16.0);
+					state.lampOffset = new Vec3(8 / 16.0, 9 / 16.0, 15 / 16.0);
 				else
-					ms.translate(8 / 16.0, 4 / 16.0, 14 / 16.0);
+					state.lampOffset = new Vec3(8 / 16.0, 4 / 16.0, 14 / 16.0);
 			} else {
 				if (bottom)
-					ms.translate(8 / 16.0, 7 / 16.0, 15 / 16.0);
+					state.lampOffset = new Vec3(8 / 16.0, 7 / 16.0, 15 / 16.0);
 				else
-					ms.translate(8 / 16.0, 12 / 16.0, 14 / 16.0);
+					state.lampOffset = new Vec3(8 / 16.0, 12 / 16.0, 14 / 16.0);
 			}
 
-
-			CachedBuffers.partial(AllPartialModels.SIGNAL_WHITE_CUBE, blockState)
-					.light(0xF000F0)
+			state.cube = CachedBuffers.partial(AllPartialModels.SIGNAL_WHITE_CUBE, blockState)
+					.cardinalLighting(cardinalLighting)
+					.light(LightCoordsUtil.FULL_BRIGHT)
 					.disableDiffuse()
 					.scale(1, 1, 1)
-					.renderInto(ms, buffer.getBuffer(RenderType.translucent()));
+					.extractRenderState();
 
-
-			CachedBuffers
+			state.glow = CachedBuffers
 					.partial(
 							bottom ? AllPartialModels.SIGNAL_WHITE_GLOW : yellow ? AllPartialModels.SIGNAL_YELLOW_GLOW : AllPartialModels.SIGNAL_RED_GLOW,
 							blockState)
-					.light(0xF000F0)
+					.cardinalLighting(cardinalLighting)
+					.light(LightCoordsUtil.FULL_BRIGHT)
 					.disableDiffuse()
 					.scale(1.5f, 2, 2)
-					.renderInto(ms, buffer.getBuffer(RenderTypes.additive()));
+					.extractRenderState();
 
-			CachedBuffers
+			state.lamp = CachedBuffers
 					.partial(bottom ? CRBlockPartials.SEMAPHORE_LAMP_WHITE : yellow ? CRBlockPartials.SEMAPHORE_LAMP_YELLOW : CRBlockPartials.SEMAPHORE_LAMP_RED
 							, blockState)
-					.light(0xF000F0)
+					.cardinalLighting(cardinalLighting)
+					.light(LightCoordsUtil.FULL_BRIGHT)
 					.disableDiffuse()
 					.scale(1 + 1 / 16f)
-					.renderInto(ms, buffer.getBuffer(RenderTypes.additive()));
+					.extractRenderState();
+		}
+	}
 
+	@Override
+	public void submit(SemaphoreRenderState state, PoseStack ms, SubmitNodeCollector queue, CameraRenderState cameraState) {
+		ms.pushPose();
+		TransformStack.of(ms)
+				.center()
+				.rotateYDegrees(state.yRot)
+				.uncenter();
 
+		state.arm.submit(ms, queue);
+
+		if (state.lamp != null) {
+			ms.pushPose();
+			ms.translate(state.lampOffset.x, state.lampOffset.y, state.lampOffset.z);
+			state.cube.submit(CreateRenderTypes.translucent(), ms, queue);
+			state.glow.submit(CreateRenderTypes.additive2(), ms, queue);
+			state.glow.submit(CreateRenderTypes.additive(), ms, queue);
+			state.lamp.submit(CreateRenderTypes.additive2(), ms, queue);
+			state.lamp.submit(CreateRenderTypes.additive(), ms, queue);
 			ms.popPose();
 		}
 
 		ms.popPose();
+	}
+
+	public static class SemaphoreRenderState extends BlockEntityRenderState {
+		public float yRot;
+		public @UnknownNullability SuperByteBufferRenderState arm;
+		public @Nullable SuperByteBufferRenderState lamp;
+		public @UnknownNullability SuperByteBufferRenderState cube;
+		public @UnknownNullability SuperByteBufferRenderState glow;
+		public @UnknownNullability Vec3 lampOffset;
 	}
 }

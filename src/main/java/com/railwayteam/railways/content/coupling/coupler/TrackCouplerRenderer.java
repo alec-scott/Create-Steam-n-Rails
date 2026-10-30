@@ -21,20 +21,28 @@ package com.railwayteam.railways.content.coupling.coupler;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.registry.CRBlockPartials;
 import com.railwayteam.railways.util.CustomTrackOverlayRendering;
+import com.railwayteam.railways.util.CustomTrackOverlayRendering.OffsetOverlay;
 import com.zurrtum.create.content.trains.track.ITrackBlock;
 import com.zurrtum.create.content.trains.track.TrackTargetingBehaviour;
+import com.zurrtum.create.client.catnip.render.SuperByteBufferRenderState;
 import com.zurrtum.create.client.foundation.blockEntity.renderer.SmartBlockEntityRenderer;
+import com.zurrtum.create.client.foundation.blockEntity.renderer.SmartBlockEntityRenderer.SmartRenderState;
 import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
-import com.zurrtum.create.client.flywheel.lib.transform.TransformStack;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-public class TrackCouplerRenderer extends SmartBlockEntityRenderer<TrackCouplerBlockEntity> {
+import java.util.ArrayList;
+import java.util.List;
+
+public class TrackCouplerRenderer extends SmartBlockEntityRenderer<TrackCouplerBlockEntity, TrackCouplerRenderer.TrackCouplerRenderState> {
 
     public TrackCouplerRenderer(Context context) {
         super(context);
@@ -54,16 +62,27 @@ public class TrackCouplerRenderer extends SmartBlockEntityRenderer<TrackCouplerB
     }
 
     @Override
-    protected void renderSafe(TrackCouplerBlockEntity te, float partialTicks, PoseStack ms, MultiBufferSource buffer,
-                              int light, int overlay) {
-        super.renderSafe(te, partialTicks, ms, buffer, light, overlay);
-
-        renderEdgePoint(te, ms, buffer, light, overlay, te.edgePoint);
-        renderEdgePoint(te, ms, buffer, light, overlay, te.secondEdgePoint);
+    public TrackCouplerRenderState createRenderState() {
+        return new TrackCouplerRenderState();
     }
 
-    private void renderEdgePoint(TrackCouplerBlockEntity te, PoseStack ms, MultiBufferSource buffer,
-                                 int light, int overlay, TrackTargetingBehaviour<TrackCoupler> target) {
+    @Override
+    public void extractRenderState(TrackCouplerBlockEntity te, TrackCouplerRenderState state, float partialTicks, Vec3 cameraPos,
+                                   @Nullable CrumblingOverlay crumblingOverlay) {
+        super.extractRenderState(te, state, partialTicks, cameraPos, crumblingOverlay);
+        state.overlays.clear();
+        extractEdgePoint(te, state, te.edgePoint);
+        extractEdgePoint(te, state, te.secondEdgePoint);
+    }
+
+    @Override
+    public void submit(TrackCouplerRenderState state, PoseStack ms, SubmitNodeCollector queue, CameraRenderState cameraState) {
+        super.submit(state, ms, queue, cameraState);
+        for (OffsetOverlay overlay : state.overlays)
+            overlay.submit(ms, queue);
+    }
+
+    private void extractEdgePoint(TrackCouplerBlockEntity te, TrackCouplerRenderState state, TrackTargetingBehaviour<TrackCoupler> target) {
         BlockPos pos = te.getBlockPos();
         boolean offsetToSide = CustomTrackOverlayRendering.overlayWillOverlap(target);
 
@@ -75,11 +94,16 @@ public class TrackCouplerRenderer extends SmartBlockEntityRenderer<TrackCouplerB
         if (!(block instanceof ITrackBlock))
             return;
 
-        ms.pushPose();
-        TransformStack.of(ms)
-            .translate(targetPosition.subtract(pos));
-        CustomTrackOverlayRendering.renderOverlay(level, targetPosition, target.getTargetDirection(), target.getTargetBezier(), ms,
-            buffer, light, overlay, getCouplerOverlayModel(te), 1, offsetToSide);
-        ms.popPose();
+        PartialModel model = getCouplerOverlayModel(te);
+        if (model == null)
+            return;
+        SuperByteBufferRenderState overlay = CustomTrackOverlayRendering.extractOverlay(level, targetPosition,
+            target.getTargetDirection(), target.getTargetBezier(), model, 1, offsetToSide);
+        if (overlay != null)
+            state.overlays.add(new OffsetOverlay(targetPosition.subtract(pos), overlay));
+    }
+
+    public static class TrackCouplerRenderState extends SmartRenderState {
+        public final List<OffsetOverlay> overlays = new ArrayList<>();
     }
 }

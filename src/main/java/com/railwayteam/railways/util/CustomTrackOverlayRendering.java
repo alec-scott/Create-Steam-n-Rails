@@ -43,12 +43,12 @@ import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
 import com.zurrtum.create.client.flywheel.lib.transform.TransformStack;
 import com.zurrtum.create.catnip.levelWrappers.SchematicLevel;
 import com.zurrtum.create.client.catnip.render.CachedBuffers;
+import com.zurrtum.create.client.catnip.render.SuperByteBufferRenderState;
 import com.zurrtum.create.client.ponder.api.level.PonderLevel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -57,6 +57,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,45 +70,49 @@ public class CustomTrackOverlayRendering {
     }
 
     @Environment(EnvType.CLIENT)
-    public static void renderOverlay(LevelAccessor level, BlockPos pos, Direction.AxisDirection direction,
-                                     BezierTrackPointLocation bezier, PoseStack ms, MultiBufferSource buffer, int light, int overlay,
-                                     EdgePointType<?> type, float scale) {
+    public static @Nullable SuperByteBufferRenderState extractOverlay(LevelAccessor level, BlockPos pos, Direction.AxisDirection direction,
+                                                                      BezierTrackPointLocation bezier, EdgePointType<?> type, float scale) {
         if (CUSTOM_OVERLAYS.containsKey(type))
-            renderOverlay(level, pos, direction, bezier, ms, buffer, light, overlay, CUSTOM_OVERLAYS.get(type), scale, false);
+            return extractOverlay(level, pos, direction, bezier, CUSTOM_OVERLAYS.get(type), scale, false);
+        return null;
     }
 
     @Environment(EnvType.CLIENT)
-    public static void renderOverlay(LevelAccessor level, BlockPos pos, Direction.AxisDirection direction,
-                                     BezierTrackPointLocation bezier, PoseStack ms, MultiBufferSource buffer, int light, int overlay,
-                                     PartialModel model, float scale) {
-        renderOverlay(level, pos, direction, bezier, ms, buffer, light, overlay, model, scale, false);
+    public static @Nullable SuperByteBufferRenderState extractOverlay(LevelAccessor level, BlockPos pos, Direction.AxisDirection direction,
+                                                                      BezierTrackPointLocation bezier, PartialModel model, float scale) {
+        return extractOverlay(level, pos, direction, bezier, model, scale, false);
     }
 
-    //Copied from TrackTargetingBehaviour
+    /**
+     * Copied from TrackTargetingBehaviour. The overlay is positioned relative to {@code pos} (the track).
+     *
+     * <p>PORT-NOTE(26.1): was {@code renderOverlay}, drawing into a buffer. The track transform is now folded into
+     * the extracted render state, which callers submit with their own pose stack.</p>
+     */
     @Environment(EnvType.CLIENT)
-    public static void renderOverlay(LevelAccessor level, BlockPos pos, Direction.AxisDirection direction,
-                              BezierTrackPointLocation bezier, PoseStack ms, MultiBufferSource buffer, int light, int overlay,
-                              PartialModel model, float scale, boolean offsetToSide) {
+    public static @Nullable SuperByteBufferRenderState extractOverlay(LevelAccessor level, BlockPos pos, Direction.AxisDirection direction,
+                                                                      BezierTrackPointLocation bezier, PartialModel model, float scale,
+                                                                      boolean offsetToSide) {
         if (level instanceof SchematicLevel && !(level instanceof PonderLevel))
-            return;
+            return null;
 
         BlockState trackState = level.getBlockState(pos);
         Block block = trackState.getBlock();
         if (!(block instanceof ITrackBlock))
-            return;
+            return null;
 
-        ms.pushPose();
-
+        PoseStack ms = new PoseStack();
         PartialModel partial = prepareTrackOverlay(level, pos, trackState, bezier, direction, ms, model);
-        if (partial != null)
-            CachedBuffers.partial(partial, trackState)
-                .translate(.5, 0, .5)
-                .scale(scale)
-                .translate(offsetToSide ? .5 : -.5, 0, -.5)
-                .light(LevelRenderer.getLightCoords(level, pos))
-                .renderInto(ms, buffer.getBuffer(RenderType.cutoutMipped()));
+        if (partial == null)
+            return null;
 
-        ms.popPose();
+        return CachedBuffers.partial(partial, trackState)
+            .transform(ms.last())
+            .translate(.5, 0, .5)
+            .scale(scale)
+            .translate(offsetToSide ? .5 : -.5, 0, -.5)
+            .light(LevelRenderer.getLightCoords(level, pos))
+            .extractRenderState();
     }
 
     //Copied from TrackBlock
@@ -215,6 +220,17 @@ public class CustomTrackOverlayRendering {
         }
 
         return model;
+    }
+
+    /** An extracted overlay and its offset from the rendering block entity. */
+    @Environment(EnvType.CLIENT)
+    public record OffsetOverlay(BlockPos offset, SuperByteBufferRenderState overlay) {
+        public void submit(PoseStack ms, SubmitNodeCollector queue) {
+            ms.pushPose();
+            ms.translate(offset.getX(), offset.getY(), offset.getZ());
+            overlay.submit(ms, queue);
+            ms.popPose();
+        }
     }
 
     public static boolean overlayWillOverlap(TrackTargetingBehaviour<? extends TrackEdgePoint> target) {
