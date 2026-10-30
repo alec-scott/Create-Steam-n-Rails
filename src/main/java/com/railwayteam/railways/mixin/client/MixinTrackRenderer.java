@@ -23,7 +23,7 @@ import com.railwayteam.railways.port.create.track.TrackMaterialData;
 import com.railwayteam.railways.port.create.track.TrackType;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.railwayteam.railways.mixin_interfaces.ICasingRenderState;
+import com.railwayteam.railways.mixin_interfaces.IExtraRenderParts;
 import com.railwayteam.railways.mixin_interfaces.IHasTrackCasing;
 import com.railwayteam.railways.registry.CRBlockPartials;
 import com.zurrtum.create.content.trains.track.BezierConnection;
@@ -59,7 +59,7 @@ import static com.railwayteam.railways.content.custom_tracks.casing.CasingRender
  * Track casings: the block's own casing and casings along its curves.
  *
  * <p>PORT-NOTE(26.1): Create Fly's {@code TrackRenderer} extracts render state (and returns early, without a block
- * position, when there are no curves), so casing parts are extracted at every return into {@link ICasingRenderState}
+ * position, when there are no curves), so casing parts are extracted at every return into {@link IExtraRenderParts}
  * and submitted after the track. 1.20's "No casing for shape" debug text is not drawn.</p>
  */
 @Mixin(value = TrackRenderer.class, remap = false)
@@ -68,7 +68,7 @@ public class MixinTrackRenderer {
         at = @At("RETURN"))
     private void extractCasings(TrackBlockEntity te, TrackRenderState state, float partialTicks, Vec3 cameraPos,
                                 @Nullable CrumblingOverlay crumblingOverlay, CallbackInfo ci) {
-        List<SuperByteBufferRenderState> parts = ((ICasingRenderState) state).railways$getCasingParts();
+        List<SuperByteBufferRenderState> parts = ((IExtraRenderParts) state).railways$getExtraParts();
         parts.clear();
         Level level = te.getLevel();
         CardinalLighting cardinalLighting = SmartBlockEntityRenderer.getCardinalLighting(level);
@@ -142,7 +142,7 @@ public class MixinTrackRenderer {
         at = @At("TAIL"))
     private void submitCasings(TrackRenderState state, PoseStack ms, SubmitNodeCollector queue, CameraRenderState cameraState,
                                CallbackInfo ci) {
-        for (SuperByteBufferRenderState part : ((ICasingRenderState) state).railways$getCasingParts())
+        for (SuperByteBufferRenderState part : ((IExtraRenderParts) state).railways$getExtraParts())
             part.submit(ms, queue);
     }
 }

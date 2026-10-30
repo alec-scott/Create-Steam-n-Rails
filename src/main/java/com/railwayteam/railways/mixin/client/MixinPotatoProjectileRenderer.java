@@ -18,51 +18,69 @@
 
 package com.railwayteam.railways.mixin.client;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.content.palettes.PalettesColor;
 import com.railwayteam.railways.content.palettes.painting.PaintPitcherItem;
+import com.railwayteam.railways.mixin_interfaces.IExtraRenderParts;
 import com.railwayteam.railways.registry.CRBlockPartials;
+import com.zurrtum.create.client.catnip.render.CachedBuffers;
+import com.zurrtum.create.client.catnip.render.SuperByteBufferRenderState;
 import com.zurrtum.create.client.content.equipment.potatoCannon.PotatoProjectileRenderer;
-import com.simibubi.create.foundation.item.render.PartialItemModelRenderer;
+import com.zurrtum.create.client.content.equipment.potatoCannon.PotatoProjectileRenderer.PotatoProjectileState;
 import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.world.item.ItemDisplayContext;
+import com.zurrtum.create.content.equipment.potatoCannon.PotatoProjectileEntity;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(PotatoProjectileRenderer.class)
+import java.util.List;
+
+/**
+ * Paint pitcher projectiles render as paint blobs.
+ *
+ * <p>PORT-NOTE(26.1): was a wrap of {@code ItemRenderer.renderStatic} with Create's {@code PartialItemModelRenderer}.
+ * The blob is extracted into the projectile's render state and submitted with Create Fly's projectile transforms;
+ * the 1.20 item display transform is approximated (centred, half scale). Check visually.</p>
+ */
+@Mixin(value = PotatoProjectileRenderer.class, remap = false)
 public class MixinPotatoProjectileRenderer {
-    @WrapOperation(
-        method = "render(Lcom/simibubi/create/content/equipment/potatoCannon/PotatoProjectileEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;renderStatic(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;IILcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/level/Level;I)V"
-        )
-    )
-    private void renderPaintBlob(
-        ItemRenderer instance,
-        ItemStack stack,
-        ItemDisplayContext displayContext,
-        int combinedLight,
-        int combinedOverlay,
-        PoseStack poseStack,
-        MultiBufferSource buffer,
-        Level level,
-        int seed,
-        Operation<Void> original
-    ) {
-        if (stack.getItem() instanceof PaintPitcherItem item) {
-            PalettesColor color = item.getColor();
-            PartialModel model = color == null ? CRBlockPartials.PAINT_STRIPPER_BLOB : CRBlockPartials.PAINT_BLOBS.get(color);
-            PartialItemModelRenderer.of(stack, displayContext, poseStack, buffer, combinedOverlay)
-                .render(model.get(), combinedLight);
-        } else {
-            original.call(instance, stack, displayContext, combinedLight, combinedOverlay, poseStack, buffer, level, seed);
-        }
+    @Inject(method = "extractRenderState(Lcom/zurrtum/create/content/equipment/potatoCannon/PotatoProjectileEntity;Lcom/zurrtum/create/client/content/equipment/potatoCannon/PotatoProjectileRenderer$PotatoProjectileState;F)V",
+        at = @At("TAIL"))
+    private void railways$extractPaintBlob(PotatoProjectileEntity entity, PotatoProjectileState state, float tickProgress, CallbackInfo ci) {
+        List<SuperByteBufferRenderState> parts = ((IExtraRenderParts) state).railways$getExtraParts();
+        parts.clear();
+        ItemStack stack = entity.getItem();
+        if (!(stack.getItem() instanceof PaintPitcherItem item))
+            return;
+        PalettesColor color = item.getColor();
+        PartialModel model = color == null ? CRBlockPartials.PAINT_STRIPPER_BLOB : CRBlockPartials.PAINT_BLOBS.get(color);
+        parts.add(CachedBuffers.partial(model, Blocks.AIR.defaultBlockState())
+            .scale(.5f)
+            .translate(-.5f, -.5f, -.5f)
+            .light(state.lightCoords)
+            .extractRenderState());
+        state.item = new ItemStackRenderState(); // empty: Create Fly's submit skips the item
+    }
+
+    @Inject(method = "submit(Lcom/zurrtum/create/client/content/equipment/potatoCannon/PotatoProjectileRenderer$PotatoProjectileState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+        at = @At("HEAD"))
+    private void railways$submitPaintBlob(PotatoProjectileState state, PoseStack ms, SubmitNodeCollector queue,
+                                         CameraRenderState cameraState, CallbackInfo ci) {
+        List<SuperByteBufferRenderState> parts = ((IExtraRenderParts) state).railways$getExtraParts();
+        if (parts.isEmpty())
+            return;
+        ms.pushPose();
+        ms.translate(0, state.translateY, 0);
+        if (state.transformer != null)
+            state.transformer.transform(state.mode, ms, state);
+        for (SuperByteBufferRenderState part : parts)
+            part.submit(ms, queue);
+        ms.popPose();
     }
 }

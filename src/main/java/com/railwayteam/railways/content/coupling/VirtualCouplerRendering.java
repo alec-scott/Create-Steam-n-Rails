@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.coupling;
 
+import com.zurrtum.create.client.catnip.render.SuperByteBufferRenderState;
+import java.util.List;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.zurrtum.create.client.AllPartialModels;
@@ -36,10 +38,15 @@ import net.minecraft.world.phys.Vec3;
 public final class VirtualCouplerRendering {
     private VirtualCouplerRendering() {}
 
-    public static void renderCoupler(Direction direction, double couplingDistance, boolean front, float partialTicks,
-                                     PoseStack ms, MultiBufferSource buffer, int light, int overlay,
-                                     StandardBogeyBlockEntity te) {
-        VertexConsumer vb = buffer.getBuffer(RenderType.solid());
+    /**
+     * Coupler parts relative to the bogey block entity.
+     *
+     * <p>PORT-NOTE(26.1): was {@code renderCoupler}, drawing into a buffer; parts are extracted with their transforms
+     * folded in, for {@code MixinBogeyBlockEntityRenderer} to submit.</p>
+     */
+    public static void extractCoupler(Direction direction, double couplingDistance, boolean front, int light,
+                                      StandardBogeyBlockEntity te, List<SuperByteBufferRenderState> out) {
+        PoseStack ms = new PoseStack();
         BlockState air = Blocks.AIR.defaultBlockState();
 
         if (te.getBlockState().getBlock() instanceof AbstractBogeyBlock<?> bogeyBlock) {
@@ -56,36 +63,39 @@ public final class VirtualCouplerRendering {
             ms.pushPose();
             ms.pushPose();
             ms.translate(anchor.x, anchor.y, anchor.z);
-            CachedBuffers.partial(AllPartialModels.TRAIN_COUPLING_HEAD, air)
+            out.add(CachedBuffers.partial(AllPartialModels.TRAIN_COUPLING_HEAD, air)
+                .transform(ms.last())
                 .rotateY(-yRot)
                 .rotateX(xRot)
                 .light(light)
-                .renderInto(ms, vb);
+                .extractRenderState());
 
             float margin = 3 / 16f;
             int couplingSegments = (int) Math.round(couplingDistance * 4);
             double stretch = 1.0;
 
             for (int j = 0; j < couplingSegments; j++) {
-                CachedBuffers.partial(AllPartialModels.TRAIN_COUPLING_CABLE, air)
+                out.add(CachedBuffers.partial(AllPartialModels.TRAIN_COUPLING_CABLE, air)
+                    .transform(ms.last())
                     .rotateY(-yRot + 180)
                     .rotateX(-xRot)
                     .translate(0, 0, margin + 2 / 16f)
                     .scale(1, 1, (float) stretch)
                     .translate(0, 0, j / 4f)
                     .light(light)
-                    .renderInto(ms, vb);
+                    .extractRenderState());
             }
 
             ms.popPose();
 
             ms.pushPose();
             ms.translate(anchor2.x, anchor2.y, anchor2.z);
-            CachedBuffers.partial(AllPartialModels.TRAIN_COUPLING_HEAD, air)
+            out.add(CachedBuffers.partial(AllPartialModels.TRAIN_COUPLING_HEAD, air)
+                .transform(ms.last())
                 .rotateY(-yRot + 180)
                 .rotateX(-xRot)
                 .light(light)
-                .renderInto(ms, vb);
+                .extractRenderState());
             ms.popPose();
             ms.popPose();
         }

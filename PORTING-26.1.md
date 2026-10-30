@@ -111,7 +111,7 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
   extract/submit. `CustomTrackOverlayRendering.extractOverlay` returns a render state with the track transform folded
   in; `MixinTrackTargetingClient` follows Create Fly's new `render` signature. Track casings: `MixinTrackRenderer`
   extracts block and curve casings at every return of `extractRenderState` (Create Fly returns early without curves)
-  into `MixinTrackRenderState`/`ICasingRenderState`, submitted after the track.
+  into `MixinTrackRenderState`/`IExtraRenderParts`, submitted after the track.
 - **Track renderers registered for Railways tracks**: Create Fly's `AllTrackRenders` only had its own track, so signal/
   station/observer overlays never drew on Railways tracks. `TrackMaterialModels` registers
   `StandardTrackBlockRenderer` per factory-built material; `MixinStandardTrackBlockRenderer` (replaces
