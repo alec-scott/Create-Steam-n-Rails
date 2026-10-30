@@ -112,6 +112,25 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
   in; `MixinTrackTargetingClient` follows Create Fly's new `render` signature. Track casings: `MixinTrackRenderer`
   extracts block and curve casings at every return of `extractRenderState` (Create Fly returns early without curves)
   into `MixinTrackRenderState`/`ICasingRenderState`, submitted after the track.
+- **Track renderers registered for Railways tracks**: Create Fly's `AllTrackRenders` only had its own track, so signal/
+  station/observer overlays never drew on Railways tracks. `TrackMaterialModels` registers
+  `StandardTrackBlockRenderer` per factory-built material; `MixinStandardTrackBlockRenderer` (replaces
+  `MixinTrackBlockClient` and the phantom/monorail overrides) applies `CustomTrackOverlayRendering.overlayShift`.
+- **Schedule entries** split like Create Fly: data classes (Identifier ctor, ValueInput/Output) + client
+  `IScheduleInput` renders registered by `CRSchedule.registerRenders()`.
+- `MixinStationBlock` → `useItemOn`; station train limit is Railways' `StationLimitPacket` (Create Fly's
+  `StationEditPacket` is a fixed record; `MixinStationEditPacket` removed).
+- Custom block outlines: Fabric `LevelRenderEvents.BEFORE_BLOCK_OUTLINE` (`CustomOutlineRendering`, replaces
+  `MixinLevelRenderer`). Item NBT → `ItemUtils.getCustomData/setCustomData` (`custom_data`).
+- `CRExtraRegistration` attaches to Create Fly's eagerly registered `AllBlockEntityTypes` after Railways' registration
+  (`MultiRegistryCallback` removed). `CopycatTypeOverride` + `MixinCopycatBlockEntity` let the copycat headstock BE
+  keep its own type (Create Fly's `CopycatBlockEntity` hardwires `COPYCAT`, and 26.1 validates in the constructor).
+- Mixins retargeted: `CarriageParticles`/`CarriageSounds` → Create Fly's `CarriageParticleBehaviour`/
+  `CarriageAudioBehaviour`; `EntityHats` → `HatFeatureRenderer.submit`; `BlockElement.Deserializer` →
+  `CuboidModelElement$Deserializer.getPosition`; train relocation → `AllHandle.onTrainRelocation`.
+  Removed: `AllKeysMixin` (uses `AllKeys.ALL`), `MixinParticleEngine`, `CreateCodecsMixin` (Porting Lib),
+  `AccessorIngredient$TagValue`, `MixinBasingRecipe` (see TODO).
+- `CRCTTypes` extends Create Fly's class-based `CTType` (bit-mask contexts); `BoilerCTBehaviour` likewise.
 
 ## TODO (not compile errors)
 - **Item model definitions** (`assets/railways/items/*.json`, 1.21.4+): none exist yet, so items will render as
@@ -122,3 +141,7 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
   needs a custom `ItemModel.Unbaked` reading `block_entity_data`. Copycat headstock item tint likewise.
 - Copycat headstock: connected-texture filtering via `canConnectTexturesToward` (needs a filtering
   `BlockAndTintGetter`), matching upstream rather than Create Fly.
+- `MixinBasingRecipe` (stopped Railways basin recipes consuming an ingredient identical to their output, e.g. dyeing)
+  was dropped: Create Fly's basin matching is restructured and 26.1 recipes have no id. Re-derive.
+- Compat track rail ingredients are a single tag now (iron nuggets / wrought iron rods; was "or zinc"). Datagen only.
+- Creative tab ordering treats block items as "3D" (no baked item model `isGui3d` in 26.1).
