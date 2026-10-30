@@ -28,7 +28,6 @@ import com.railwayteam.railways.content.custom_tracks.CustomTrackBlockStateGener
 import com.railwayteam.railways.content.custom_tracks.gen_template.OutputPrefixer;
 import com.railwayteam.railways.content.custom_tracks.gen_template.TextureMaps;
 import com.railwayteam.railways.content.custom_tracks.gen_template.TrackGenTemplate;
-import com.railwayteam.railways.mixin.AccessorIngredient$TagValue;
 import com.railwayteam.railways.multiloader.CommonTags;
 import com.railwayteam.railways.registry.CRBlocks;
 import com.railwayteam.railways.registry.CRTrackMaterials;
@@ -172,10 +171,8 @@ public class GenericTrackCompat {
     }
 
     protected Ingredient getIngredientForRail() {
-        return Ingredient.fromValues(Stream.of(
-                AccessorIngredient$TagValue.railways$create(CommonTags.IRON_NUGGETS.tag),
-                AccessorIngredient$TagValue.railways$create(CommonTags.ZINC_NUGGETS.tag)
-        ));
+        // PORT-NOTE(26.1): ingredients are a single HolderSet now (was iron OR zinc nuggets); datagen use only
+        return Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(CommonTags.IRON_NUGGETS.tag));
     }
 
     private TrackMaterial wideVariant(TrackMaterial material) {

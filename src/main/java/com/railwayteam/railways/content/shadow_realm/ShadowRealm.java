@@ -18,6 +18,7 @@
 
 package com.railwayteam.railways.content.shadow_realm;
 
+import net.minecraft.server.permissions.Permissions;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.railwayteam.railways.Railways;
@@ -114,7 +115,7 @@ public class ShadowRealm {
 
         String messagePrefix = sender.getName().getString() + " could not restore Train " + shadowTrain.name.getString();
 
-        if (!sender.hasPermissions(2)) {
+        if (!sender.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
             LOGGER.warn("{}: player has insufficient permissions", messagePrefix);
             return;
         }
@@ -161,7 +162,7 @@ public class ShadowRealm {
         Vec3 lookAngle
     ) {
         public boolean apply(Train train) {
-            if (!TrainRelocator.relocate(train, level, pos, bezier, bezierDirection, lookAngle, false))
+            if (!TrainRelocator.relocate(train, level, pos, bezier, bezierDirection, lookAngle, null))
                 return false;
 
             train.carriages.forEach(c -> c.forEachPresentEntity(e -> {

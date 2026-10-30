@@ -120,7 +120,7 @@ public abstract class MixinBezierConnection implements IHasTrackCasing {
 		  Railways.LOGGER.error("NBTCtor trackCasing was minecraft:block!!! for BezierConnection: primary={}, secondary={}", bePositions.getFirst(), bePositions.getSecond());
             }
             //Railways.LOGGER.warn("NBTCtor: Casing="+compound.getString("Casing"));
-            railways$setTrackCasing(BuiltInRegistries.BLOCK.get(Identifier.of(compound.getString("Casing"), ':')));
+            railways$setTrackCasing(BuiltInRegistries.BLOCK.getValue(Identifier.parse(compound.getStringOr("Casing", ""))));
         }
         if (compound.contains("ShiftDown")) {
             railways$setAlternate(compound.getBooleanOr("ShiftDown", false));
@@ -132,7 +132,7 @@ public abstract class MixinBezierConnection implements IHasTrackCasing {
     @Inject(method = "<init>(Lnet/minecraft/network/FriendlyByteBuf;)V", at = @At("RETURN"), remap = true)
     private void byteBufConstructor(FriendlyByteBuf buffer, CallbackInfo ci) {
         if (buffer.readBoolean()) {
-            railways$setTrackCasing(BuiltInRegistries.BLOCK.get(buffer.readIdentifier()));
+            railways$setTrackCasing(BuiltInRegistries.BLOCK.getValue(buffer.readIdentifier()));
             railways$setAlternate(buffer.readBoolean());
         } else {
             railways$setTrackCasing(null);

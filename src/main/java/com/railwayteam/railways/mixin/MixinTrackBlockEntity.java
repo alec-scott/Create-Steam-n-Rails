@@ -160,9 +160,9 @@ public abstract class MixinTrackBlockEntity extends SmartBlockEntity implements 
         }
 
         if (tag.contains("TrackCasing")) {
-            Identifier casingName = Identifier.of(tag.getString("TrackCasing"), ':');
+            Identifier casingName = Identifier.parse(tag.getStringOr("TrackCasing", ""));
             if (BuiltInRegistries.BLOCK.containsKey(casingName)) {
-                this.railways$setTrackCasing(BuiltInRegistries.BLOCK.get(casingName));
+                this.railways$setTrackCasing(BuiltInRegistries.BLOCK.getValue(casingName));
                 return;
             }
         }

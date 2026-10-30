@@ -20,7 +20,9 @@ package com.railwayteam.railways.content.palettes.ct;
 
 import com.railwayteam.railways.content.palettes.boiler.BoilerBlock;
 import com.zurrtum.create.client.foundation.block.connected.CTSpriteShiftEntry;
+import com.zurrtum.create.client.foundation.block.connected.CTType;
 import com.zurrtum.create.client.foundation.block.connected.ConnectedTextureBehaviour;
+import com.zurrtum.create.client.foundation.block.connected.HorizontalKryppersCTType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -52,14 +54,17 @@ public class BoilerCTBehaviour extends ConnectedTextureBehaviour.Base {
     }
 
     @Override
-    public CTContext buildContext(BlockAndTintGetter reader, BlockPos pos, BlockState state, Direction face, ContextRequirement requirement) {
-        CTContext context = new CTContext();
+    // PORT-NOTE(26.1): the context is a bit mask of the boiler shifts' HorizontalKryppersCTType flags (was a CTContext)
+    public int buildContext(BlockAndTintGetter reader, BlockPos pos, BlockState state, Direction face, CTType type) {
 
         Direction offset1 = Direction.fromAxisAndDirection(state.getValue(BoilerBlock.HORIZONTAL_AXIS), Direction.AxisDirection.POSITIVE);
         Direction offset2 = Direction.fromAxisAndDirection(state.getValue(BoilerBlock.HORIZONTAL_AXIS), Direction.AxisDirection.NEGATIVE);
 
-        context.right = connectsTo(reader, pos, state, offset1);
-        context.left = connectsTo(reader, pos, state, offset2);
+        int context = 0;
+        if (connectsTo(reader, pos, state, offset1))
+            context |= HorizontalKryppersCTType.RIGHT_FLAG;
+        if (connectsTo(reader, pos, state, offset2))
+            context |= HorizontalKryppersCTType.LEFT_FLAG;
 
         return context;
     }

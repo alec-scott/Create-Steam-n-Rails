@@ -18,6 +18,7 @@
 
 package com.railwayteam.railways.mixin.client;
 
+import com.railwayteam.railways.util.packet.StationLimitPacket;
 import com.google.common.collect.ImmutableList;
 import com.railwayteam.railways.mixin_interfaces.ILimited;
 import com.railwayteam.railways.registry.CRPackets;
@@ -63,7 +64,7 @@ public abstract class MixinStationScreen extends AbstractStationScreen {
             @Override
             public void onPress() {
                 super.onPress();
-                CRPackets.PACKETS.send(ILimited.makeLimitEnabledPacket(blockEntity.getBlockPos(), this.selected()));
+                CRPackets.PACKETS.send(new StationLimitPacket(blockEntity.getBlockPos(), this.selected()));
             }
 
             @Override

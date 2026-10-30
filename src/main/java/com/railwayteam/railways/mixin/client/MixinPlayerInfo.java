@@ -59,7 +59,7 @@ public class MixinPlayerInfo {
 
     @Inject(method = "getCapeLocation", at = @At("HEAD"))
     private void registerCapeTextures(CallbackInfoReturnable<Identifier> cir) {
-        if (!railways$texturesLoaded && DevCapeUtils.INSTANCE.useDevCape(profile.getId())) {
+        if (!railways$texturesLoaded && DevCapeUtils.INSTANCE.useDevCape(profile.id())) {
             railways$texturesLoaded = true;
             this.textureLocations.put(MinecraftProfileTexture.Type.CAPE, DEV_CAPE);
         }
@@ -67,7 +67,7 @@ public class MixinPlayerInfo {
 
     @Inject(method = "getCapeLocation", at = @At("RETURN"), cancellable = true)
     private void skipCapeIfNeeded(CallbackInfoReturnable<Identifier> cir) {
-        if (Objects.equals(DEV_CAPE, cir.getReturnValue()) && !DevCapeUtils.INSTANCE.useDevCape(profile.getId())) {
+        if (Objects.equals(DEV_CAPE, cir.getReturnValue()) && !DevCapeUtils.INSTANCE.useDevCape(profile.id())) {
             cir.setReturnValue(null);
         }
     }

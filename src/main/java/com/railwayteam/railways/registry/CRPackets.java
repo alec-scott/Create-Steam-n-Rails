@@ -37,6 +37,7 @@ public class CRPackets {
         .c2s(SpyConductorInteractPacket.class, SpyConductorInteractPacket::new)
         .c2s(ConfigureDevCapeC2SPacket.class, ConfigureDevCapeC2SPacket::new)
         .c2s(TagCycleSelectionPacket.class, TagCycleSelectionPacket::new)
+        .c2s(StationLimitPacket.class, StationLimitPacket::new)
         .c2s(CurvedTrackHandcarPlacementPacket.class, CurvedTrackHandcarPlacementPacket::new)
 
         .s2c(JukeboxCartPacket.class, JukeboxCartPacket::new)

@@ -18,6 +18,7 @@
 
 package com.railwayteam.railways.mixin;
 
+import net.minecraft.server.level.ServerPlayer;
 import com.railwayteam.railways.port.minecraft.NbtCompat;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -363,17 +364,17 @@ public abstract class MixinTrain implements IOccupiedCouplers, IIndexedSchedule,
         for (Carriage carriage : carriages)
             carriage.forEachPresentEntity(e -> e.getIndirectPassengers()
                     .forEach(entity -> {
-                        if (!(entity instanceof Player p))
+                        if (!(entity instanceof ServerPlayer p))
                             return;
                         Optional<UUID> controllingPlayer = e.getControllingPlayer();
                         if (controllingPlayer.isPresent() && controllingPlayer.get()
                                 .equals(p.getUUID()))
                             return;
-                        AllAdvancements.TRAIN_CRASH.awardTo(p);
+                        AllAdvancements.TRAIN_CRASH.trigger(p);
                     }));
 
         if (backwardsDriver != null)
-            AllAdvancements.TRAIN_CRASH_BACKWARDS.awardTo(backwardsDriver);
+            AllAdvancements.TRAIN_CRASH_BACKWARDS.trigger((ServerPlayer) backwardsDriver);
     }
 
     @Override

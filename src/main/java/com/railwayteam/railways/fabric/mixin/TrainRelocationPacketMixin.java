@@ -20,59 +20,37 @@ package com.railwayteam.railways.fabric.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Local;
 import com.railwayteam.railways.config.CRConfigs;
 import com.railwayteam.railways.content.shadow_realm.ShadowRealm;
 import com.railwayteam.railways.content.shadow_realm.ShadowRealm.RestorationTarget;
+import com.zurrtum.create.AllHandle;
 import com.zurrtum.create.infrastructure.packet.c2s.TrainRelocationPacket;
-import com.zurrtum.create.infrastructure.component.BezierTrackPointLocation;
-import com.simibubi.create.foundation.networking.SimplePacketBase.Context;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Position;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.UUID;
-
 // earlier priority to bypass OPAC protections, which freak out about there being no entity associated with the relocation
-@Mixin(value = TrainRelocationPacket.class, priority = 500)
+// PORT-NOTE(26.1): Create Fly handles the packet in AllHandle.onTrainRelocation (was the packet's handle lambda)
+@Mixin(value = AllHandle.class, priority = 500)
 public class TrainRelocationPacketMixin {
-    @Shadow
-    UUID trainId;
-
-    @Shadow
-    BlockPos pos;
-
-    @Shadow private BezierTrackPointLocation hoveredBezier;
-
-    @Shadow private boolean direction;
-
-    @Shadow
-    Vec3 lookAngle;
-
-    @WrapOperation(method = "lambda$handle$2", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;closerThan(Lnet/minecraft/core/Position;D)Z", ordinal = 1))
-    private boolean unrestrictRange(Vec3 instance, Position pos, double distance, Operation<Boolean> original,
-                                    @Local(name = "sender") ServerPlayer sender) {
-        if (sender.isCreative() && CRConfigs.server().unlimitedCreativeRelocation.get())
+    @WrapOperation(method = "onTrainRelocation", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;closerThan(Lnet/minecraft/core/Position;D)Z", ordinal = 1))
+    private static boolean unrestrictRange(Vec3 instance, Position pos, double distance, Operation<Boolean> original,
+                                           ServerGamePacketListenerImpl listener, TrainRelocationPacket packet) {
+        if (listener.player.isCreative() && CRConfigs.server().unlimitedCreativeRelocation.get())
             return true;
 
         return original.call(instance, pos, distance);
     }
 
-    @Inject(method = "lambda$handle$2", at = @At("HEAD"), cancellable = true, remap = false)
-    private void relocateShadowTrain(Context context, CallbackInfo ci) {
-        ServerPlayer sender = context.getSender();
-        if (sender == null) {
-            ShadowRealm.LOGGER.warn("Received TrainRelocationPacket without sender, ignoring");
-            return;
-        }
-
-        RestorationTarget target = new RestorationTarget(sender.level(), pos, hoveredBezier, direction, lookAngle);
-        ShadowRealm.handleTrainRelocationPacket(sender, trainId, target, ci);
+    @Inject(method = "onTrainRelocation", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V", shift = At.Shift.AFTER), cancellable = true)
+    private static void relocateShadowTrain(ServerGamePacketListenerImpl listener, TrainRelocationPacket packet, CallbackInfo ci) {
+        ServerPlayer sender = listener.player;
+        RestorationTarget target = new RestorationTarget(sender.level(), packet.pos(), packet.hoveredBezier(), packet.direction(), packet.lookAngle());
+        ShadowRealm.handleTrainRelocationPacket(sender, packet.trainId(), target, ci);
     }
 }

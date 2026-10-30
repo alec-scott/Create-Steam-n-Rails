@@ -26,7 +26,7 @@ import com.railwayteam.railways.registry.CRSounds;
 import com.zurrtum.create.AllSoundEvents;
 import com.zurrtum.create.content.trains.entity.Carriage;
 import com.zurrtum.create.content.trains.entity.CarriageContraptionEntity;
-import com.simibubi.create.content.trains.entity.CarriageSounds;
+import com.zurrtum.create.client.foundation.entity.behaviour.CarriageAudioBehaviour;
 import com.zurrtum.create.catnip.animation.LerpedFloat;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundEvent;
@@ -41,7 +41,8 @@ import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = CarriageSounds.class)
+// PORT-NOTE(26.1): Create Fly's CarriageSounds is the CarriageAudioBehaviour entity behaviour
+@Mixin(value = CarriageAudioBehaviour.class)
 public class MixinCarriageSounds {
     @Shadow(remap = false)
     LerpedFloat seatCrossfade;
@@ -59,7 +60,7 @@ public class MixinCarriageSounds {
     }
 
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true, remap = false)
-    private void actuallySkip(Carriage.DimensionalCarriageEntity dce, CallbackInfo ci) {
+    private void actuallySkip(CallbackInfo ci) {
         if (railways$skip)
             ci.cancel();
     }
@@ -96,8 +97,8 @@ public class MixinCarriageSounds {
         return !railways$isHandcar;
     }
 
-    @WrapOperation(method = "finalizeSharedVolume", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/trains/entity/CarriageSounds$LoopingSound;setVolume(F)V", ordinal = 0))
-    private void handcarNoCrossfade(@Coerce /* CarriageSounds.LoopingSound */ AbstractTickableSoundInstance instance,
+    @WrapOperation(method = "finalizeSharedVolume", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/client/foundation/entity/behaviour/CarriageAudioBehaviour$LoopingSound;setVolume(F)V", ordinal = 0))
+    private void handcarNoCrossfade(@Coerce /* CarriageAudioBehaviour.LoopingSound */ AbstractTickableSoundInstance instance,
                                     float volume, Operation<Void> original) {
         if (railways$isHandcar) {
             float crossfade = seatCrossfade.getValue();

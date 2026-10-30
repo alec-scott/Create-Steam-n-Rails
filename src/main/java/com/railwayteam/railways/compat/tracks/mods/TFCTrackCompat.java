@@ -18,10 +18,10 @@
 
 package com.railwayteam.railways.compat.tracks.mods;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.compat.Mods;
 import com.railwayteam.railways.compat.tracks.GenericTrackCompat;
-import com.railwayteam.railways.mixin.AccessorIngredient$TagValue;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
@@ -36,10 +36,8 @@ public class TFCTrackCompat extends GenericTrackCompat {
 
     @Override
     protected Ingredient getIngredientForRail() {
-        return Ingredient.fromValues(Stream.of(
-                AccessorIngredient$TagValue.railways$create(TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("forge", "rods/wrought_iron"))),
-                AccessorIngredient$TagValue.railways$create(TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("forge", "rods/zinc")))
-        ));
+        // PORT-NOTE(26.1): single HolderSet ingredient (was wrought iron OR zinc rods); datagen use only
+        return Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("forge", "rods/wrought_iron"))));
     }
 
     @Override

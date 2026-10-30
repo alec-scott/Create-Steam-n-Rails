@@ -18,6 +18,7 @@
 
 package com.railwayteam.railways.util.packet;
 
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import com.railwayteam.railways.content.minecarts.MinecartJukebox;
 import com.railwayteam.railways.multiloader.S2CPacket;
 import net.fabricmc.api.EnvType;
@@ -39,13 +40,13 @@ public class JukeboxCartPacket implements S2CPacket {
 
   public JukeboxCartPacket(FriendlyByteBuf buf) {
     id = buf.readInt();
-    record = buf.readItem();
+    record = ItemStack.OPTIONAL_STREAM_CODEC.decode((RegistryFriendlyByteBuf) buf);
   }
 
   @Override
   public void write(FriendlyByteBuf buffer) {
     buffer.writeInt(this.id);
-    buffer.writeItem(this.record);
+    ItemStack.OPTIONAL_STREAM_CODEC.encode((RegistryFriendlyByteBuf) buffer, this.record);
   }
 
   @Override

@@ -20,19 +20,23 @@ package com.railwayteam.railways.mixin.client;
 
 import com.railwayteam.railways.config.CRConfigs;
 import com.railwayteam.railways.registry.CREntities;
-import com.simibubi.create.content.equipment.hats.EntityHats;
-import net.minecraft.world.entity.LivingEntity;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.zurrtum.create.client.content.equipment.hats.HatFeatureRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(EntityHats.class)
+// PORT-NOTE(26.1): Create Fly picks train hats inline while extracting render state, so this skips the hat layer
+@Mixin(value = HatFeatureRenderer.class, remap = false)
 public class MixinEntityHats {
-    @Inject(method = "shouldRenderTrainHat", at = @At("HEAD"), cancellable = true)
-    private static void railways$shouldRenderTrainHat(LivingEntity entity, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "submit(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;FF)V", at = @At("HEAD"), cancellable = true)
+    private void railways$shouldRenderTrainHat(PoseStack ms, SubmitNodeCollector queue, int light, LivingEntityRenderState renderState,
+                                               float limbAngle, float limbDistance, CallbackInfo ci) {
         // If its conductor and the config says to not render the double cap then dont render it
-        if (entity != null && CREntities.CONDUCTOR.is(entity) && !CRConfigs.client().renderNormalCap.get())
-            cir.setReturnValue(false);
+        if (renderState.entityType == CREntities.CONDUCTOR.get() && !CRConfigs.client().renderNormalCap.get())
+            ci.cancel();
     }
 }

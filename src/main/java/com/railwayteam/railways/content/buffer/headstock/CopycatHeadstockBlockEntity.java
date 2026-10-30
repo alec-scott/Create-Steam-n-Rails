@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.buffer.headstock;
 
+import net.minecraft.core.component.DataComponents;
+import com.railwayteam.railways.port.create.CopycatTypeOverride;
 import net.minecraft.world.level.storage.ValueOutput;
 
 import net.minecraft.world.level.storage.ValueInput;
@@ -42,7 +44,7 @@ public class CopycatHeadstockBlockEntity extends CopycatBlockEntity implements I
     protected DyeColor color;
 
     public CopycatHeadstockBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-        super(type, pos, state);
+        super(CopycatTypeOverride.withType(type, pos), state);
     }
 
     @Override
@@ -83,7 +85,9 @@ public class CopycatHeadstockBlockEntity extends CopycatBlockEntity implements I
     public InteractionResult applyDyeIfValid(ItemStack stack) {
         if (!(stack.getItem()instanceof DyeItem dyeItem))
             return InteractionResult.PASS;
-        DyeColor color = dyeItem.getDyeColor();
+        DyeColor color = stack.get(DataComponents.DYE);
+        if (color == null)
+            return InteractionResult.PASS;
         if (color == this.color)
             return InteractionResult.PASS;
         if (level.isClientSide() && !isVirtual())
