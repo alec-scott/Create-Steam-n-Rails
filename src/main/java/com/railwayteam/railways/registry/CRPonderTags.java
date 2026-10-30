@@ -18,6 +18,7 @@
 
 package com.railwayteam.railways.registry;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.client.infrastructure.ponder.AllCreatePonderTags;
 import com.railwayteam.railways.port.registrate.util.entry.RegistryEntry;
@@ -28,8 +29,10 @@ public class CRPonderTags {
     public static void register(PonderTagRegistrationHelper<Identifier> helper) {
         PonderTagRegistrationHelper<RegistryEntry<?, ?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
 
+        // PORT-NOTE(26.1): Create Fly's blocks are plain blocks, not Registrate entries
+        helper.addToTag(AllCreatePonderTags.DISPLAY_SOURCES)
+            .add(BuiltInRegistries.BLOCK.getKey(AllBlocks.TRACK_SIGNAL));
         HELPER.addToTag(AllCreatePonderTags.DISPLAY_SOURCES)
-            .add(AllBlocks.TRACK_SIGNAL)
             .add(CRBlocks.TRACK_COUPLER)
             .add(CRBlocks.ANDESITE_SWITCH)
             .add(CRBlocks.BRASS_SWITCH);

@@ -44,14 +44,14 @@ public class TagCycleHandlerServer {
         TagKey<Item> targetTag = CYCLE_TRACKER.getCycleTag(target);
         if (handTag == null || !handTag.equals(targetTag)) return false;
         ItemStack newStack = new ItemStack(target, handStack.getCount());
-        newStack.setTag(handStack.getTag());
+        com.railwayteam.railways.util.ItemUtils.copyStackData(handStack, newStack);
         player.setItemInHand(hand, newStack);
         return true;
     }
 
     public static void select(ServerPlayer player, Item target) {
         if (!select(player, target, InteractionHand.MAIN_HAND) && !select(player, target, InteractionHand.OFF_HAND)) {
-            Railways.LOGGER.warn("Player {} tried to select {} through tag cycling but failed", player.getName().getString(), target.getDescription().getString());
+            Railways.LOGGER.warn("Player {} tried to select {} through tag cycling but failed", player.getName().getString(), target.getDefaultInstance().getHoverName().getString());
             player.connection.disconnect(Component.literal("Invalid tag selection"));
         }
     }

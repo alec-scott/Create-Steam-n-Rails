@@ -105,8 +105,7 @@ public class PalettesDemoCommand {
 
                     ctx.getSource().sendSuccess(() -> Component.literal("Placed palettes blocks. Click ")
                         .append(Component.literal("[here]").withStyle(Style.EMPTY
-                            .withClickEvent(new ClickEvent(
-                                ClickEvent.Action.SUGGEST_COMMAND,
+                            .withClickEvent(new ClickEvent.SuggestCommand(
                                 "/fill " +
                                     origin0.getX() + " " + origin0.getY() + " " + origin0.getZ() + " " +
                                     finalCorner.getX() + " " + finalCorner.getY() + " " + finalCorner.getZ() + " air")

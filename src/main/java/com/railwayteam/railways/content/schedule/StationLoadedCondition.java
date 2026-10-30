@@ -18,11 +18,9 @@
 
 package com.railwayteam.railways.content.schedule;
 
-import com.railwayteam.railways.Railways;
 import com.zurrtum.create.content.trains.entity.Train;
 import com.zurrtum.create.content.trains.schedule.condition.ScheduleWaitCondition;
 import com.zurrtum.create.content.trains.station.GlobalStation;
-import com.zurrtum.create.catnip.data.Pair;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -30,13 +28,12 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
+// PORT-NOTE(26.1): summary moved to the client StationLoadedConditionRender, as in Create Fly.
 public class StationLoadedCondition extends ScheduleWaitCondition {
-    @Override
-    public Pair<ItemStack, Component> getSummary() {
-        return Pair.of(ItemStack.EMPTY, Component.translatable("railways.schedule.condition.loaded"));
+    public StationLoadedCondition(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -53,17 +50,6 @@ public class StationLoadedCondition extends ScheduleWaitCondition {
             return false;
         }
         return stationLevel.isPositionEntityTicking(currentStation.getBlockEntityPos());
-    }
-
-    @Override
-    protected void writeAdditional(CompoundTag tag) {}
-
-    @Override
-    protected void readAdditional(CompoundTag tag) {}
-
-    @Override
-    public Identifier getId() {
-        return Railways.asResource("loaded");
     }
 
     @Override

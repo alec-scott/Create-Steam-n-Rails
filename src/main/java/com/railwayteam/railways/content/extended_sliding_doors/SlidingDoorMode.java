@@ -87,14 +87,15 @@ public enum SlidingDoorMode implements INamedIconOptions {
     public static SlidingDoorMode fromNbt(CompoundTag nbt) {
         if (nbt == null)
             return SlidingDoorMode.NORMAL;
-        return SlidingDoorMode.values()[Math.min(2, Math.max(0, nbt.getInt("ScrollValue")))];
+        return SlidingDoorMode.values()[Math.min(2, Math.max(0, nbt.getIntOr("ScrollValue", 0)))];
     }
 
     public static class SlidingDoorValueBoxTransform extends CenteredSideValueBoxTransform {
         public SlidingDoorValueBoxTransform() {
             super((state, d) -> {
                 Direction facing = state.getValue(SlidingDoorBlock.FACING);
-                boolean showAtAll = state.getValue(SlidingDoorBlock.VISIBLE) && !state.getValue(SlidingDoorBlock.OPEN);
+                // PORT-NOTE(26.1): Create Fly's sliding doors have no VISIBLE property
+                boolean showAtAll = !state.getValue(SlidingDoorBlock.OPEN);
                 return showAtAll && (d == facing || d == facing.getOpposite());
             });
         }
@@ -105,7 +106,7 @@ public enum SlidingDoorMode implements INamedIconOptions {
         }
 
         @Override
-        public Vec3 getLocalOffset(LevelAccessor level, BlockPos pos, BlockState state) {
+        public Vec3 getLocalOffset(BlockState state) {
             Vec3 location = VecHelper.voxelSpace(8, 8, state.getValue(SlidingDoorBlock.FACING) == direction ? 3 : 16);
             location = VecHelper.rotateCentered(location, AngleHelper.horizontalAngle(getSide()), Direction.Axis.Y);
             location = VecHelper.rotateCentered(location, AngleHelper.verticalAngle(getSide()), Direction.Axis.X);

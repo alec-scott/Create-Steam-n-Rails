@@ -18,11 +18,8 @@
 
 package com.railwayteam.railways.content.schedule;
 
-import com.google.common.collect.ImmutableList;
-import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.annotation.multiloader.MultiLoaderEvent;
 import com.railwayteam.railways.mixin.AccessorScheduleRuntime;
-import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.Create;
 import com.zurrtum.create.content.redstone.link.IRedstoneLinkable;
 import com.zurrtum.create.content.redstone.link.RedstoneLinkNetworkHandler;
@@ -32,29 +29,23 @@ import com.zurrtum.create.content.trains.entity.Train;
 import com.zurrtum.create.content.trains.graph.DiscoveredPath;
 import com.zurrtum.create.content.trains.schedule.ScheduleRuntime;
 import com.zurrtum.create.content.trains.schedule.destination.ScheduleInstruction;
-import com.zurrtum.create.client.foundation.gui.ModularGuiLineBuilder;
-import com.zurrtum.create.client.foundation.utility.CreateLang;
 import com.zurrtum.create.catnip.data.Couple;
-import com.zurrtum.create.catnip.data.Pair;
 import com.zurrtum.create.catnip.data.WorldAttached;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.ChatFormatting;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+// PORT-NOTE(26.1): UI (summary, icons, editor) moved to the client RedstoneLinkInstructionRender, as in Create Fly.
 public class RedstoneLinkInstruction extends ScheduleInstruction {
+    private static final Codec<Couple<Frequency>> FREQUENCY_CODEC = Couple.codec(Frequency.CODEC);
 
     public static WorldAttached<List<CustomRedstoneActor>> customActors =
         new WorldAttached<>($ -> new ArrayList<>());
@@ -74,14 +65,10 @@ public class RedstoneLinkInstruction extends ScheduleInstruction {
 
     public Couple<Frequency> freq;
 
-    public RedstoneLinkInstruction() {
+    public RedstoneLinkInstruction(Identifier id) {
+        super(id);
         freq = Couple.create(() -> RedstoneLinkNetworkHandler.Frequency.EMPTY);
         data.putInt("Power", 15);
-    }
-
-    @Override
-    public int slotsTargeted() {
-        return 2;
     }
 
     @Override
@@ -90,88 +77,15 @@ public class RedstoneLinkInstruction extends ScheduleInstruction {
     }
 
     @Override
-    public Pair<ItemStack, Component> getSummary() {
-        return Pair.of(icon(), formatted());
-    }
-
-    private MutableComponent formatted() {
-        return Component.translatable("railways.schedule.instruction.redstone_link.power", intData("Power"));
+    protected void writeAdditional(ValueOutput view) {
+        view.store("Frequency", FREQUENCY_CODEC, freq);
     }
 
     @Override
-    public List<Component> getSecondLineTooltip(int slot) {
-        return ImmutableList.of(CreateLang.translateDirect(slot == 0 ? "logistics.firstFrequency" : "logistics.secondFrequency")
-            .withStyle(ChatFormatting.RED));
+    protected void readAdditional(ValueInput view) {
+        freq = view.read("Frequency", FREQUENCY_CODEC).orElseGet(() -> Couple.create(() -> RedstoneLinkNetworkHandler.Frequency.EMPTY));
     }
 
-    private ItemStack icon() {
-        return new ItemStack(AllBlocks.REDSTONE_LINK);
-    }
-
-    @Override
-    public Identifier getId() {
-        return Railways.asResource("redstone_link");
-    }
-
-    @Override
-    public ItemStack getSecondLineIcon() {
-        return icon();
-    }
-
-    @Override
-    public List<Component> getTitleAs(String type) {
-        return ImmutableList.of(
-            CreateLang.translateDirect("schedule.condition.redstone_link.frequency_powered"),
-            Component.literal(" #1 ").withStyle(ChatFormatting.GRAY)
-                .append(freq.getFirst()
-                    .getStack()
-                    .getHoverName()
-                    .copy()
-                    .withStyle(ChatFormatting.DARK_AQUA)),
-            Component.literal(" #2 ").withStyle(ChatFormatting.GRAY)
-                .append(freq.getSecond()
-                    .getStack()
-                    .getHoverName()
-                    .copy()
-                    .withStyle(ChatFormatting.DARK_AQUA)));
-    }
-
-    @Override
-    public void setItem(int slot, ItemStack stack) {
-        freq.set(slot == 0, RedstoneLinkNetworkHandler.Frequency.of(stack));
-        super.setItem(slot, stack);
-    }
-
-    @Override
-    public ItemStack getItem(int slot) {
-        return freq.get(slot == 0)
-            .getStack();
-    }
-
-    @Override
-    protected void writeAdditional(CompoundTag tag) {
-        tag.put("Frequency", freq.serializeEach(f -> f.getStack().save(new CompoundTag())));
-    }
-
-    @Override
-    protected void readAdditional(CompoundTag tag) {
-        if (tag.contains("Frequency"))
-            freq = Couple.deserializeEach(tag.getListOrEmpty("Frequency"), c -> RedstoneLinkNetworkHandler.Frequency.of(ItemStack.of(c)));
-        else
-            freq = Couple.create(() -> RedstoneLinkNetworkHandler.Frequency.EMPTY);
-    }
-
-    @Override
-    @Environment(EnvType.CLIENT)
-    public void initConfigurationWidgets(ModularGuiLineBuilder builder) {
-        builder.addScrollInput(20, 101, (si, l) -> {
-            si.withRange(1, 16)
-                .withStepFunction(c -> c.shift ? 5 : 1)
-                .titled(Component.translatable("railways.schedule.instruction.redstone_link.power_edit_box"));
-            //l.withSuffix("%");
-        }, "Power");
-    }
-    
     @Override
     public @Nullable DiscoveredPath start(ScheduleRuntime runtime, Level level) {
         Train train = ((AccessorScheduleRuntime) runtime).getTrain();

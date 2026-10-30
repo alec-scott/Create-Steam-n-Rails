@@ -18,6 +18,11 @@
 
 package com.railwayteam.railways.mixin;
 
+import com.zurrtum.create.infrastructure.packet.s2c.TrainEditReturnPacket;
+import net.minecraft.core.component.DataComponents;
+import com.railwayteam.railways.util.CRValueIO;
+import com.zurrtum.create.AllSchedules;
+import com.railwayteam.railways.util.ItemUtils;
 import com.railwayteam.railways.port.minecraft.NbtCompat;
 
 import com.railwayteam.railways.config.CRConfigs;
@@ -71,15 +76,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Mixin(value = StationBlock.class, remap = false)
 public abstract class MixinStationBlock {
     @SuppressWarnings("UnresolvedMixinReference")
-    @Inject(method = "use", at = @At("HEAD"), cancellable = true, remap = true)
-    private void autoWhistle(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit, CallbackInfoReturnable<InteractionResult> cir){
+    @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true, remap = true)
+    private void autoWhistle(ItemStack stackArg, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit, CallbackInfoReturnable<InteractionResult> cir){
         ItemStack itemInHand = pPlayer.getItemInHand(pHand);
         if (CRBlocks.CONDUCTOR_WHISTLE_FLAG.asStack().getItem().equals(itemInHand.getItem())) {
             if (!pLevel.isClientSide() && pPlayer instanceof DeployerFakePlayer && pLevel.getBlockEntity(pPos) instanceof StationBlockEntity stationBe) {
                 cir.setReturnValue(InteractionResult.CONSUME);
                 GlobalStation station = stationBe.getStation();
                 if (station != null && station.getPresentTrain() == null) {
-                    CompoundTag stackTag = itemInHand.getTag();
+                    CompoundTag stackTag = ItemUtils.getCustomData(itemInHand);
                     if (stackTag == null || !NbtCompat.hasUUID(stackTag, "SelectedTrain") || !NbtCompat.hasUUID(stackTag, "SelectedConductor")) {
                         cir.setReturnValue(InteractionResult.FAIL);
                         return;
@@ -109,16 +114,16 @@ public abstract class MixinStationBlock {
 
                     stackTag.put("SelectedPos", NbtCompat.writeBlockPos(pos));
                     stackTag.remove("Bezier");
-                    itemInHand.setTag(stackTag);
+                    ItemUtils.setCustomData(itemInHand, stackTag);
 
                     if (CRConfigs.server().conductors.whistleRequiresOwning.get() && train.runtime.getSchedule() != null && !train.runtime.completed && !train.runtime.isAutoSchedule && train.getOwner(level) != pPlayer) {
                         stackTag.remove("SelectedPos");
-                        itemInHand.setTag(stackTag);
+                        ItemUtils.setCustomData(itemInHand, stackTag);
                         return;
                     }
 
                     if (train.runtime.getSchedule() != null && !train.runtime.isAutoSchedule) {
-                        ItemStack scheduleStack = train.runtime.returnSchedule();
+                        ItemStack scheduleStack = train.runtime.returnSchedule(level.registryAccess());
                         if (!scheduleStack.isEmpty()) {
                             for (CompoundTag passengerTag : ((AccessorCarriage) conductorCarriage).getSerialisedPassengers().values()) {
                                 if (passengerTag.contains("PlayerPassenger")) continue;
@@ -134,7 +139,7 @@ public abstract class MixinStationBlock {
                                         } else {
                                             schedulesList = passengerTag.getListOrEmpty("heldSchedules");
                                         }
-                                        schedulesList.add(scheduleStack.save(new CompoundTag()));
+                                        schedulesList.add(CRValueIO.saveItem(level.registryAccess(), scheduleStack));
                                         scheduleStack.setCount(0);
                                         break;
                                     }
@@ -161,8 +166,8 @@ public abstract class MixinStationBlock {
 
                     Schedule schedule = new Schedule();
                     ScheduleEntry entry = new ScheduleEntry();
-                    DestinationInstruction instruction = new DestinationInstruction();
-                    ScheduledDelay condition = new ScheduledDelay();
+                    DestinationInstruction instruction = new DestinationInstruction(AllSchedules.DESTINATION);
+                    ScheduledDelay condition = new ScheduledDelay(AllSchedules.DELAY);
                     condition.getData().putInt("Value", 0);
                     instruction.getData().putString("Text", station.name);
                     entry.instruction = instruction;
@@ -185,11 +190,11 @@ public abstract class MixinStationBlock {
                         carriage.forEachPresentEntity(e -> e.getIndirectPassengers()
                                 .forEach(p -> {
                                     if (p instanceof ConductorEntity conductor && !found.get()) {
-                                        CompoundTag stackTag = itemInHand.getOrCreateTag();
+                                        CompoundTag stackTag = ItemUtils.getCustomData(itemInHand);
                                         NbtCompat.putUUID(stackTag, "SelectedTrain", train.id);
                                         NbtCompat.putUUID(stackTag, "SelectedConductor", conductor.getUUID());
                                         stackTag.putByte("SelectedColor", conductor.getEntityData().get(ConductorEntity.COLOR));
-                                        itemInHand.setTag(stackTag);
+                                        ItemUtils.setCustomData(itemInHand, stackTag);
                                         pPlayer.setItemInHand(pHand, itemInHand);
                                         cir.setReturnValue(InteractionResult.SUCCESS);
                                         found.set(true);
@@ -202,8 +207,8 @@ public abstract class MixinStationBlock {
         }
     }
 
-    @Inject(method = "use", at = @At(value = "RETURN", ordinal = 1), cancellable = true, remap = true)
-    private void deployersAssemble(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit, CallbackInfoReturnable<InteractionResult> cir) {
+    @Inject(method = "useItemOn", at = @At(value = "RETURN", ordinal = 1), cancellable = true, remap = true)
+    private void deployersAssemble(ItemStack stackArg, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit, CallbackInfoReturnable<InteractionResult> cir) {
         if (!pLevel.isClientSide() && pPlayer instanceof DeployerFakePlayer deployerFakePlayer && pLevel.getBlockEntity(pPos) instanceof StationBlockEntity stationBe) {
             cir.setReturnValue(InteractionResult.CONSUME);
             GlobalStation station = stationBe.getStation();
@@ -243,8 +248,8 @@ public abstract class MixinStationBlock {
         if (station != null) {
             Train train = station.getPresentTrain();
             BlockPos trackPosition = te.edgePoint.getGlobalPosition();
-            ItemStack schedule = train == null ? ItemStack.EMPTY : train.runtime.returnSchedule();
-            if (train != null && !train.disassemble(te.getAssemblyDirection(), trackPosition.above()))
+            ItemStack schedule = train == null ? ItemStack.EMPTY : train.runtime.returnSchedule(sender.registryAccess());
+            if (train != null && !train.disassemble(sender, te.getAssemblyDirection(), trackPosition.above()))
                 return false;
             dropSchedule(sender, te, schedule);
         }
@@ -267,8 +272,8 @@ public abstract class MixinStationBlock {
             .addFreshEntity(itemEntity);
     }
 
-    @Inject(method = "use", at = @At("HEAD"), cancellable = true, remap = true)
-    private void deployersNameTag(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit, CallbackInfoReturnable<InteractionResult> cir) {
+    @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true, remap = true)
+    private void deployersNameTag(ItemStack stackArg, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit, CallbackInfoReturnable<InteractionResult> cir) {
         ItemStack itemInHand = pPlayer.getItemInHand(pHand);
         if (!pLevel.isClientSide() && pPlayer instanceof DeployerFakePlayer
             && pLevel.getBlockEntity(pPos) instanceof StationBlockEntity stationBe
@@ -279,15 +284,15 @@ public abstract class MixinStationBlock {
             if (station == null || station.getPresentTrain() == null) return;
 
             Train train = station.getPresentTrain();
-            if (itemInHand.hasCustomHoverName()) { // Set the train name
+            if (itemInHand.has(DataComponents.CUSTOM_NAME)) { // Set the train name
                 String newName = itemInHand.getHoverName().getString();
                 if (train.name.getString().equals(newName)) return;
 
                 train.name = Component.literal(newName);
-                CRPackets.PACKETS.sendTo(PlayerSelection.all(),
-                    new TrainEditPacket.TrainEditReturnPacket(train.id, newName, train.icon.getId(), train.mapColorIndex));
+                pLevel.getServer().getPlayerList()
+                    .broadcastAll(new TrainEditReturnPacket(train.id, newName, train.icon.id(), train.mapColorIndex));
             } else { // Get the train's name and put it on the nametag
-                itemInHand.setHoverName(Component.literal(train.name.getString()));
+                itemInHand.set(DataComponents.CUSTOM_NAME, Component.literal(train.name.getString()));
             }
         }
     }

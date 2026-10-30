@@ -119,7 +119,7 @@ public class FillPaintCommand {
         @Nullable PalettesColor colorToReplace
     ) throws CommandSyntaxException {
         int targetedVolume = area.getXSpan() * area.getYSpan() * area.getZSpan();
-        int max = source.getLevel().getGameRules().getInt(GameRules.RULE_COMMAND_MODIFICATION_BLOCK_LIMIT);
+        int max = source.getLevel().getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
         if (targetedVolume > max) {
             throw ERROR_AREA_TOO_LARGE.create(max, targetedVolume);
         }

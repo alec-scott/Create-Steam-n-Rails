@@ -49,6 +49,11 @@ public class ItemUtils {
 		return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
 	}
 
+	/** Replaces the stack's custom data (1.20 {@code setTag}); the component is removed when the tag is empty. */
+	public static void setCustomData(ItemStack stack, CompoundTag tag) {
+		CustomData.set(DataComponents.CUSTOM_DATA, stack, tag);
+	}
+
 	/** Edits the stack's custom data; the component is removed when the tag ends up empty. */
 	public static void updateCustomData(ItemStack stack, Consumer<CompoundTag> updater) {
 		CustomData.update(DataComponents.CUSTOM_DATA, stack, updater);

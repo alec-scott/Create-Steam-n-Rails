@@ -41,7 +41,7 @@ public class FlywheelMovementRender implements MovementRenderBehaviour {
     @Override
     public MovementRenderState getRenderState(Vec3 camera, Font font, MovementContext context, VirtualRenderWorld renderWorld,
                                               PoseStack.Pose transform, Matrix4f worldMatrix) {
-        if (!(context.contraption.getOrCreateClientContraptionLazy().getBlockEntity(context.localPos) instanceof FlywheelBlockEntity flywheelBlockEntity))
+        if (!(com.zurrtum.create.client.content.contraptions.render.ClientContraption.getBlockEntityClientSide(context.contraption, context.localPos) instanceof FlywheelBlockEntity flywheelBlockEntity))
             return null;
         if (!(context.temporaryData instanceof FlywheelMovementBehaviour.TemporaryData temporaryData))
             return null;

@@ -18,6 +18,7 @@
 
 package com.railwayteam.railways.content.conductor.remote_lens;
 
+import com.railwayteam.railways.util.ItemUtils;
 import com.railwayteam.railways.port.minecraft.NbtCompat;
 
 import net.minecraft.world.item.component.TooltipDisplay;
@@ -56,7 +57,7 @@ public class RemoteLensItem extends Item {
     @Override
     public void appendHoverText(@NotNull ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, display, tooltip, flag);
-        CompoundTag tag = stack.getTag();
+        CompoundTag tag = ItemUtils.getCustomData(stack);
         if (tag != null && NbtCompat.hasUUID(tag, "SelectedConductor")) {
             UUID conductorId = NbtCompat.getUUID(tag, "SelectedConductor");
 
@@ -74,10 +75,10 @@ public class RemoteLensItem extends Item {
         if (pPlayer.level.isClientSide())
             return InteractionResult.CONSUME;
         if (pInteractionTarget instanceof ConductorEntity conductor && conductor.getJob() == ConductorEntity.Job.SPY) {
-            CompoundTag stackTag = pStack.getOrCreateTag();
+            CompoundTag stackTag = ItemUtils.getCustomData(pStack);
             NbtCompat.putUUID(stackTag, "SelectedConductor", conductor.getUUID());
             pPlayer.sendOverlayMessage(Component.translatable("railways.remote_lens.set"));
-            pStack.setTag(stackTag);
+            ItemUtils.setCustomData(pStack, stackTag);
             pPlayer.setItemInHand(pUsedHand, pStack);
             AllSoundEvents.PECULIAR_BELL_USE.play(pPlayer.level, null, conductor.getX(), conductor.getY(), conductor.getZ(), .5f, 1.1f);
             return InteractionResult.SUCCESS;
@@ -96,12 +97,12 @@ public class RemoteLensItem extends Item {
     public @NotNull InteractionResult use(@NotNull Level level, Player player, @NotNull InteractionHand usedHand) {
         ItemStack stack = player.getItemInHand(usedHand);
         if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer) {
-            CompoundTag stackTag = stack.getTag();
+            CompoundTag stackTag = ItemUtils.getCustomData(stack);
             if (stackTag == null || !NbtCompat.hasUUID(stackTag, "SelectedConductor"))
                 return InteractionResult.FAIL;
             UUID conductorId = NbtCompat.getUUID(stackTag, "SelectedConductor");
             if (player.isShiftKeyDown()) {
-                stack.removeTagKey("SelectedConductor");
+                ItemUtils.updateCustomData(stack, t -> t.remove("SelectedConductor"));
                 AllSoundEvents.CONTROLLER_CLICK.play(level, null, player.blockPosition(), .5f, 1.1f);
                 player.sendOverlayMessage(Component.translatable("railways.remote_lens.clear"));
                 return InteractionResult.SUCCESS;

@@ -183,7 +183,7 @@ public class SmokeStackMovementBehaviour extends MovementBehaviour {
         float chanceModifierTarget = (Math.abs(context.getAnimationSpeed()) + 100) / 800;
         chanceModifierTarget = chanceModifierTarget * chanceModifierTarget;
 
-        if (context.contraption.getOrCreateClientContraptionLazy().getBlockEntity(context.localPos) instanceof ISpeedNotifiable notifiable) {
+        if (com.zurrtum.create.client.content.contraptions.render.ClientContraption.getBlockEntityClientSide(context.contraption, context.localPos) instanceof ISpeedNotifiable notifiable) {
             notifiable.notifySpeed(chanceModifierTarget);
         }
 

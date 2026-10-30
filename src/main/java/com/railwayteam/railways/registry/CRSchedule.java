@@ -22,10 +22,16 @@ import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.content.schedule.RedstoneLinkInstruction;
 import com.railwayteam.railways.content.schedule.StationLoadedCondition;
 import com.railwayteam.railways.content.schedule.WaypointDestinationInstruction;
+import com.railwayteam.railways.content.schedule.client.RedstoneLinkInstructionRender;
+import com.railwayteam.railways.content.schedule.client.StationLoadedConditionRender;
+import com.zurrtum.create.client.AllScheduleRenders;
+import com.zurrtum.create.client.content.trains.schedule.destination.DestinationInstructionRender;
 import com.zurrtum.create.content.trains.schedule.condition.ScheduleWaitCondition;
 import com.zurrtum.create.content.trains.schedule.destination.ScheduleInstruction;
 import com.zurrtum.create.catnip.data.Pair;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.resources.Identifier;
 
 import java.util.function.Function;
@@ -34,18 +40,28 @@ import static com.zurrtum.create.AllSchedules.CONDITION_TYPES;
 import static com.zurrtum.create.AllSchedules.INSTRUCTION_TYPES;
 
 public class CRSchedule {
-    static {
-        registerInstruction("redstone_link", RedstoneLinkInstruction::new);
-        registerInstruction("waypoint_destination", WaypointDestinationInstruction::new);
-        registerCondition("loaded", StationLoadedCondition::new);
+    public static final Identifier REDSTONE_LINK = registerInstruction("redstone_link", RedstoneLinkInstruction::new);
+    public static final Identifier WAYPOINT_DESTINATION = registerInstruction("waypoint_destination", WaypointDestinationInstruction::new);
+    public static final Identifier LOADED = registerCondition("loaded", StationLoadedCondition::new);
+
+    private static Identifier registerInstruction(String name, Function<Identifier, ? extends ScheduleInstruction> factory) {
+        Identifier id = Railways.asResource(name);
+        INSTRUCTION_TYPES.add(Pair.of(id, factory));
+        return id;
     }
 
-    private static void registerInstruction(String name, Function<Identifier, ? extends ScheduleInstruction> factory) {
-        INSTRUCTION_TYPES.add(Pair.of(Railways.asResource(name), factory));
+    private static Identifier registerCondition(String name, Function<Identifier, ? extends ScheduleWaitCondition> factory) {
+        Identifier id = Railways.asResource(name);
+        CONDITION_TYPES.add(Pair.of(id, factory));
+        return id;
     }
 
-    private static void registerCondition(String name, Function<Identifier, ? extends ScheduleWaitCondition> factory) {
-        CONDITION_TYPES.add(Pair.of(Railways.asResource(name), factory));
+    /** PORT-NOTE(26.1): schedule UI is client side in Create Fly ({@link AllScheduleRenders}); call during client init. */
+    @Environment(EnvType.CLIENT)
+    public static void registerRenders() {
+        AllScheduleRenders.ALL.put(REDSTONE_LINK, new RedstoneLinkInstructionRender());
+        AllScheduleRenders.ALL.put(WAYPOINT_DESTINATION, new DestinationInstructionRender());
+        AllScheduleRenders.ALL.put(LOADED, new StationLoadedConditionRender());
     }
 
     public static void register() {}

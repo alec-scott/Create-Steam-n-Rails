@@ -18,19 +18,16 @@
 
 package com.railwayteam.railways.content.schedule;
 
-import com.railwayteam.railways.Railways;
 import com.zurrtum.create.content.trains.schedule.destination.DestinationInstruction;
 import net.minecraft.resources.Identifier;
 
 public class WaypointDestinationInstruction extends DestinationInstruction {
+	public WaypointDestinationInstruction(Identifier id) {
+		super(id);
+	}
 
 	@Override
 	public boolean supportsConditions() {
 		return false;
-	}
-
-	@Override
-	public Identifier getId() {
-		return Railways.asResource("waypoint_destination");
 	}
 }

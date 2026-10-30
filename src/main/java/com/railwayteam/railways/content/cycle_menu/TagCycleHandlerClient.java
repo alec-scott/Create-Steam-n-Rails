@@ -29,6 +29,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -73,13 +74,13 @@ public class TagCycleHandlerClient {
             return;
 
         MutableObject<TagKey<Item>> cycleTag = new MutableObject<>();
-        MutableObject<@Nullable CompoundTag> stackTag = new MutableObject<>();
+        MutableObject<@Nullable DataComponentPatch> stackTag = new MutableObject<>();
         if (!EntityUtils.isHolding(player, stack -> {
             Item item = stack.getItem();
             TagKey<Item> tag = CYCLE_TRACKER.getCycleTag(item);
             if (tag != null) {
                 cycleTag.setValue(tag);
-                stackTag.setValue(stack.getTag());
+                stackTag.setValue(stack.getComponentsPatch());
             }
             return tag != null;
         })) return;

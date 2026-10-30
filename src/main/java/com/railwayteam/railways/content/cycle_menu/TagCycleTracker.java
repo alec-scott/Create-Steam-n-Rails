@@ -49,7 +49,7 @@ public class TagCycleTracker {
         REVERSE_LOOKUP.clear();
         CYCLING_TAGS.forEach(tag -> CYCLES.put(tag, new ArrayList<>()));
 
-        BuiltInRegistries.ITEM.holders().forEachOrdered(item -> {
+        BuiltInRegistries.ITEM.listElements().forEachOrdered(item -> {
             for (TagKey<Item> tag : CYCLING_TAGS) {
                 if (item.is(tag)) {
                     CYCLES.get(tag).add(item.value());

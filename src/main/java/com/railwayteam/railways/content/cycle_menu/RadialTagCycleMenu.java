@@ -35,7 +35,7 @@ import com.zurrtum.create.catnip.math.AngleHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
@@ -54,10 +54,10 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
     private int scrollSlot = 0;
     private final TagKey<Item> tag;
     private final List<Item> cycle;
-    private final @Nullable CompoundTag stackTag;
+    private final @Nullable DataComponentPatch stackTag;
     private final int slotCount;
 
-    RadialTagCycleMenu(TagKey<Item> tag, List<Item> cycle, @Nullable CompoundTag stackTag) {
+    RadialTagCycleMenu(TagKey<Item> tag, List<Item> cycle, @Nullable DataComponentPatch stackTag) {
         hoveredSlot = -1;
         this.cycle = cycle;
         this.tag = tag;
@@ -115,7 +115,7 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
             if (slot < cycle.size()) {
                 ItemStack stack = new ItemStack(cycle.get(slot));
                 if (stackTag != null) {
-                    stack.setTag(stackTag.copy());
+                    stack.applyComponents(stackTag);
                 }
 
                 if (minecraft != null) {

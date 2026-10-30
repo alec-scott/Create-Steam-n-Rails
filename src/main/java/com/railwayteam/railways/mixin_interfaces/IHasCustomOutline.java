@@ -32,6 +32,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * Which is licensed under <a href="https://github.com/XFactHD/FramedBlocks/blob/17c8274ca380c3a868763b1b05657d07860c364b/LICENSE">LGPL</a>
  */
 public interface IHasCustomOutline {
+    /** PORT-NOTE(26.1): line vertices carry a width; matches the vanilla block outline. */
+    float LINE_WIDTH = 2.0F;
+
     @Environment(EnvType.CLIENT)
     void customOutline(PoseStack poseStack, VertexConsumer consumer, BlockState state);
 
@@ -54,10 +57,10 @@ public interface IHasCustomOutline {
         yDiff /= length;
         zDiff /= length;
 
-        vb.vertex(transform.pose(), (float) (x1 / 16), (float) (y1 / 16), (float) (z1 / 16)).color(0F, 0F, 0F, 0.4F)
-                .normal(transform.normal(), xDiff, yDiff, zDiff).endVertex();
-        vb.vertex(transform.pose(), (float) (x2 / 16), (float) (y2 / 16), (float) (z2 / 16)).color(0F, 0F, 0F, 0.4F)
-                .normal(transform.normal(), xDiff, yDiff, zDiff).endVertex();
+        vb.addVertex(transform, (float) (x1 / 16), (float) (y1 / 16), (float) (z1 / 16)).setColor(0F, 0F, 0F, 0.4F)
+                .setNormal(transform, xDiff, yDiff, zDiff).setLineWidth(LINE_WIDTH);
+        vb.addVertex(transform, (float) (x2 / 16), (float) (y2 / 16), (float) (z2 / 16)).setColor(0F, 0F, 0F, 0.4F)
+                .setNormal(transform, xDiff, yDiff, zDiff).setLineWidth(LINE_WIDTH);
     }
 
     /**

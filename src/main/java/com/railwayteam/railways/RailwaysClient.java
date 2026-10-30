@@ -67,6 +67,7 @@ public class RailwaysClient {
     PonderIndex.addPlugin(new CRPonderPlugin());
 
     CRKeys.register();
+    com.railwayteam.railways.registry.CRSchedule.registerRenders();
     CRBlockPartials.init();
     CRSpriteShifts.register(); // PORT-NOTE(fabric): moved from ModSetup, sprite shifts are client only in Create Fly
 
@@ -86,6 +87,8 @@ public class RailwaysClient {
     com.railwayteam.railways.fabric.client.CRMovementRenders.register();
     com.zurrtum.create.client.AllMenuScreens.register(com.railwayteam.railways.registry.CRContainerTypes.MOUNTED_TOOLBOX,
         com.railwayteam.railways.content.conductor.toolbox.MountedToolboxScreen::create);
+
+    com.railwayteam.railways.util.client.CustomOutlineRendering.register();
 
     DevCapeUtils.INSTANCE.init();
   }

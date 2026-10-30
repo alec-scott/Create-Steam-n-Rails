@@ -52,7 +52,7 @@ public class RegistrationListeningImpl {
 			Identifier id = listener.id();
 			// if already registered, don't store it
 			if (beforeListeningStart.contains(id))
-				listener.onRegister(registry.get(id));
+				listener.onRegister(registry.getValue(id));
 			else listeners.put(id, listener);
 		}
 

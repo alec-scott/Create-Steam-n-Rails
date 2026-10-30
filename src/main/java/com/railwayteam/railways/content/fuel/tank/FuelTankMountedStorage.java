@@ -18,7 +18,7 @@
 
 package com.railwayteam.railways.content.fuel.tank;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.railwayteam.railways.content.fuel.LiquidFuelTrainHandler;
 import com.railwayteam.railways.content.fuel.tank.FuelTankMountedStorage.Handler;
@@ -26,12 +26,12 @@ import com.railwayteam.railways.registry.fabric.CRMountedStorageTypesImpl;
 import com.zurrtum.create.api.contraption.storage.SyncedMountedStorage;
 import com.zurrtum.create.api.contraption.storage.fluid.WrapperMountedFluidStorage;
 import com.zurrtum.create.content.contraptions.Contraption;
-import com.zurrtum.create.foundation.codec.CreateCodecs;
 import com.zurrtum.create.infrastructure.fluids.FluidStack;
 import com.zurrtum.create.foundation.fluid.FluidTank;
 import com.zurrtum.create.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import com.zurrtum.create.AllClientHandle;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -40,16 +40,16 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 public class FuelTankMountedStorage extends WrapperMountedFluidStorage<Handler> implements SyncedMountedStorage {
-	public static final Codec<FuelTankMountedStorage> CODEC = RecordCodecBuilder.create(i -> i.group(
-			CreateCodecs.NON_NEGATIVE_LONG.fieldOf("capacity").forGetter(FuelTankMountedStorage::getCapacity),
-			CreateCodecs.FLUID_STACK_CODEC.fieldOf("fluid").forGetter(FuelTankMountedStorage::getFluid)
+	public static final MapCodec<FuelTankMountedStorage> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			ExtraCodecs.NON_NEGATIVE_INT.fieldOf("capacity").forGetter(FuelTankMountedStorage::getCapacity),
+			FluidStack.OPTIONAL_CODEC.fieldOf("fluid").forGetter(FuelTankMountedStorage::getFluid)
 	).apply(i, FuelTankMountedStorage::new));
 
 	private boolean dirty;
 
-	protected FuelTankMountedStorage(long capacity, FluidStack stack) {
-		super(CRMountedStorageTypesImpl.FUEL_TANK.get(), new Handler(capacity, stack));
-		this.wrapped.onChange = () -> this.dirty = true;
+	protected FuelTankMountedStorage(int capacity, FluidStack stack) {
+		super(CRMountedStorageTypesImpl.FUEL_TANK.get());
+		wrapped = new Handler(capacity, stack);
 	}
 
 	@Override
@@ -65,8 +65,8 @@ public class FuelTankMountedStorage extends WrapperMountedFluidStorage<Handler> 
 		return Objects.requireNonNull(this.wrapped.getFluid());
 	}
 
-	public long getCapacity() {
-		return this.wrapped.getCapacity();
+	public int getCapacity() {
+		return this.wrapped.getMaxAmountPerStack();
 	}
 
 	@Override
@@ -80,14 +80,19 @@ public class FuelTankMountedStorage extends WrapperMountedFluidStorage<Handler> 
 	}
 
 	@Override
+	public void markDirty() {
+		this.dirty = true;
+	}
+
+	@Override
 	public void afterSync(Contraption contraption, BlockPos localPos) {
-		BlockEntity be = contraption.getBlockEntityClientSide(localPos);
+		BlockEntity be = AllClientHandle.INSTANCE.getBlockEntityClientSide(contraption, localPos);
 		if (!(be instanceof FuelTankBlockEntity tank))
 			return;
 
 		FluidTank inv = tank.getTankInventory();
 		inv.setFluid(this.getFluid());
-		float fillLevel = inv.getFluidAmount() / (float) inv.getCapacity();
+		float fillLevel = inv.getFluid().getAmount() / (float) inv.getMaxAmountPerStack();
 		if (tank.getFluidLevel() == null) {
 			tank.setFluidLevel(LerpedFloat.linear().startWithValue(fillLevel));
 		}
@@ -97,27 +102,24 @@ public class FuelTankMountedStorage extends WrapperMountedFluidStorage<Handler> 
 	public static FuelTankMountedStorage fromTank(FuelTankBlockEntity tank) {
 		// tank has update callbacks, make an isolated copy
 		FluidTank inventory = tank.getTankInventory();
-		return new FuelTankMountedStorage(inventory.getCapacity(), inventory.getFluid().copy());
+		return new FuelTankMountedStorage(inventory.getMaxAmountPerStack(), inventory.getFluid().copy());
 	}
 
-	public static FuelTankMountedStorage fromLegacy(CompoundTag nbt) {
-		int capacity = nbt.getIntOr("Capacity", 0);
-		FluidStack fluid = FluidStack.loadFluidStackFromNBT(nbt);
-		return new FuelTankMountedStorage(capacity, fluid);
-	}
-
-	public static final class Handler extends FluidTank {
-		private Runnable onChange = () -> {};
-
-		public Handler(long capacity, FluidStack stack) {
-			super(capacity, fluid -> LiquidFuelTrainHandler.isFuelForTanks(fluid.getFluid()));
+	public final class Handler extends FluidTank {
+		public Handler(int capacity, FluidStack stack) {
+			super(capacity);
 			Objects.requireNonNull(stack);
 			this.setFluid(stack);
 		}
 
 		@Override
-		protected void onContentsChanged() {
-			this.onChange.run();
+		public void markDirty() {
+			dirty = true;
+		}
+
+		@Override
+		public boolean isValid(int slot, FluidStack stack) {
+			return LiquidFuelTrainHandler.isFuelForTanks(stack.getFluid());
 		}
 	}
 }
