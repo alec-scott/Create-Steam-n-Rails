@@ -77,7 +77,7 @@ public class LiquidFuelType {
                                         type.fluidTags.add(() -> tag);
                                     }
                                 } else {
-                                    Fluid fluid = BuiltInRegistries.FLUID.get(Identifier.parse(primitive.getAsString()));
+                                    Fluid fluid = BuiltInRegistries.FLUID.getOptional(Identifier.parse(primitive.getAsString())).orElse(null);
                                     if (fluid != null) {
                                         type.fluids.add(() -> fluid);
                                     }

@@ -35,8 +35,4 @@ public class TrackSwitchBlockItem extends TrackTargetingBlockItem {
     super(block, properties, type);
   }
 
-  @Override
-  public boolean useOnCurve(TrackBlockOutline.BezierPointSelection selection, ItemStack stack) {
-    return false;
-  }
 }

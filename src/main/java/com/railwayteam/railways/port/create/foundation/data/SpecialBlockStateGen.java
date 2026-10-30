@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class SpecialBlockStateGen {
     protected int horizontalAngle(Direction direction) { return (int) direction.toYRot(); }
+    protected net.minecraft.world.level.block.state.properties.Property<?>[] getIgnoredProperties() { return new net.minecraft.world.level.block.state.properties.Property<?>[0]; }
     protected abstract int getXRotation(BlockState state);
     protected abstract int getYRotation(BlockState state);
     public abstract <T extends Block> ModelFile getModel(DataGenContext<Block, T> ctx, RegistrateBlockstateProvider prov, BlockState state);

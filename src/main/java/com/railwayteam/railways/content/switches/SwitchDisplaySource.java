@@ -34,7 +34,7 @@ public class SwitchDisplaySource extends SingleLineDisplaySource {
     }
 
     @Override
-    protected boolean allowsLabeling(DisplayLinkContext context) {
+    public boolean allowsLabeling(DisplayLinkContext context) {
         return true;
     }
 

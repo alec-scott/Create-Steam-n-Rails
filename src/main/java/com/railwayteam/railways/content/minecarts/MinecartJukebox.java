@@ -83,7 +83,7 @@ public class MinecartJukebox extends MinecartBlock {
   }
 
   @Override
-  public void activateMinecart(int x, int y, int z, boolean active) {
+  public void activateMinecart(ServerLevel serverLevel, int x, int y, int z, boolean active) {
     if (active && !level.isClientSide()) {
       if (cooldownCount <= 0) {
         cooldownCount = COOLDOWN;

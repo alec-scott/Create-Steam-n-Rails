@@ -37,8 +37,4 @@ public class TrackCouplerBlockItem extends TrackTargetingBlockItem {
         super(pBlock, pProperties, type);
     }
 
-    @Override
-    public boolean useOnCurve(TrackBlockOutline.BezierPointSelection selection, ItemStack stack) {
-        return false;
-    }
 }

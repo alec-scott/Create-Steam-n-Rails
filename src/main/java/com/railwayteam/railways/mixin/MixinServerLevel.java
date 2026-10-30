@@ -93,7 +93,7 @@ public class MixinServerLevel {
             if (instance.getBlockEntity(pos) instanceof TrackBlockEntity be)
                 be.notifyUpdate();
             return true;
-        } else if (existingCasing == Blocks.SNOW && instance.getGameRules().getInt(GameRules.RULE_SNOW_ACCUMULATION_HEIGHT) >= 3) {
+        } else if (existingCasing == Blocks.SNOW && instance.getGameRules().get(GameRules.MAX_SNOW_ACCUMULATION_HEIGHT) >= 3) {
             if (IHasTrackCasing.isAlternate(instance, pos) && instance.getRandom().nextInt(4) == 0) {
                 IHasTrackCasing.setAlternateModel(instance, pos, false);
                 if (instance.getBlockEntity(pos) instanceof TrackBlockEntity be)

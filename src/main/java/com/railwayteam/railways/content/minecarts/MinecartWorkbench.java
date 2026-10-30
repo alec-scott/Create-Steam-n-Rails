@@ -18,6 +18,7 @@
 
 package com.railwayteam.railways.content.minecarts;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
 
 import com.railwayteam.railways.registry.CREntities;
@@ -61,7 +62,7 @@ public class MinecartWorkbench extends MinecartBlock implements MenuProvider {
     player.openMenu(this);
     if (!player.level().isClientSide()) {
       this.gameEvent(GameEvent.CONTAINER_OPEN, player);
-      PiglinAi.angerNearbyPiglins(player, true);
+      PiglinAi.angerNearbyPiglins((ServerLevel) player.level(), player, true);
       return InteractionResult.CONSUME;
     } else {
       return InteractionResult.SUCCESS;

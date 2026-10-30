@@ -32,15 +32,15 @@ import net.minecraft.world.phys.Vec3;
 public class GuiBlockMovingInteractionBehaviour extends MovingInteractionBehaviour {
     @Override
     public boolean handlePlayerInteraction(Player player, InteractionHand activeHand, BlockPos localPos, AbstractContraptionEntity contraptionEntity) {
-        if (player.level.isClientSide())
+        if (player.level().isClientSide())
             return true;
 
         Contraption contraption = contraptionEntity.getContraption();
         StructureTemplate.StructureBlockInfo info = contraption.getBlocks().get(localPos);
 
-        info.state.use(new GuiBlockContraptionWorld(player.level, contraption, localPos),
+        // PORT-NOTE(26.1): BlockState.use split into useItemOn/useWithoutItem; GUI blocks open without an item
+        info.state().useWithoutItem(new GuiBlockContraptionWorld(player.level(), contraption, localPos),
                 player,
-                activeHand,
                 new BlockHitResult(Vec3.atCenterOf(localPos), Direction.DOWN, localPos, false)
         );
 

@@ -225,7 +225,7 @@ public class HandcarItem extends BlockItem implements IDeployAnywayBlockItem {
 
         CarriageBogey bogey = new CarriageBogey(getBogeyBlock(), false, null, tp1, tp2);
         Carriage carriage = new Carriage(bogey, null, 0);
-        Train train = new Train(UUID.randomUUID(), owner, graph, List.of(carriage), new ArrayList<>(), true);
+        Train train = new Train(UUID.randomUUID(), owner, graph, List.of(carriage), new ArrayList<>(), true, 0);
 
         ((IHandcarTrain) train).railways$setHandcar(true);
 

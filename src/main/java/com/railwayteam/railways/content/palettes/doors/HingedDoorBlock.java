@@ -52,7 +52,7 @@ public class HingedDoorBlock extends DoorBlock implements IWrenchable {
     public static final BooleanProperty WINDOWED = BooleanProperty.create("windowed");
 
     public HingedDoorBlock(Properties properties) {
-        super(properties, CRBlockSetTypes.LOCOMETAL);
+        super(CRBlockSetTypes.LOCOMETAL, properties);
         registerDefaultState(defaultBlockState()
             .setValue(WINDOWED, false));
     }

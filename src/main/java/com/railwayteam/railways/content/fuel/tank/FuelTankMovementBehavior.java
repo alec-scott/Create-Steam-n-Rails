@@ -33,7 +33,7 @@ public class FuelTankMovementBehavior extends MovementBehaviour {
         if(!context.world.isClientSide())
             return;
 
-        BlockEntity be = context.contraption.getOrCreateClientContraptionLazy().getBlockEntity(context.localPos);
+        BlockEntity be = com.zurrtum.create.client.content.contraptions.render.ClientContraption.getBlockEntityClientSide(context.contraption, context.localPos);
         if(be instanceof FuelTankBlockEntity fuelTank) {
             fuelTank.getFluidLevel().tickChaser();
         }

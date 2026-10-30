@@ -34,8 +34,8 @@ import org.spongepowered.asm.mixin.injection.At;
 public class LevelRendererMixin {
     @Shadow @Final private Minecraft minecraft;
 
-    @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;getEntity()Lnet/minecraft/world/entity/Entity;", ordinal = 3), require = 0)
+    @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;entity()Lnet/minecraft/world/entity/Entity;", ordinal = 3), require = 0) // PORT-NOTE(26.1): ordinal unverified against 26.1 renderLevel; see PORTING-26.1.md
     private Entity overrideEntity(Camera instance, Operation<Entity> original) {
-        return instance.getEntity() instanceof ConductorEntity ? minecraft.player : original.call(instance);
+        return instance.entity() instanceof ConductorEntity ? minecraft.player : original.call(instance);
     }
 }

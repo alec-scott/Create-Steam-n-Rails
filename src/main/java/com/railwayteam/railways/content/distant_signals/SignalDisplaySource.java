@@ -49,7 +49,7 @@ public class SignalDisplaySource extends SingleLineDisplaySource {
     }
 
     @Override
-    protected boolean allowsLabeling(DisplayLinkContext context) {
+    public boolean allowsLabeling(DisplayLinkContext context) {
         return !isSignalTarget(context);
     }
 

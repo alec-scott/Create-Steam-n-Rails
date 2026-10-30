@@ -52,7 +52,7 @@ public class FlywheelMovementBehaviour extends MovementBehaviour {
         if (!context.world.isClientSide() || Minecraft.getInstance().isPaused()) return;
         if (!(context.contraption instanceof CarriageContraption carriageContraption)) return;
         if (!(carriageContraption.entity instanceof CarriageContraptionEntity carriageContraptionEntity)) return;
-        if (!(context.contraption.getOrCreateClientContraptionLazy().getBlockEntity(context.localPos) instanceof FlywheelBlockEntity flywheelBlockEntity)) return;
+        if (!(com.zurrtum.create.client.content.contraptions.render.ClientContraption.getBlockEntityClientSide(context.contraption, context.localPos) instanceof FlywheelBlockEntity flywheelBlockEntity)) return;
         if (flywheelBlockEntity.getBlockState().getValue(BlockStateProperties.AXIS).isVertical()) return;
         // It wasn't that bad was it? :^)
 
