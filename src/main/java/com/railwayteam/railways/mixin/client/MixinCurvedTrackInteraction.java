@@ -22,6 +22,7 @@ import com.railwayteam.railways.port.create.track.TrackMaterialData;
 
 import com.railwayteam.railways.content.custom_tracks.casing.CasingChecker;
 import com.railwayteam.railways.content.custom_tracks.casing.SlabUseOnCurvePacket;
+import com.railwayteam.railways.content.buffer.TrackBufferBlockItem;
 import com.railwayteam.railways.content.coupling.coupler.TrackCouplerBlockItem;
 import com.railwayteam.railways.content.handcar.HandcarItem;
 import com.railwayteam.railways.content.switches.TrackSwitchBlockItem;
@@ -95,14 +96,21 @@ public abstract class MixinCurvedTrackInteraction {
         }
     }
 
-    // PORT-NOTE(26.1): 1.20's TrackTargetingBlockItem.useOnCurve let switches and couplers opt out of curves (they
+    // PORT-NOTE(26.1): 1.20's TrackTargetingBlockItem.useOnCurve let switches, couplers and buffers opt out of curves (they
     // returned false); Create Fly sends the curve selection for every track targeting item.
     @ModifyExpressionValue(method = "onClickInput", at = @At(value = "CONSTANT",
         args = "classValue=com/zurrtum/create/content/trains/track/TrackTargetingBlockItem"))
     private static boolean railways$skipStraightOnlyItems(boolean isTargetingItem, Minecraft mc, boolean attack) {
         if (!isTargetingItem || mc.player == null)
             return isTargetingItem;
-        var item = mc.player.getMainHandItem().getItem();
+        var held = mc.player.getMainHandItem();
+        var item = held.getItem();
+        if (item instanceof com.railwayteam.railways.content.conductor.whistle.ConductorWhistleItem)
+            return false;
+        if (item instanceof TrackBufferBlockItem buffer) {
+            buffer.useOnCurve(TrackBlockOutline.result, held); // shows "invalid target"
+            return false;
+        }
         return !(item instanceof TrackSwitchBlockItem || item instanceof TrackCouplerBlockItem);
     }
 }

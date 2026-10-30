@@ -18,6 +18,12 @@
 
 package com.railwayteam.railways.content.conductor.whistle;
 
+import net.minecraft.world.entity.EquipmentSlot;
+import com.railwayteam.railways.util.CRValueIO;
+import com.zurrtum.create.AllSchedules;
+import com.railwayteam.railways.registry.CRBlockEntities;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.core.component.DataComponents;
 import com.railwayteam.railways.util.ItemUtils;
 import com.railwayteam.railways.port.minecraft.NbtCompat;
@@ -96,10 +102,8 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
     public ConductorWhistleItem(Block block, Item.Properties properties) {
         super(block, properties, EdgePointType.STATION);
     }
-    @Override
-    public boolean useOnCurve(TrackBlockOutline.BezierPointSelection selection, ItemStack stack) { //Not worth the effort
-        return false;
-    }
+    // PORT-NOTE(26.1): curve placement (1.20 useOnCurve returned false, "not worth the effort") is refused by
+    // MixinCurvedTrackInteraction
 
     private static InteractionResult fail(Player player, String message) {
         player.sendOverlayMessage(Component.translatable("railways.whistle.failure."+message).withStyle(ChatFormatting.RED));
@@ -115,7 +119,7 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
             UUID trainId = NbtCompat.getUUID(tag, "SelectedTrain");
             UUID conductorId = NbtCompat.getUUID(tag, "SelectedConductor");
             String trainName = "NOT FOUND";
-            GlobalRailwayManager railways = Create.RAILWAYS.sided(level);
+            GlobalRailwayManager railways = Create.RAILWAYS.sided(context.level());
             if (railways != null && railways.trains.containsKey(trainId))
                 trainName = railways.trains.get(trainId).name.getString();
 
@@ -276,14 +280,15 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
                 teTag.putByte("SelectedColor", stackTag.getByteOr("SelectedColor", (byte) 0));
                 teTag.putBoolean("TargetDirection", stackTag.getBooleanOr("SelectedDirection", false));
                 BlockPos selectedPos = NbtCompat.readBlockPos(stackTag.getCompoundOrEmpty("SelectedPos"));
-                teTag.put("TargetTrack", NbtCompat.writeBlockPos(selectedPos.subtract(placePos)));
-                stackTag.put("BlockEntityTag", teTag);
-                ItemUtils.setCustomData(stack, stackTag);
+                // PORT-NOTE(26.1): Create Fly's TrackTargetingBehaviour reads TargetTrack with BlockPos.CODEC, and block
+                // entity data for placement is the BLOCK_ENTITY_DATA component (was the BlockEntityTag stack NBT)
+                teTag.store("TargetTrack", BlockPos.CODEC, selectedPos.subtract(placePos));
+                stack.set(DataComponents.BLOCK_ENTITY_DATA, TypedEntityData.<BlockEntityType<?>>of(CRBlockEntities.CONDUCTOR_WHISTLE_FLAG.get(), teTag));
 
                 updateCustomBlockEntityTag(placePos, level, player, stack, placeState);
+                stack.remove(DataComponents.BLOCK_ENTITY_DATA);
                 stackTag.remove("SelectedPos");
                 stackTag.remove("SelectedDirection");
-                stackTag.remove("BlockEntityTag");
                 ItemUtils.setCustomData(stack, stackTag);
 
             }
@@ -301,7 +306,7 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
             }
 
             if (train.runtime.getSchedule() != null && !train.runtime.isAutoSchedule) {
-                ItemStack scheduleStack = train.runtime.returnSchedule();
+                ItemStack scheduleStack = train.runtime.returnSchedule(level.registryAccess());
                 if (!scheduleStack.isEmpty()) {
                     for (CompoundTag passengerTag : ((AccessorCarriage) conductorCarriage).getSerialisedPassengers().values()) {
                         if (passengerTag.contains("PlayerPassenger")) continue;
@@ -317,7 +322,7 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
                                 } else {
                                     schedulesList = passengerTag.getListOrEmpty("heldSchedules");
                                 }
-                                schedulesList.add(scheduleStack.save(new CompoundTag()));
+                                schedulesList.add(CRValueIO.saveItem(level.registryAccess(), scheduleStack));
                                 scheduleStack.setCount(0);
                                 break;
                             }
@@ -348,8 +353,8 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
 
             Schedule schedule = new Schedule();
             ScheduleEntry entry = new ScheduleEntry();
-            DestinationInstruction instruction = new DestinationInstruction();
-            ScheduledDelay condition = new ScheduledDelay();
+            DestinationInstruction instruction = new DestinationInstruction(AllSchedules.DESTINATION);
+            ScheduledDelay condition = new ScheduledDelay(AllSchedules.DELAY);
             condition.getData().putInt("Value", 0);
             instruction.getData().putString("Text", stationName);
             entry.instruction = instruction;
@@ -367,9 +372,10 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
     }
 
     @Override
-    public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slotId, boolean isSelected) {
-        if (isSelected && level instanceof ServerLevel serverLevel
-            && (serverLevel.getGameTime() + entity.hashCode() + slotId) % CRConfigs.server().conductors.whistleRebindRate.get() == 0) {
+    // PORT-NOTE(26.1): 26.1 passes the equipment slot (null outside equipment slots) instead of slot id + selected
+    public void inventoryTick(@NotNull ItemStack stack, @NotNull ServerLevel serverLevel, @NotNull Entity entity, @Nullable EquipmentSlot slot) {
+        if (slot == EquipmentSlot.MAINHAND
+            && (serverLevel.getGameTime() + entity.hashCode()) % CRConfigs.server().conductors.whistleRebindRate.get() == 0) {
             CompoundTag tag = ItemUtils.getCustomData(stack);
             if (tag != null && NbtCompat.hasUUID(tag, "SelectedTrain") && NbtCompat.hasUUID(tag, "SelectedConductor")) {
                 UUID trainId = NbtCompat.getUUID(tag, "SelectedTrain");
@@ -378,6 +384,7 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
                 if (serverLevel.getEntity(conductorId) instanceof ConductorEntity conductor) {
                     if (conductor.getVehicle() instanceof CarriageContraptionEntity cce && !trainId.equals(cce.trainId)) {
                         NbtCompat.putUUID(tag, "SelectedTrain", cce.trainId);
+                        ItemUtils.setCustomData(stack, tag);
                     }
                 }
             }

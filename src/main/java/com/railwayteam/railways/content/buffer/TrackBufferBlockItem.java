@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.content.buffer;
 
+import com.zurrtum.create.foundation.block.IBE;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.item.component.TypedEntityData;
+import net.minecraft.core.component.DataComponents;
 import com.railwayteam.railways.port.minecraft.NbtCompat;
 
 import com.railwayteam.railways.port.create.track.TrackMaterialData;
@@ -109,7 +113,7 @@ public class TrackBufferBlockItem extends TrackTargetingBlockItem {
             Pair<Vec3, AxisDirection> nearestTrackAxis = track.getNearestTrackAxis(level, pos, state, lookAngle);
             boolean front = nearestTrackAxis.getSecond() == AxisDirection.NEGATIVE;
             Vec3 biasedDirection = nearestTrackAxis.getFirst().yRot(10);
-            Axis axis = Direction.getNearest(
+            Axis axis = Direction.getApproximateNearest(
                 biasedDirection.x,
                 biasedDirection.y,
                 biasedDirection.z
@@ -132,10 +136,10 @@ public class TrackBufferBlockItem extends TrackTargetingBlockItem {
                 return InteractionResult.FAIL;
             }
             
-            CompoundTag stackTag = stack.getOrCreateTag();
-            stack.setTag(stackTag);
-            
-            CompoundTag oldTeTag = stackTag.getCompoundOrEmpty("BlockEntityTag");
+            // PORT-NOTE(26.1): 1.20's "BlockEntityTag" stack NBT is the BLOCK_ENTITY_DATA component, typed by the
+            // placed block's block entity type; the stack's own data is restored after placing.
+            TypedEntityData<BlockEntityType<?>> oldData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+            CompoundTag oldTeTag = oldData == null ? null : oldData.copyTagWithoutId();
             
             CompoundTag teTag = new CompoundTag();
             if (oldTeTag != null) {
@@ -162,8 +166,10 @@ public class TrackBufferBlockItem extends TrackTargetingBlockItem {
                 placeDirection = context.getClickedFace();
             }
             
-            teTag.put("TargetTrack", NbtCompat.writeBlockPos(pos.subtract(placedPos)));
-            stackTag.put("BlockEntityTag", teTag);
+            // Create Fly's TrackTargetingBehaviour reads TargetTrack with BlockPos.CODEC
+            teTag.store("TargetTrack", BlockPos.CODEC, pos.subtract(placedPos));
+            Block placedBlock = overrideBlock != null ? overrideBlock : getBlock();
+            stack.set(DataComponents.BLOCK_ENTITY_DATA, TypedEntityData.<BlockEntityType<?>>of(((IBE<?>) placedBlock).getBlockEntityType(), teTag));
             
             TrackShape shape = state.getValue(TrackBlock.SHAPE);
             boolean diagonal = shape == TrackShape.PD || shape == TrackShape.ND;
@@ -174,8 +180,10 @@ public class TrackBufferBlockItem extends TrackTargetingBlockItem {
                     overrideBlock, diagonal
             ));
             
-            teTag.remove("TargetTrack");
-            teTag.remove("TargetDirection");
+            if (oldData == null)
+                stack.remove(DataComponents.BLOCK_ENTITY_DATA);
+            else
+                stack.set(DataComponents.BLOCK_ENTITY_DATA, oldData);
             
             return useOn;
         }
@@ -184,7 +192,7 @@ public class TrackBufferBlockItem extends TrackTargetingBlockItem {
     }
     
     @Environment(EnvType.CLIENT)
-    @Override
+    // PORT-NOTE(26.1): no longer an override; called by MixinCurvedTrackInteraction
     public boolean useOnCurve(TrackBlockOutline.BezierPointSelection selection, ItemStack stack) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;

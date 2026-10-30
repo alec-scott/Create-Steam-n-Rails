@@ -18,6 +18,7 @@
 
 package com.railwayteam.railways.ponder.scenes;
 
+import net.minecraft.world.item.Items;
 import com.railwayteam.railways.port.minecraft.NbtCompat;
 
 import net.minecraft.world.item.ItemStack;
@@ -570,7 +571,7 @@ public class TrainScenes {
         scene.idle(20);
 
         for (int i = 0; i < 3; i++) {
-            scene.world().createEntity((level) -> new Arrow(level, switchPos.getX() + 0.5, 30, switchPos.getZ() + 0.5) {
+            scene.world().createEntity((level) -> new Arrow(level, switchPos.getX() + 0.5, 30, switchPos.getZ() + 0.5, new ItemStack(Items.ARROW), null) {
                 @Override
                 protected void onHitBlock(@NotNull BlockHitResult result) {
                     super.onHitBlock(result);
@@ -619,7 +620,7 @@ public class TrainScenes {
             }
 
             private Optional<TrackSwitchBlockEntity> getSwitch(PonderScene scene) {
-                if (scene.getWorld().getBlockEntity(switchPos) instanceof TrackSwitchBlockEntity switchBE)
+                if (scene.getLevel().getBlockEntity(switchPos) instanceof TrackSwitchBlockEntity switchBE)
                     return Optional.of(switchBE);
                 return Optional.empty();
             }
@@ -645,7 +646,7 @@ public class TrainScenes {
             }
 
             private Optional<TrackSwitchBlockEntity> getSwitch(PonderScene scene) {
-                if (scene.getWorld().getBlockEntity(switchPos) instanceof TrackSwitchBlockEntity switchBE)
+                if (scene.getLevel().getBlockEntity(switchPos) instanceof TrackSwitchBlockEntity switchBE)
                     return Optional.of(switchBE);
                 return Optional.empty();
             }
@@ -671,7 +672,7 @@ public class TrainScenes {
             }
 
             private Optional<TrackSwitchBlockEntity> getSwitch(PonderScene scene) {
-                if (scene.getWorld().getBlockEntity(switchPos) instanceof TrackSwitchBlockEntity switchBE)
+                if (scene.getLevel().getBlockEntity(switchPos) instanceof TrackSwitchBlockEntity switchBE)
                     return Optional.of(switchBE);
                 return Optional.empty();
             }
@@ -1022,7 +1023,7 @@ public class TrainScenes {
 
     public static void coupleTrain(SceneBuilder scene, BlockPos pos, double distance, Direction direction) {
         scene.addInstruction(PonderInstruction.simple(ponderScene -> {
-            PonderLevel world = ponderScene.getWorld();
+            PonderLevel world = ponderScene.getLevel();
             world.getBlockEntity(pos, AllBlockEntityTypes.BOGEY).ifPresent(sbte -> {
                 if (sbte instanceof IStandardBogeyTEVirtualCoupling virtualCoupling) {
                     virtualCoupling.setCouplingDistance(distance);
@@ -1034,7 +1035,7 @@ public class TrainScenes {
 
     public static void decoupleTrain(SceneBuilder scene, BlockPos pos) {
         scene.addInstruction(PonderInstruction.simple(ponderScene -> {
-            PonderLevel world = ponderScene.getWorld();
+            PonderLevel world = ponderScene.getLevel();
             world.getBlockEntity(pos, AllBlockEntityTypes.BOGEY).ifPresent(sbte -> {
                 if (sbte instanceof IStandardBogeyTEVirtualCoupling virtualCoupling) {
                     virtualCoupling.setCouplingDistance(-1);

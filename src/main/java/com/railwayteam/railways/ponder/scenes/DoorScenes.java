@@ -18,6 +18,7 @@
 
 package com.railwayteam.railways.ponder.scenes;
 
+import com.zurrtum.create.AllBlocks;
 import net.minecraft.resources.Identifier;
 
 import net.minecraft.world.item.ItemStack;
@@ -25,7 +26,7 @@ import net.minecraft.world.item.ItemStack;
 import com.zurrtum.create.AllItems;
 import com.zurrtum.create.Create;
 import com.zurrtum.create.content.contraptions.elevator.ElevatorContactBlock;
-import com.simibubi.create.content.decoration.palettes.AllPaletteBlocks;
+
 import com.zurrtum.create.content.decoration.slidingDoor.SlidingDoorBlock;
 import com.zurrtum.create.client.foundation.ponder.CreateSceneBuilder;
 import com.zurrtum.create.catnip.animation.LerpedFloat;
@@ -93,7 +94,7 @@ public class DoorScenes {
 
         openDoor(scene, elevatorDoorBottomPos); // open elevator door in preparation
         scene.world().cycleBlockProperty(outerContactLowerPos, ElevatorContactBlock.CALLING);
-        scene.world().setBlocks(glassArea, AllPaletteBlocks.FRAMED_GLASS.getDefaultState(), false);
+        scene.world().setBlocks(glassArea, AllBlocks.FRAMED_GLASS.defaultBlockState(), false);
 
         // show baseplate and door
 
@@ -362,14 +363,10 @@ public class DoorScenes {
 
     private static void openDoor(SceneBuilder scene, BlockPos bottom) {
         scene.world().cycleBlockProperty(bottom, SlidingDoorBlock.OPEN);
-        scene.world().cycleBlockProperty(bottom, SlidingDoorBlock.VISIBLE);
-        scene.world().cycleBlockProperty(bottom.above(), SlidingDoorBlock.VISIBLE);
     }
 
     private static void closeDoor(SceneBuilder scene, BlockPos bottom) {
         scene.world().cycleBlockProperty(bottom, SlidingDoorBlock.OPEN);
         scene.idle(10);
-        scene.world().cycleBlockProperty(bottom, SlidingDoorBlock.VISIBLE);
-        scene.world().cycleBlockProperty(bottom.above(), SlidingDoorBlock.VISIBLE);
     }
 }

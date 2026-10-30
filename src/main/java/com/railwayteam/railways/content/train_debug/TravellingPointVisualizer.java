@@ -34,7 +34,7 @@ public class TravellingPointVisualizer {
     @SuppressWarnings("UnnecessaryBoxing")
     public static void debugTrain(Train train) {
         Minecraft mc = Minecraft.getInstance();
-        Entity cameraEntity = mc.cameraEntity;
+        Entity cameraEntity = mc.getCameraEntity();
         if (cameraEntity == null)
             return;
         for (Carriage carriage : train.carriages) {
@@ -52,8 +52,8 @@ public class TravellingPointVisualizer {
                     }*/
                         Vec3 leadPos = bogey.leading().getPosition(train.graph);
                         Vec3 trailPos = bogey.trailing().getPosition(train.graph);
-                        mc.level.addParticle(new DustParticleOptions(new Vector3f(0, 1, 0), 2.0f), leadPos.x, leadPos.y+2, leadPos.z, 0, 0, 0);
-                        mc.level.addParticle(new DustParticleOptions(new Vector3f(1, 0, 0), 2.0f), trailPos.x, trailPos.y+2, trailPos.z, 0, 0, 0);
+                        mc.level.addParticle(new DustParticleOptions(0x00FF00, 2.0f), leadPos.x, leadPos.y+2, leadPos.z, 0, 0, 0);
+                        mc.level.addParticle(new DustParticleOptions(0xFF0000, 2.0f), trailPos.x, trailPos.y+2, trailPos.z, 0, 0, 0);
                         Outliner.getInstance().showLine(Integer.valueOf(carriage.id * 2 + (bogey == carriage.leadingBogey() ? 0 : 1)), bogey.leading().getPosition(train.graph), bogey.trailing().getPosition(train.graph))
                             .colored(color)
                             .lineWidth(2/16f);

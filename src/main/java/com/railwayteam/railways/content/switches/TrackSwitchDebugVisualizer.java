@@ -43,7 +43,7 @@ import java.util.Objects;
 public class TrackSwitchDebugVisualizer {
   public static void visualizeSwitchExits(TrackSwitch sw) {
     Minecraft mc = Minecraft.getInstance();
-    Entity camera = mc.cameraEntity;
+    Entity camera = mc.getCameraEntity();
     if (camera == null) {
       return;
     }
@@ -65,7 +65,7 @@ public class TrackSwitchDebugVisualizer {
 
   public static void visualizePotentialLocations() {
     Minecraft mc = Minecraft.getInstance();
-    Entity camera = mc.cameraEntity;
+    Entity camera = mc.getCameraEntity();
     if (camera == null)
       return;
 
@@ -132,7 +132,7 @@ public class TrackSwitchDebugVisualizer {
             }
           }
 
-          Direction offsetDirection = Direction.getNearest(farthestOffset.x, farthestOffset.y, farthestOffset.z);
+          Direction offsetDirection = Direction.getApproximateNearest(farthestOffset.x, farthestOffset.y, farthestOffset.z);
           Outliner.getInstance().showAABB(node, AABB.ofSize(tnl.getLocation()
                           .add(farthestOffset.x/2., farthestOffset.y/2., farthestOffset.z/2.)
                           .add(0, 8 / 16f, 0),
