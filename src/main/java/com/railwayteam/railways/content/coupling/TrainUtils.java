@@ -18,6 +18,9 @@
 
 package com.railwayteam.railways.content.coupling;
 
+import net.minecraft.core.HolderLookup;
+import com.railwayteam.railways.util.ServerHolder;
+import com.railwayteam.railways.util.CRValueIO;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.mixin.AccessorAbstractContraptionEntity;
 import com.railwayteam.railways.mixin.AccessorOrientedContraptionEntity;
@@ -70,6 +73,12 @@ public class TrainUtils {
      * @param numberOffEnd The number of carriages to move to the new train.
      * @return The new train.
      */
+    // PORT-NOTE(26.1): schedule runtimes save to ValueOutput; copy through a tag
+    private static void copyRuntime(ScheduleRuntime from, ScheduleRuntime to) {
+        HolderLookup.Provider registries = ServerHolder.get().registryAccess();
+        to.read(CRValueIO.input(registries, CRValueIO.save(registries, from::write)));
+    }
+
     public static Train splitTrain(Train train, int numberOffEnd) {
         if (((IHandcarTrain) train).railways$isHandcar()) return train;
         if (numberOffEnd == 0)
@@ -101,7 +110,7 @@ public class TrainUtils {
 
         Train newTrain;
         try {
-            newTrain = new Train(UUID.randomUUID(), train.owner, train.graph, new ArrayList<>(List.of(lastCarriages)), new ArrayList<>(List.of(lastCarriageSpacings)), Arrays.stream(lastCarriages).anyMatch(carriage -> carriage.anyAvailableEntity().getContraption() instanceof CarriageContraption carriageContraption && carriageContraption.hasBackwardControls()));
+            newTrain = new Train(UUID.randomUUID(), train.owner, train.graph, new ArrayList<>(List.of(lastCarriages)), new ArrayList<>(List.of(lastCarriageSpacings)), Arrays.stream(lastCarriages).anyMatch(carriage -> carriage.anyAvailableEntity().getContraption() instanceof CarriageContraption carriageContraption && carriageContraption.hasBackwardControls()), train.mapColorIndex);
         } catch (NullPointerException e) {
             train.carriages.addAll(List.of(lastCarriages));
             if (frontSpacingBackup != null)
@@ -173,7 +182,7 @@ public class TrainUtils {
             int newIndex = ((IIndexedSchedule) train).railways$getIndex() - train.carriages.size();
             ((IIndexedSchedule) newTrain).railways$setIndex(newIndex);
 
-            newTrain.runtime.read(train.runtime.write());
+            copyRuntime(train.runtime, newTrain.runtime);
             if (train.runtime.state == ScheduleRuntime.State.IN_TRANSIT) {
                 newTrain.runtime.state = ScheduleRuntime.State.PRE_TRANSIT;
                 ((AccessorScheduleRuntime) newTrain.runtime).setCooldown(0);
@@ -290,23 +299,23 @@ public class TrainUtils {
 //        frontTrain.carriages.forEach(carriage -> carriage.forEachPresentEntity(CarriageContraptionEntity::syncCarriage));
         if (frontTrain.runtime.getSchedule() == null && backTrain.runtime.getSchedule() != null) {
             ((IIndexedSchedule) frontTrain).railways$setIndex(((IIndexedSchedule) backTrain).railways$getIndex() + frontTrainSize);
-            frontTrain.runtime.read(backTrain.runtime.write());
+            copyRuntime(backTrain.runtime, frontTrain.runtime);
             if (backTrain.runtime.state == ScheduleRuntime.State.IN_TRANSIT) {
                 frontTrain.runtime.state = ScheduleRuntime.State.PRE_TRANSIT;
                 ((AccessorScheduleRuntime) frontTrain.runtime).setCooldown(0);
             }
         } else if (backTrain.runtime.getSchedule() != null) {
             if (frontTrain.runtime.completed) {
-                ItemStack stack = frontTrain.runtime.returnSchedule();
+                ItemStack stack = frontTrain.runtime.returnSchedule(itemDropLevel.registryAccess());
                 Containers.dropItemStack(itemDropLevel, itemDropPos.x, itemDropPos.y, itemDropPos.z, stack);
                 ((IIndexedSchedule) frontTrain).railways$setIndex(((IIndexedSchedule) backTrain).railways$getIndex() + frontTrainSize);
-                frontTrain.runtime.read(backTrain.runtime.write());
+                copyRuntime(backTrain.runtime, frontTrain.runtime);
                 if (backTrain.runtime.state == ScheduleRuntime.State.IN_TRANSIT) {
                     frontTrain.runtime.state = ScheduleRuntime.State.PRE_TRANSIT;
                     ((AccessorScheduleRuntime) frontTrain.runtime).setCooldown(0);
                 }
             } else {
-                ItemStack stack = backTrain.runtime.returnSchedule();
+                ItemStack stack = backTrain.runtime.returnSchedule(itemDropLevel.registryAccess());
                 Containers.dropItemStack(itemDropLevel, itemDropPos.x, itemDropPos.y, itemDropPos.z, stack);
             }
         }

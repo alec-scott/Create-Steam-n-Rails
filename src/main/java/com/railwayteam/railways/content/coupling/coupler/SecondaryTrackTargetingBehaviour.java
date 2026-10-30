@@ -18,6 +18,7 @@
 
 package com.railwayteam.railways.content.coupling.coupler;
 
+import com.railwayteam.railways.util.CRValueIO;
 import com.railwayteam.railways.port.minecraft.NbtCompat;
 
 import net.minecraft.core.UUIDUtil;
@@ -59,21 +60,21 @@ public class SecondaryTrackTargetingBehaviour<T extends TrackEdgePoint> extends 
     public void write(ValueOutput nbt, boolean clientPacket) {
         AccessorTrackTargetingBehavior accessor = (AccessorTrackTargetingBehavior) this;
         nbt.store("SecondaryId", UUIDUtil.CODEC, accessor.getId());
-        nbt.put("SecondaryTargetTrack", NbtCompat.writeBlockPos(accessor.getTargetTrack()));
+        CRValueIO.put(nbt, "SecondaryTargetTrack", NbtCompat.writeBlockPos(accessor.getTargetTrack()));
         nbt.putBoolean("SecondaryOrtho", accessor.isOrthogonal());
         nbt.putBoolean("SecondaryTargetDirection", accessor.getTargetDirection() == Direction.AxisDirection.POSITIVE);
         if (accessor.getRotatedDirection() != null)
-            nbt.put("SecondaryRotatedAxis", VecHelper.writeNBT(accessor.getRotatedDirection()));
+            CRValueIO.put(nbt, "SecondaryRotatedAxis", VecHelper.writeNBT(accessor.getRotatedDirection()));
         if (accessor.getPrevDirection() != null)
-            nbt.put("SecondaryPrevAxis", VecHelper.writeNBT(accessor.getPrevDirection()));
+            CRValueIO.put(nbt, "SecondaryPrevAxis", VecHelper.writeNBT(accessor.getPrevDirection()));
         if (accessor.getMigrationData() != null && !clientPacket)
-            nbt.put("SecondaryMigrate", accessor.getMigrationData());
+            CRValueIO.put(nbt, "SecondaryMigrate", accessor.getMigrationData());
         if (accessor.getTargetBezier() != null) {
             CompoundTag bezierNbt = new CompoundTag();
             bezierNbt.putInt("Segment", accessor.getTargetBezier().segment());
             bezierNbt.put("Key", NbtCompat.writeBlockPos(accessor.getTargetBezier().curveTarget()
                 .subtract(getPos())));
-            nbt.put("SecondaryBezier", bezierNbt);
+            CRValueIO.put(nbt, "SecondaryBezier", bezierNbt);
         }
     }
 
@@ -81,19 +82,19 @@ public class SecondaryTrackTargetingBehaviour<T extends TrackEdgePoint> extends 
     public void read(ValueInput nbt, boolean clientPacket) {
         AccessorTrackTargetingBehavior accessor = (AccessorTrackTargetingBehavior) this;
         accessor.setId(nbt.contains("SecondaryId") ? nbt.read("SecondaryId", UUIDUtil.CODEC).orElseThrow() : UUID.randomUUID());
-        accessor.setTargetTrack(NbtCompat.readBlockPos(nbt.childOrEmpty("SecondaryTargetTrack")));
+        accessor.setTargetTrack(NbtCompat.readBlockPos(CRValueIO.getCompound(nbt, "SecondaryTargetTrack")));
         accessor.setTargetDirection(nbt.getBooleanOr("SecondaryTargetDirection", false) ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
         accessor.setOrthogonal(nbt.getBooleanOr("SecondaryOrtho", false));
         if (nbt.contains("SecondaryPrevAxis"))
-            accessor.setPrevDirection(VecHelper.readNBT(nbt.getList("SecondaryPrevAxis", Tag.TAG_DOUBLE)));
+            accessor.setPrevDirection(VecHelper.readNBT(CRValueIO.getList(nbt, "SecondaryPrevAxis")));
         if (nbt.contains("SecondaryRotatedAxis"))
-            accessor.setRotatedDirection(VecHelper.readNBT(nbt.getList("SecondaryRotatedAxis", Tag.TAG_DOUBLE)));
+            accessor.setRotatedDirection(VecHelper.readNBT(CRValueIO.getList(nbt, "SecondaryRotatedAxis")));
         if (nbt.contains("SecondaryMigrate"))
-            accessor.setMigrationData(nbt.childOrEmpty("SecondaryMigrate"));
+            accessor.setMigrationData(CRValueIO.getCompound(nbt, "SecondaryMigrate"));
         if (clientPacket)
             accessor.setEdgePoint(null);
         if (nbt.contains("SecondaryBezier")) {
-            CompoundTag bezierNbt = nbt.childOrEmpty("SecondaryBezier");
+            CompoundTag bezierNbt = CRValueIO.getCompound(nbt, "SecondaryBezier");
             BlockPos key = NbtCompat.readBlockPos(bezierNbt.getCompoundOrEmpty("Key"));
             accessor.setTargetBezier(new BezierTrackPointLocation(bezierNbt.contains("FromStack") ? key : key.offset(getPos()),
                 bezierNbt.getIntOr("Segment", 0)));

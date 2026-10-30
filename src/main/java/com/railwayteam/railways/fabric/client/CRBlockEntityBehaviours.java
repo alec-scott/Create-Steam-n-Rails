@@ -17,6 +17,9 @@
  */
 package com.railwayteam.railways.fabric.client;
 
+import net.minecraft.network.chat.Component;
+import com.zurrtum.create.client.foundation.blockEntity.behaviour.scrollValue.ScrollOptionBehaviour;
+import com.railwayteam.railways.content.extended_sliding_doors.SlidingDoorMode;
 import com.railwayteam.railways.content.coupling.coupler.client.TrackCouplerClientBehaviours;
 import com.railwayteam.railways.content.switches.client.TrackSwitchClientBehaviours;
 import com.railwayteam.railways.content.fuel.tank.client.FuelTankTooltip;
@@ -41,5 +44,12 @@ public final class CRBlockEntityBehaviours {
         for (var type : List.of(CRBlockEntities.ANDESITE_SWITCH.get(), CRBlockEntities.BRASS_SWITCH.get()))
             AllBlockEntityBehaviours.add(type, TrackSwitchClientBehaviours::autoMode, TrackSwitchClientBehaviours.Tooltip::new);
         AllBlockEntityBehaviours.add(CRBlockEntitiesImpl.FUEL_TANK.get(), FuelTankTooltip::new);
+        // sliding door mode (server half added by MixinSlidingDoorBlockEntity)
+        AllBlockEntityBehaviours.add(com.zurrtum.create.AllBlockEntityTypes.SLIDING_DOOR, be -> new ScrollOptionBehaviour<SlidingDoorMode>(SlidingDoorMode.class, mode -> mode,
+            Component.translatable("create.sliding_door.mode"), be, new SlidingDoorMode.SlidingDoorValueBoxTransform()) {
+            {
+                needsWrench = true;
+            }
+        });
     }
 }

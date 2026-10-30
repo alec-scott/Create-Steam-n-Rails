@@ -18,14 +18,10 @@
 
 package com.railwayteam.railways.mixin;
 
-import net.minecraft.world.level.storage.ValueInput;
-
 import com.railwayteam.railways.content.extended_sliding_doors.SlidingDoorMode;
 import com.zurrtum.create.content.decoration.slidingDoor.SlidingDoorBlockEntity;
 import com.zurrtum.create.api.behaviour.BlockEntityBehaviour;
-import com.zurrtum.create.client.foundation.blockEntity.behaviour.scrollValue.ScrollOptionBehaviour;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
+import com.zurrtum.create.foundation.blockEntity.behaviour.scrollValue.ServerScrollOptionBehaviour;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -37,19 +33,13 @@ import java.util.List;
 @Mixin(value = SlidingDoorBlockEntity.class, remap = false)
 public class MixinSlidingDoorBlockEntity implements SlidingDoorMode.IHasDoorMode {
     @Unique
-    private ScrollOptionBehaviour<SlidingDoorMode> railways$doorModeScroll;
+    private ServerScrollOptionBehaviour<SlidingDoorMode> railways$doorModeScroll;
 
     @Inject(method = "addBehaviours", at = @At("RETURN"))
     private void addScrollBehaviour(List<BlockEntityBehaviour<?>> behaviours, CallbackInfo ci) {
+        // PORT-NOTE(26.1): server half only; the value box is the client SlidingDoorModeScroll (CRBlockEntityBehaviours)
         SlidingDoorBlockEntity this_ = (SlidingDoorBlockEntity) (Object) this;
-        railways$doorModeScroll = new ScrollOptionBehaviour<>(SlidingDoorMode.class, Component.translatable("create.sliding_door.mode"), this_, new SlidingDoorMode.SlidingDoorValueBoxTransform()) {
-            @Override
-            public void read(ValueInput nbt, boolean clientPacket) {
-                super.read(nbt, clientPacket);
-                setValue(value); // ensure that it is properly bounded
-            }
-        };
-        railways$doorModeScroll.requiresWrench();
+        railways$doorModeScroll = new ServerScrollOptionBehaviour<>(SlidingDoorMode.class, this_);
 //        doorModeScroll.value = doorModeScroll.scrollableValue = 1;
         behaviours.add(railways$doorModeScroll);
     }

@@ -102,13 +102,13 @@ public class CRItems {
     }
 
     public static final ItemEntry<? extends Item> ITEM_BENCHCART = makeMinecart("benchcart", CREntities.CART_BLOCK)
-        .recipe((ctx,prov)-> ShapelessRecipeBuilder.shapeless(RecipeCategory.TRANSPORTATION, ctx.get()).requires(Items.MINECART).requires(CommonTags.WORKBENCH.tag)
-            .unlockedBy("hasitem", InventoryChangeTrigger.TriggerInstance.hasItems(Items.MINECART)).save(prov))
+        // PORT-NOTE(26.1): datagen is stubbed; the recipe is in src/generated (minecart + workbench tag)
+        .recipe((ctx, prov) -> { })
         .lang("Minecart with Workbench")
         .register();
     public static final ItemEntry<? extends Item> ITEM_JUKEBOXCART = makeMinecart("jukeboxcart", CREntities.CART_JUKEBOX)
-        .recipe((ctx,prov)-> ShapelessRecipeBuilder.shapeless(RecipeCategory.TRANSPORTATION, ctx.get()).requires(Items.MINECART).requires(Items.JUKEBOX)
-            .unlockedBy("hasitem", InventoryChangeTrigger.TriggerInstance.hasItems(Items.MINECART)).save(prov))
+        // PORT-NOTE(26.1): datagen is stubbed; the recipe is in src/generated (minecart + jukebox)
+        .recipe((ctx, prov) -> { })
         .lang("Minecart with Jukebox")
         .register();
 
@@ -136,11 +136,8 @@ public class CRItems {
                 .lang(colorName + " Conductor's Cap")
                 .tag(CONDUCTOR_CAPS)
                 .properties(p -> p.stacksTo(1))
-                .recipe((ctx, prov)-> ShapelessRecipeBuilder.shapeless(RecipeCategory.COMBAT, ctx.get()) // combat because of armor
-                    .requires(CONDUCTOR_CAPS)
-                    .requires(CommonTags.DYES.get(color).tag)
-                    .unlockedBy("hasitem", RegistrateRecipeProvider.has(CONDUCTOR_CAPS))
-                    .save(prov, Railways.asResource("dying_existing_cap_" + colorReg)))
+                // PORT-NOTE(26.1): datagen is stubbed; the dye recipe is in src/generated (dying_existing_cap_<color>)
+                .recipe((ctx, prov) -> { })
                 .register());
         }
 

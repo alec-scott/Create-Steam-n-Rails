@@ -55,7 +55,7 @@ public class IdentifyTrainCommand {
         if (mc.player == null || mc.level == null)
             return 0;
 
-        Couple<Vec3> rayInputs = ContraptionHandlerClient.getRayInputs(mc.player);
+        Couple<Vec3> rayInputs = ContraptionHandlerClient.getRayInputs(mc, mc.player);
         Vec3 origin = rayInputs.getFirst();
         Vec3 target = rayInputs.getSecond();
 
@@ -74,7 +74,7 @@ public class IdentifyTrainCommand {
                 .append("' ")
                 .append(Component.literal(train.id.toString().substring(0, 5) + "[...]").withStyle(Style.EMPTY
                     .withColor(ChatFormatting.GRAY)
-                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(train.id.toString())))
+                    .withHoverEvent(new HoverEvent.ShowText(Component.literal(train.id.toString())))
                 ));
 
             if (train.owner != null) {
@@ -83,7 +83,7 @@ public class IdentifyTrainCommand {
 
             msg.append(Component.literal(" [Copy ID]").withStyle(Style.EMPTY
                 .withColor(ChatFormatting.GOLD)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, train.id.toString()))
+                .withClickEvent(new ClickEvent.CopyToClipboard(train.id.toString()))
             ));
 
             sendSuccess(source, msg);
