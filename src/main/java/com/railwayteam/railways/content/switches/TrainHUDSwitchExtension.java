@@ -18,7 +18,8 @@
 
 package com.railwayteam.railways.content.switches;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.RenderPipelines;
+import org.joml.Matrix3x2fStack;
 import com.railwayteam.railways.mixin.client.AccessorControlsHandler;
 import com.railwayteam.railways.registry.CRGuiTextures;
 import com.zurrtum.create.client.content.contraptions.actors.trainControls.ControlsHandler;
@@ -71,17 +72,17 @@ public class TrainHUDSwitchExtension {
         if (localPos == null)
             return;
 
-        PoseStack poseStack = graphics.pose();
-        poseStack.pushPose();
-        poseStack.translate(width / 2 - 91, height - 29, 0);
+        // PORT-NOTE(26.1): GUI poses are 2D (Matrix3x2fStack)
+        Matrix3x2fStack poseStack = graphics.pose();
+        poseStack.pushMatrix();
+        poseStack.translate(width / 2 - 91, height - 29);
 
         if (switchProgress.getValue(partialTicks) > 0) {
             CRGuiTextures bg = isAutomaticSwitch ?
                     CRGuiTextures.TRAIN_HUD_SWITCH_BRASS :
                     CRGuiTextures.TRAIN_HUD_SWITCH_ANDESITE;
             //bg.render(poseStack, 131, (int) (-bg.height * switchProgress.getValue(partialTicks)));
-            bg.bind();
-            graphics.blit(bg.location, 131, (int) (-16 * switchProgress.getValue(partialTicks) - 0.5), 0,
+            graphics.blit(RenderPipelines.GUI_TEXTURED, bg.location, 131, (int) (-16 * switchProgress.getValue(partialTicks) - 0.5),
                     bg.startX, bg.startY, bg.width, (int) (bg.height * switchProgress.getValue(partialTicks) + 0.5),
                     256, 256);
         }
@@ -96,6 +97,6 @@ public class TrainHUDSwitchExtension {
                 CRGuiTextures.TRAIN_HUD_SWITCH_LOCKED.render(graphics, 134, -13);
         }
 
-        poseStack.popPose();
+        poseStack.popMatrix();
     }
 }

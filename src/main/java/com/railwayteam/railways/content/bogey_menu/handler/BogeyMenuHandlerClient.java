@@ -113,7 +113,7 @@ public class BogeyMenuHandlerClient {
         try {
             Minecraft mc = Minecraft.getInstance();
             File file = new File(mc.gameDirectory, "snr_favorite_styles.nbt");
-            CompoundTag tag = NbtIo.read(file);
+            CompoundTag tag = NbtIo.read(file.toPath());
             if (tag == null)
                 return;
 
@@ -124,7 +124,7 @@ public class BogeyMenuHandlerClient {
                 favorites.clear();
                 for (Tag favoriteTag : favoritesList) {
                     if (favoriteTag instanceof StringTag stringTag) {
-                        Identifier loc = Identifier.tryParse(stringTag.getAsString());
+                        Identifier loc = Identifier.tryParse(stringTag.value());
                         if (loc == null)
                             continue;
                         if (AllBogeyStyles.BOGEY_STYLES.containsKey(loc)) {
@@ -149,7 +149,7 @@ public class BogeyMenuHandlerClient {
                 listTag.add(StringTag.valueOf(style.displayName.toString()));
             }
             tag.put("Favorites", listTag);
-            NbtIo.write(tag, new File(Minecraft.getInstance().gameDirectory, "snr_favorite_styles.nbt"));
+            NbtIo.write(tag, new File(Minecraft.getInstance().gameDirectory, "snr_favorite_styles.nbt").toPath());
         } catch (Exception e) {
             Railways.LOGGER.error("Failed to save favorite styles", e);
         }

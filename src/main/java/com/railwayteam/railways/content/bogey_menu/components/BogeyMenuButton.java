@@ -28,6 +28,6 @@ public class BogeyMenuButton extends Button {
         super(x, y, width, height, Component.empty(), onPress, Button.DEFAULT_NARRATION);
     }
 
-    @Override // NO-OP, We take care of rendering ourselves as buttons for text doesn't update properly
-    public void render(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) { }
+    @Override // NO-OP, We take care of rendering ourselves as buttons for text doesn't update properly (PORT-NOTE(26.1): was render)
+    public void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) { }
 }

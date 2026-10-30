@@ -18,7 +18,10 @@
 
 package com.railwayteam.railways.registry;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.Minecraft;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.content.switches.TrackSwitchBlock;
 import com.zurrtum.create.client.catnip.gui.UIRenderHelper;
@@ -90,24 +93,25 @@ public enum CRGuiTextures implements ScreenElement {
         }
     }
 
+    // PORT-NOTE(26.1): GUI drawing follows Create Fly's AllGuiTextures (render pipelines, texture setups)
     @Environment(EnvType.CLIENT)
-    public void bind() {
-        RenderSystem.setShaderTexture(0, location);
+    public TextureSetup bind() {
+        AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(location);
+        return TextureSetup.singleTexture(texture.getTextureView(), texture.getSampler());
     }
 
     @Environment(EnvType.CLIENT)
     public void render(GuiGraphicsExtractor graphics, int x, int y) {
-        graphics.blit(location, x, y, startX, startY, width, height);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, location, x, y, startX, startY, width, height, 256, 256);
     }
 
     @Environment(EnvType.CLIENT)
     public void render(GuiGraphicsExtractor graphics, int x, int y, int textureWidth, int textureHeight) {
-        graphics.blit(location, x, y, startX, startY, width, height, textureWidth, textureHeight);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, location, x, y, startX, startY, width, height, textureWidth, textureHeight);
     }
 
     @Environment(EnvType.CLIENT)
     public void render(GuiGraphicsExtractor graphics, int x, int y, Color c) {
-        bind();
-        UIRenderHelper.drawColoredTexture(graphics, c, x, y, startX, startY, width, height);
+        UIRenderHelper.drawColoredTexture(graphics, bind(), c, x, y, startX, startY, width, height);
     }
 }

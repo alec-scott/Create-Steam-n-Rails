@@ -18,7 +18,6 @@
 
 package com.railwayteam.railways.registry;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.railwayteam.railways.Railways;
@@ -28,10 +27,12 @@ import com.zurrtum.create.catnip.theme.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
@@ -84,23 +85,32 @@ public class CRIcons extends AllIcons {
         return new CRIcons(x = 0, ++y);
     }
 
+    // PORT-NOTE(26.1): rendering follows Create Fly's AllIcons (render pipelines, render state GUI), with this atlas
     @Environment(EnvType.CLIENT)
-    public void bind() {
-        RenderSystem.setShaderTexture(0, ICON_ATLAS);
+    @Override
+    public RenderType bind() {
+        return RenderTypes.text(ICON_ATLAS);
     }
 
     @Environment(EnvType.CLIENT)
     @Override
     public void render(GuiGraphicsExtractor graphics, int x, int y) {
-        graphics.blit(ICON_ATLAS, x, y, 0, iconX, iconY, 16, 16, 256, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, ICON_ATLAS, x, y, iconX, iconY, 16, 16, 256, 256);
     }
 
     @Environment(EnvType.CLIENT)
+    @Override
+    public void render(GuiGraphicsExtractor graphics, int x, int y, int color) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, ICON_ATLAS, x, y, iconX, iconY, 16, 16, 16, 16, 256, 256, color);
+    }
+
+    @Environment(EnvType.CLIENT)
+    @Override
     public void render(PoseStack ms, MultiBufferSource buffer, int color) {
-        VertexConsumer builder = buffer.getBuffer(RenderType.text(ICON_ATLAS));
+        VertexConsumer builder = buffer.getBuffer(RenderTypes.text(ICON_ATLAS));
         Matrix4f matrix = ms.last().pose();
         Color rgb = new Color(color);
-        int light = LightTexture.FULL_BRIGHT;
+        int light = LightCoordsUtil.FULL_BRIGHT;
 
         Vec3 vec1 = new Vec3(0, 0, 0);
         Vec3 vec2 = new Vec3(0, 1, 0);
@@ -120,14 +130,12 @@ public class CRIcons extends AllIcons {
 
     @Environment(EnvType.CLIENT)
     private void vertex(VertexConsumer builder, Matrix4f matrix, Vec3 vec, Color rgb, float u, float v, int light) {
-        builder.vertex(matrix, (float) vec.x, (float) vec.y, (float) vec.z)
-                .color(rgb.getRed(), rgb.getGreen(), rgb.getBlue(), 255)
-                .uv(u, v)
-                .uv2(light)
-                .endVertex();
+        builder.addVertex(matrix, (float) vec.x, (float) vec.y, (float) vec.z)
+            .setColor(rgb.getRed(), rgb.getGreen(), rgb.getBlue(), 255).setUv(u, v).setLight(light);
     }
 
     @Environment(EnvType.CLIENT)
+    @Override
     public DelegatedStencilElement asStencil() {
         return new DelegatedStencilElement().withStencilRenderer((ms, w, h, alpha) -> this.render(ms, 0, 0)).withBounds(16, 16);
     }
