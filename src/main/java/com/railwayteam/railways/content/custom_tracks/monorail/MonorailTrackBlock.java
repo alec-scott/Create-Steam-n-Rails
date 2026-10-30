@@ -166,16 +166,6 @@ public class MonorailTrackBlock extends TrackBlock {
     }
 
     @Override
-    @Environment(EnvType.CLIENT)
-    public PartialModel prepareAssemblyOverlay(BlockGetter world, BlockPos pos, BlockState state, Direction direction,
-                                               PoseStack ms) {
-        TransformStack.of(ms)
-            .rotateCentered(AngleHelper.rad(AngleHelper.horizontalAngle(direction)), Direction.UP)
-            .translateY(14/16f);
-        return CRBlockPartials.MONORAIL_TRACK_ASSEMBLING_OVERLAY;
-    }
-
-    @Override
     @SuppressWarnings("deprecation") // deprecated to call, fine to implement
     public void randomTick(BlockState state, @NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull RandomSource random) {
         if (!state.hasProperty(SHAPE)) return;

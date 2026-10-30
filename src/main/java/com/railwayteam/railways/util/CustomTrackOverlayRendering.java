@@ -222,6 +222,56 @@ public class CustomTrackOverlayRendering {
         return model;
     }
 
+    /**
+     * Shift for Create's track overlays (signals, stations, observers) on monorails and cased tracks, applied before
+     * the overlay's rotation; {@code null} when the overlay is hidden (invisible phantom track).
+     *
+     * <p>PORT-NOTE(26.1): was {@code MixinTrackBlockClient}'s injections into {@code TrackBlock.prepareTrackOverlay},
+     * which moved to Create Fly's client {@code StandardTrackBlockRenderer} (see {@code MixinStandardTrackBlockRenderer}).</p>
+     */
+    @Environment(EnvType.CLIENT)
+    public static @Nullable Vec3 overlayShift(BlockGetter world, BlockPos pos, BlockState state, @Nullable BezierTrackPointLocation bezierPoint) {
+        if (bezierPoint != null) {
+            if (!(world.getBlockEntity(pos) instanceof TrackBlockEntity trackTE))
+                return Vec3.ZERO;
+            BezierConnection bc = trackTE.getConnections().get(bezierPoint.curveTarget());
+            if (bc == null)
+                return Vec3.ZERO;
+            if (bc.getMaterial() == CRTrackMaterials.PHANTOM && !PhantomSpriteManager.isVisible())
+                return null;
+            if (TrackMaterialData.of(bc.getMaterial()).trackType == CRTrackMaterials.CRTrackType.MONORAIL)
+                return new Vec3(0, 14 / 16f, 0);
+            // Don't shift up if the curve is a slope and the casing is under the track, rather than in it
+            IHasTrackCasing casingBc = (IHasTrackCasing) bc;
+            if (casingBc.railways$getTrackCasing() != null) {
+                if (bc.bePositions.getFirst().getY() == bc.bePositions.getSecond().getY())
+                    return new Vec3(0, 1 / 16f, 0);
+                else if (!casingBc.railways$isAlternate())
+                    return new Vec3(0, 4 / 16f, 0);
+            }
+            return Vec3.ZERO;
+        }
+
+        if (!(state.getBlock() instanceof TrackBlock trackBlock))
+            return Vec3.ZERO;
+        if (trackBlock.getMaterial() == CRTrackMaterials.PHANTOM && !PhantomSpriteManager.isVisible())
+            return null;
+        TrackType trackType = TrackMaterialData.of(trackBlock.getMaterial()).trackType;
+        if (trackType == CRTrackMaterials.CRTrackType.MONORAIL)
+            return new Vec3(0, 14 / 16f, 0);
+        if (world.getBlockEntity(pos) instanceof TrackBlockEntity trackTE) {
+            IHasTrackCasing casingTE = (IHasTrackCasing) trackTE;
+            TrackCasingSpec spec = CRBlockPartials.TRACK_CASINGS.get(state.getValue(TrackBlock.SHAPE));
+            if (casingTE.railways$getTrackCasing() != null && spec != null)
+                return new Vec3(
+                    spec.getXShift(trackType),
+                    (spec.getTopSurfacePixelHeight(trackType, casingTE.railways$isAlternate()) - 2) / 16f,
+                    spec.getZShift(trackType)
+                );
+        }
+        return Vec3.ZERO;
+    }
+
     /** An extracted overlay and its offset from the rendering block entity. */
     @Environment(EnvType.CLIENT)
     public record OffsetOverlay(BlockPos offset, SuperByteBufferRenderState overlay) {

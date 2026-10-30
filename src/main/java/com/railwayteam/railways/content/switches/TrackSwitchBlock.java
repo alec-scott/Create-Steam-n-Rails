@@ -56,7 +56,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class TrackSwitchBlock extends HorizontalDirectionalBlock implements IBE<TrackSwitchBlockEntity>, IWrenchable {
-  boolean isAutomatic;
+  protected boolean isAutomatic;
 //  public static final Property<SwitchState> STATE = EnumProperty.create("state", SwitchState.class);
   public static final BooleanProperty LOCKED = BlockStateProperties.LOCKED;
 

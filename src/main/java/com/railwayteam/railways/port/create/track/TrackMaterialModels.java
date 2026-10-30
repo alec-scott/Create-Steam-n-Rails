@@ -2,7 +2,9 @@ package com.railwayteam.railways.port.create.track;
 
 import com.zurrtum.create.client.AllPartialModels;
 import com.zurrtum.create.client.AllTrackMaterialModels;
+import com.zurrtum.create.client.AllTrackRenders;
 import com.zurrtum.create.client.AllTrackMaterialModels.TrackModelHolder;
+import com.zurrtum.create.client.content.trains.track.StandardTrackBlockRenderer;
 import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
 import com.zurrtum.create.content.trains.track.TrackMaterial;
 import net.minecraft.resources.Identifier;
@@ -11,7 +13,9 @@ import java.util.Map;
 
 /**
  * Client side of {@link TrackMaterialFactory}: gives Create Fly a {@link TrackModelHolder} for each material built
- * with the factory. Call once during client init, after the materials are registered.
+ * with the factory, and registers Create Fly's standard track renderer (signal/station/observer overlays) for their
+ * blocks, since Create Fly only registers its own track. Call once during client init, after the materials are
+ * registered.
  */
 public final class TrackMaterialModels {
 	private static final TrackModelHolder DEFAULT = new TrackModelHolder(AllPartialModels.TRACK_TIE,
@@ -22,6 +26,8 @@ public final class TrackMaterialModels {
 	public static void register() {
 		for (Map.Entry<TrackMaterial, TrackMaterialFactory.ModelSpec> entry : TrackMaterialFactory.MODELS.entrySet()) {
 			TrackMaterial material = entry.getKey();
+			if (AllTrackRenders.get(material.getBlock()) == null)
+				AllTrackRenders.register(material.getBlock(), StandardTrackBlockRenderer::new);
 			if (material.modelHolder != null)
 				continue;
 			AllTrackMaterialModels.register(material, holderFor(material.getId(), entry.getValue()));

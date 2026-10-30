@@ -18,6 +18,7 @@
 
 package com.railwayteam.railways.content.buffer;
 
+import com.mojang.serialization.MapCodec;
 import com.railwayteam.railways.Railways;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
@@ -30,6 +31,13 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import java.util.Locale;
 
 public class StandardTrackBufferBlock extends WoodVariantTrackBufferBlock {
+    public static final MapCodec<StandardTrackBufferBlock> CODEC = simpleCodec(StandardTrackBufferBlock::new);
+
+    @Override
+    protected MapCodec<? extends StandardTrackBufferBlock> codec() {
+        return CODEC;
+    }
+
     public static final EnumProperty<Style> STYLE = EnumProperty.create("style", Style.class);
     public StandardTrackBufferBlock(Properties pProperties) {
         super(pProperties);

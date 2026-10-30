@@ -158,7 +158,7 @@
     "client.MixinTextureAtlas",
     "client.MixinToolboxHandlerClient",
     "client.MixinToolboxScreen",
-    "client.MixinTrackBlockClient",
+    "client.MixinStandardTrackBlockRenderer",
     "client.MixinTrackBlockOutline",
     "client.MixinTrackGraphVisualizer",
     "client.MixinTrackObserverVisual",
