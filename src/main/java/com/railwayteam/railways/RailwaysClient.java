@@ -79,6 +79,7 @@ public class RailwaysClient {
     CRFluids.initRendering();
     TrackMaterialModels.register();
     CreateRegistrate.registerBlockModels();
+    com.railwayteam.railways.port.create.bogey.CRBogeyStyleBuilder.registerRenderers();
     com.railwayteam.railways.fabric.client.CRItemTooltips.register();
     com.railwayteam.railways.fabric.client.CRBlockEntityBehaviours.register();
     com.railwayteam.railways.fabric.client.CRBlockExtensions.register();

@@ -72,6 +72,7 @@ import com.zurrtum.create.content.trains.bogey.AbstractBogeyBlock;
 import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
 import com.zurrtum.create.content.trains.bogey.BogeyStyle;
 import com.zurrtum.create.client.content.trains.bogey.SizeRenderer;
+import com.railwayteam.railways.port.create.bogey.CRBogeyStyleBuilder;
 import com.railwayteam.railways.port.create.track.TrackType;
 import com.zurrtum.create.catnip.data.Pair;
 import net.minecraft.network.chat.Component;
@@ -187,13 +188,13 @@ public class CRBogeyStyles {
     public static final BogeyStyle INVISIBLE = create("invisible", STANDARD_CYCLE_GROUP)
         .displayName(Component.translatable("railways.bogeys.styles.invisible"))
         .size(AllBogeySizes.SMALL, CRBlocks.INVISIBLE_BOGEY, () -> () -> new SizeRenderer(new InvisibleBogeyRenderer(), InvisibleBogeyVisual::new))
-        .contactParticle(new CubeParticleData())
+        .contactParticle(new CubeParticleData(0, 0, 0, 0, 0, false))
         .build();
 
     public static final BogeyStyle INVISIBLE_MONOBOGEY = create("invisible_monobogey", "monobogey")
         .displayName(Component.translatable("railways.bogeys.styles.invisible_monobogey"))
         .size(AllBogeySizes.SMALL, CRBlocks.INVISIBLE_MONO_BOGEY, () -> () -> new SizeRenderer(new InvisibleBogeyRenderer(), InvisibleBogeyVisual::new))
-        .contactParticle(new CubeParticleData())
+        .contactParticle(new CubeParticleData(0, 0, 0, 0, 0, false))
         .build();
 
     // Single Axles
@@ -339,17 +340,17 @@ public class CRBogeyStyles {
             .build();
 
 
-    public static BogeyStyle.Builder create(String name, String cycleGroup) {
+    public static CRBogeyStyleBuilder create(String name, String cycleGroup) {
         return create(Railways.asResource(name), Railways.asResource(cycleGroup))
             .displayName(Component.translatable("railways.bogeys.styles." + name));
     }
 
-    public static BogeyStyle.Builder create(String name, Identifier cycleGroup) {
+    public static CRBogeyStyleBuilder create(String name, Identifier cycleGroup) {
         return create(Railways.asResource(name), cycleGroup);
     }
 
-    public static BogeyStyle.Builder create(Identifier name, Identifier cycleGroup) {
-        return new BogeyStyle.Builder(name, cycleGroup);
+    public static CRBogeyStyleBuilder create(Identifier name, Identifier cycleGroup) {
+        return new CRBogeyStyleBuilder(name, cycleGroup);
     }
 
     public static CategoryEntry registerCategory(String name) {

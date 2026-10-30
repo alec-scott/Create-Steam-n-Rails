@@ -19,28 +19,34 @@
 package com.railwayteam.railways.content.custom_bogeys.renderer.unified.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.railwayteam.railways.content.custom_bogeys.renderer.unified.BogeyDisplay;
 import com.railwayteam.railways.content.custom_bogeys.renderer.unified.BogeyDisplayHolder;
-import com.zurrtum.create.client.content.trains.bogey.BogeyRenderer;
 import com.zurrtum.create.catnip.data.Couple;
 import com.zurrtum.create.client.catnip.render.CachedBuffers;
 import com.zurrtum.create.client.catnip.render.SuperByteBuffer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import com.zurrtum.create.client.catnip.render.SuperByteBufferRenderState;
+import com.zurrtum.create.client.content.trains.bogey.BogeyBlockEntityRenderer.BogeyRenderState;
+import com.zurrtum.create.client.content.trains.bogey.BogeyRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
+import org.joml.Matrix3f;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * PORT-NOTE(26.1): Create Fly's bogey renderers extract a {@link BogeyRenderState} that is submitted later, instead of
+ * drawing into a buffer. Elements are laid out relative to the bogey (identity base pose) and each one is captured as a
+ * {@link SuperByteBufferRenderState} carrying its own transform.
+ */
 @ApiStatus.Internal
 public class UnifiedBogeyRenderer implements BogeyRenderer, BogeyDisplayHolder {
     private final Couple<Renderer> renderers;
@@ -55,76 +61,70 @@ public class UnifiedBogeyRenderer implements BogeyRenderer, BogeyDisplayHolder {
     public void runWithDisplay(Consumer<BogeyDisplay> consumer) {
         consumer.accept(renderers.getFirst().display);
         consumer.accept(renderers.getSecond().display);
-
         if (customRenderer instanceof BogeyDisplayHolder customDisplayHolder) {
             customDisplayHolder.runWithDisplay(consumer);
         }
     }
 
     @Override
-    public void render(CompoundTag bogeyData, float wheelAngle, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean inContraption) {
-        final VertexConsumer buffer = bufferSource.getBuffer(RenderType.cutoutMipped());
+    public BogeyRenderState getRenderData(CompoundTag bogeyData, float wheelAngle, float tickProgress, int light,
+                                          @Nullable CardinalLighting cardinalLighting, boolean inContraption) {
         final BlockState air = Blocks.AIR.defaultBlockState();
-
         final Renderer renderer = renderers.get(inContraption);
 
         // prepare
-        Matrix4f pose = poseStack.last().pose();
         for (RenderedElement element : renderer.allElements) {
-            element.setTransform(pose);
+            element.pose.identity();
         }
 
         // update
         renderer.display.update(bogeyData, wheelAngle);
 
-        // render
-        PoseStack ms = new PoseStack();
-
+        // extract
+        List<SuperByteBufferRenderState> parts = new ArrayList<>();
         for (RenderedElement.Single element : renderer.singleElements) {
-            var mat = element.element().pose;
-            ms.last().pose().set(mat);
-            ms.last().normal().set(mat);
-
-            CachedBuffers.partial(element.model(), air)
-                .light(packedLight)
-                .overlay(packedOverlay)
-                .renderInto(ms, buffer);
+            parts.add(extract(CachedBuffers.partial(element.model(), air), element.element(), light, cardinalLighting));
         }
 
         for (RenderedElement.Multiple elements : renderer.multipleElements) {
-            SuperByteBuffer sbb = CachedBuffers.partial(elements.model(), air);
-
             for (RenderedElement element : elements.elements()) {
-                var mat = element.pose;
-                ms.last().pose().set(mat);
-                ms.last().normal().set(mat);
-
-                sbb.light(packedLight)
-                    .overlay(packedOverlay)
-                    .renderInto(ms, buffer);
+                parts.add(extract(CachedBuffers.partial(elements.model(), air), element, light, cardinalLighting));
             }
         }
 
         for (RenderedElement.Scrolling element : renderer.scrollingElements) {
-            var mat = element.element.pose;
-            ms.last().pose().set(mat);
-            ms.last().normal().set(mat);
-
             float spriteSize = element.entry.getTarget().getV1() - element.entry.getTarget().getV0();
-
             float scrollV = element.shiftV;
             scrollV = scrollV - Mth.floor(scrollV);
             scrollV = scrollV * spriteSize * 0.5f;
-
-            CachedBuffers.partial(element.model, air)
-                .light(packedLight)
-                .overlay(packedOverlay)
-                .shiftUVScrolling(element.entry, scrollV)
-                .renderInto(ms, buffer);
+            parts.add(extract(CachedBuffers.partial(element.model, air).shiftUVScrolling(element.entry, scrollV),
+                element.element, light, cardinalLighting));
         }
 
-        if (customRenderer != null) {
-            customRenderer.render(bogeyData, wheelAngle, partialTick, poseStack, bufferSource, packedLight, packedOverlay, inContraption);
+        BogeyRenderState custom = customRenderer == null ? null
+            : customRenderer.getRenderData(bogeyData, wheelAngle, tickProgress, light, cardinalLighting, inContraption);
+        return new UnifiedBogeyRenderState(parts, custom);
+    }
+
+    private static SuperByteBufferRenderState extract(SuperByteBuffer sbb, RenderedElement element, int light,
+                                                      @Nullable CardinalLighting cardinalLighting) {
+        return sbb.mulPose(element.pose)
+            .mulNormal(new Matrix3f(element.pose))
+            .cardinalLighting(cardinalLighting)
+            .light(light)
+            .extractRenderState();
+    }
+
+    private record UnifiedBogeyRenderState(List<SuperByteBufferRenderState> parts,
+                                           @Nullable BogeyRenderState custom) implements BogeyRenderState {
+        @Override
+        public void submit(PoseStack matrices, SubmitNodeCollector queue) {
+            for (SuperByteBufferRenderState part : parts) {
+                part.submit(matrices, queue);
+            }
+            if (custom != null) {
+                custom.submit(matrices, queue);
+            }
         }
     }
 
@@ -139,8 +139,8 @@ public class UnifiedBogeyRenderer implements BogeyRenderer, BogeyDisplayHolder {
             ArrayList<RenderedElement.Single> singleElements = new ArrayList<>();
             ArrayList<RenderedElement.Multiple> multipleElements = new ArrayList<>();
             ArrayList<RenderedElement.Scrolling> scrollingElements = new ArrayList<>();
-
             var prov = new RenderedElementProvider(singleElements, multipleElements, scrollingElements);
+
             BogeyDisplay display = factory.create(prov, inContraption);
             prov.freeze();
 

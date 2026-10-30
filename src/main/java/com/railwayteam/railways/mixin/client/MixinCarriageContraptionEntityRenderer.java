@@ -18,30 +18,37 @@
 
 package com.railwayteam.railways.mixin.client;
 
-import com.zurrtum.create.content.trains.bogey.BogeySize;
-
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.content.custom_bogeys.renderer.unified.BogeyDisplay;
 import com.railwayteam.railways.content.custom_bogeys.renderer.unified.BogeyDisplayHolder;
-import com.zurrtum.create.content.trains.bogey.AllBogeySizes;
-import com.zurrtum.create.content.trains.bogey.BogeyStyle;
-import com.zurrtum.create.content.trains.entity.CarriageContraptionEntity;
+import com.zurrtum.create.client.AllBogeyStyleRenders;
+import com.zurrtum.create.client.content.trains.bogey.SizeRenderer;
 import com.zurrtum.create.client.content.trains.entity.CarriageContraptionEntityRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.nbt.CompoundTag;
+import com.zurrtum.create.client.content.trains.entity.CarriageContraptionEntityRenderer.CarriageBogeyRenderState;
+import com.zurrtum.create.client.content.trains.entity.CarriageContraptionEntityRenderer.CarriageContraptionState;
+import com.zurrtum.create.content.trains.bogey.BogeySize;
+import com.zurrtum.create.content.trains.entity.CarriageBogey;
+import com.zurrtum.create.content.trains.entity.CarriageContraptionEntity;
+import net.minecraft.world.level.CardinalLighting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
+import java.util.Map;
+
+// PORT-NOTE(26.1): bogeys are rendered from extracted state; displays get the entity just before extraction.
 @Mixin(CarriageContraptionEntityRenderer.class)
 public class MixinCarriageContraptionEntityRenderer {
-    @WrapOperation(method = "lambda$render$1", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/content/trains/bogey/BogeyStyle;render(Lcom/simibubi/create/content/trains/bogey/AllBogeySizes$BogeySize;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IIFLnet/minecraft/nbt/CompoundTag;Z)V"))
-    private static void updateEntity(BogeyStyle instance, BogeySize size, float partialTick,
-                                     PoseStack poseStack, MultiBufferSource buffers, int light, int overlay,
-                                     float wheelAngle, CompoundTag bogeyData, boolean inContraption,
-                                     Operation<Void> original, CarriageContraptionEntity entity) {
-        BogeyStyle.SizeRenderer renderer = ((AccessorBogeyStyle) instance).getSizeRenderers().get(size);
+    @WrapOperation(method = "extractRenderState(Lcom/zurrtum/create/content/trains/entity/CarriageContraptionEntity;Lcom/zurrtum/create/client/content/trains/entity/CarriageContraptionEntityRenderer$CarriageContraptionState;F)V",
+        at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/client/content/trains/entity/CarriageContraptionEntityRenderer$CarriageBogeyRenderState;create(Lcom/zurrtum/create/content/trains/entity/CarriageBogey;FFIFFILnet/minecraft/world/level/CardinalLighting;F)Lcom/zurrtum/create/client/content/trains/entity/CarriageContraptionEntityRenderer$CarriageBogeyRenderState;"),
+        remap = false)
+    private CarriageBogeyRenderState updateEntity(CarriageBogey bogey, float viewXRot, float viewYRot, int bogeySpacing,
+                                                  float yaw, float pitch, int light, CardinalLighting cardinalLighting,
+                                                  float tickProgress, Operation<CarriageBogeyRenderState> original,
+                                                  CarriageContraptionEntity entity, CarriageContraptionState state,
+                                                  float outerTickProgress) {
+        Map<BogeySize, SizeRenderer> renderers = AllBogeyStyleRenders.ALL.get(bogey.getStyle().id);
+        SizeRenderer renderer = renderers == null ? null : renderers.get(bogey.getSize());
         if (renderer != null && renderer.renderer() instanceof BogeyDisplayHolder holder) {
             holder.runWithDisplay(display -> {
                 if (display instanceof BogeyDisplay.EntityAware entityAware) {
@@ -49,6 +56,6 @@ public class MixinCarriageContraptionEntityRenderer {
                 }
             });
         }
-        original.call(instance, size, partialTick, poseStack, buffers, light, overlay, wheelAngle, bogeyData, inContraption);
+        return original.call(bogey, viewXRot, viewYRot, bogeySpacing, yaw, pitch, light, cardinalLighting, tickProgress);
     }
 }

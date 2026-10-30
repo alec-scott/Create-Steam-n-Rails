@@ -98,6 +98,7 @@ public class Railways {
   }
 
   public static void postRegistrationInit() {
+    com.railwayteam.railways.port.create.bogey.CRBogeyStyleBuilder.resolveBlocks();
     ModSetupLate.registerPostRegistration();
   }
 

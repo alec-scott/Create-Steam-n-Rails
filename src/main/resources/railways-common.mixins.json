@@ -114,7 +114,6 @@
     "port.client.KeyboardHandlerMixin",
     "port.client.RollingModeIconMixin",
     "client.AccessorAbstractVisual",
-    "client.AccessorBogeyStyle",
     "client.AccessorControlsHandler",
     "client.AccessorEntity",
     "client.AccessorLevelRenderer",

@@ -47,7 +47,7 @@ public class MonoBogeyDisplay implements BogeyDisplay {
 
     @Override
     public void update(CompoundTag bogeyData, float wheelAngle) {
-        boolean upsideDown = bogeyData.getBoolean(UPSIDE_DOWN_KEY);
+        boolean upsideDown = bogeyData.getBooleanOr(UPSIDE_DOWN_KEY, false);
         boolean specialUpsideDown = !inContraption && upsideDown; // tile entity renderer needs special handling
 
         frame.rotateZDegrees(specialUpsideDown ? 180 : 0)

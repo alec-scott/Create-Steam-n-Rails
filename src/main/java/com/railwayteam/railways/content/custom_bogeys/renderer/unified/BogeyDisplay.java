@@ -21,7 +21,7 @@ package com.railwayteam.railways.content.custom_bogeys.renderer.unified;
 import com.railwayteam.railways.content.custom_bogeys.renderer.unified.impl.UnifiedBogeyRenderer;
 import com.railwayteam.railways.content.custom_bogeys.renderer.unified.impl.UnifiedBogeyVisual;
 import com.zurrtum.create.client.content.trains.bogey.BogeyRenderer;
-import com.zurrtum.create.content.trains.bogey.BogeyStyle;
+import com.zurrtum.create.client.content.trains.bogey.SizeRenderer;
 import com.zurrtum.create.client.content.trains.bogey.BogeyVisualizer;
 import com.zurrtum.create.content.trains.entity.CarriageContraptionEntity;
 import net.minecraft.nbt.CompoundTag;
@@ -59,11 +59,11 @@ public interface BogeyDisplay {
         }
     }
 
-    static BogeyStyle.SizeRenderer createSizeRenderer(Factory factory) {
-        return new BogeyStyle.SizeRenderer(new UnifiedBogeyRenderer(factory), UnifiedBogeyVisual.create(factory));
+    static SizeRenderer createSizeRenderer(Factory factory) {
+        return new SizeRenderer(new UnifiedBogeyRenderer(factory), UnifiedBogeyVisual.create(factory));
     }
 
-    static BogeyStyle.SizeRenderer createSizeRenderer(SimpleFactory factory) {
-        return new BogeyStyle.SizeRenderer(new UnifiedBogeyRenderer(factory), UnifiedBogeyVisual.create(factory));
+    static SizeRenderer createSizeRenderer(SimpleFactory factory) {
+        return new SizeRenderer(new UnifiedBogeyRenderer(factory), UnifiedBogeyVisual.create(factory));
     }
 }
