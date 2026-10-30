@@ -44,7 +44,7 @@ public class MixinToolboxHandlerClient {
   private static ConductorEntity railways$getConductorForSlot(int slot) {
     Minecraft mc = Minecraft.getInstance();
     LocalPlayer player = mc.player;
-    CompoundTag toolboxData = EntityUtils.getPersistentData(player).getCompound("CreateToolboxData");
+    CompoundTag toolboxData = EntityUtils.getToolboxData(player);
     String slotKey = String.valueOf(slot);
 
     CompoundTag data = toolboxData.getCompoundOrEmpty(slotKey);

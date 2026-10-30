@@ -68,7 +68,7 @@ import static com.railwayteam.railways.util.BlockPosUtils.normalize;
 public abstract class MixinCarriageContraptionEntity extends OrientedContraptionEntity implements IDistanceTravelled {
     @Shadow private Carriage carriage;
 
-    private MixinCarriageContraptionEntity(EntityType<?> type, Level world) {
+    private MixinCarriageContraptionEntity(EntityType<? extends OrientedContraptionEntity> type, Level world) {
         super(type, world);
     }
 

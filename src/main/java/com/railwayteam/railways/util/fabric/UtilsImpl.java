@@ -18,8 +18,8 @@
 
 package com.railwayteam.railways.util.fabric;
 
-import com.zurrtum.create.AllPackets;
-import com.zurrtum.create.infrastructure.packet.c2s.HonkPacket;
+import com.railwayteam.railways.util.ServerHolder;
+import com.zurrtum.create.infrastructure.packet.s2c.HonkReturnPacket;
 import com.zurrtum.create.content.trains.entity.Train;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -38,7 +38,9 @@ public class UtilsImpl {
 	}
 
     public static void sendHonkPacket(Train train, boolean isHonk) {
-		AllPackets.getChannel().sendToClientsInCurrentServer(new HonkPacket(train, isHonk));
+		// PORT-NOTE(26.1): Create Fly broadcasts its own HonkReturnPacket (as its server honk handler does)
+		if (ServerHolder.get() != null)
+			ServerHolder.get().getPlayerList().broadcastAll(new HonkReturnPacket(train, isHonk));
     }
 
     public static void postChunkEventClient(LevelChunk chunk, boolean load) {

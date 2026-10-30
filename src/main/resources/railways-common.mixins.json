@@ -140,7 +140,6 @@
     "client.MixinFlywheelVisual",
     "client.MixinGlobalRailwayManager",
     "client.MixinKeyBindsListKeyEntry",
-    "client.MixinParticleEngine",
     "client.MixinPlayerInfo",
     "client.MixinPlayerRenderer",
     "client.MixinPortableStorageInterfaceRenderer",

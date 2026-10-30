@@ -22,7 +22,7 @@ import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.railwayteam.railways.registry.CRBogeyStyles;
 import com.zurrtum.create.content.trains.entity.CarriageContraptionEntity;
-import com.simibubi.create.content.trains.entity.CarriageParticles;
+import com.zurrtum.create.client.foundation.entity.behaviour.CarriageParticleBehaviour;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,7 +31,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(CarriageParticles.class)
+// PORT-NOTE(26.1): Create Fly's CarriageParticles is the CarriageParticleBehaviour entity behaviour
+@Mixin(CarriageParticleBehaviour.class)
 public class MixinCarriageParticles {
     @Unique private boolean railways$isHandcar;
 

@@ -70,8 +70,8 @@ public class OcclusionTestLevel implements BlockGetter {
     }
 
     @Override
-    public int getMinBuildHeight() {
-        return blockGetter.getMinBuildHeight();
+    public int getMinY() {
+        return blockGetter.getMinY();
     }
 }
 

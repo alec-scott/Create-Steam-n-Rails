@@ -21,6 +21,8 @@ package com.railwayteam.railways.registry;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.railwayteam.railways.Railways;
 import net.minecraft.client.KeyMapping;
+import com.mojang.blaze3d.platform.Window;
+import com.zurrtum.create.client.AllKeys;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import org.lwjgl.glfw.GLFW;
@@ -37,6 +39,9 @@ public enum CRKeys {
     private final int key;
     private final boolean modifiable;
 
+    // PORT-NOTE(26.1): key mappings take a registered category (lang key key.category.railways.keys)
+    private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(Railways.asResource("keys"));
+
     // Needed to make keys not appear to conflict between Steam 'n' Rails & Create
     public static final Set<KeyMapping> NON_CONFLICTING_KEYMAPPINGS = new HashSet<>();
 
@@ -47,17 +52,19 @@ public enum CRKeys {
     }
 
     public static void register() {
+        // PORT-NOTE(fabric): was AllKeysMixin; Create Fly lists its key mappings in AllKeys.ALL
+        NON_CONFLICTING_KEYMAPPINGS.addAll(AllKeys.ALL);
         for (CRKeys key : values()) {
             if (!key.modifiable)
                 continue;
-            key.keybind = new KeyMapping(key.description, key.key, Railways.NAME);
+            key.keybind = new KeyMapping(key.description, key.key, CATEGORY);
             NON_CONFLICTING_KEYMAPPINGS.add(key.keybind);
             registerKeyBinding(key.keybind);
         }
     }
 
     public static void fixBinds() {
-        long window = Minecraft.getInstance().getWindow().getWindow();
+        Window window = Minecraft.getInstance().getWindow();
         for (CRKeys key : values()) {
             if (key.keybind == null || key.keybind.isUnbound())
                 continue;
@@ -86,27 +93,23 @@ public enum CRKeys {
     }
 
     public static boolean isKeyDown(int key) {
-        return InputConstants.isKeyDown(Minecraft.getInstance()
-                .getWindow()
-                .getWindow(), key);
+        return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), key);
     }
 
     public static boolean isMouseButtonDown(int button) {
-        return GLFW.glfwGetMouseButton(Minecraft.getInstance()
-                .getWindow()
-                .getWindow(), button) == 1;
+        return GLFW.glfwGetMouseButton(Minecraft.getInstance().getWindow().handle(), button) == 1;
     }
 
     public static boolean ctrlDown() {
-        return Screen.hasControlDown();
+        return Minecraft.getInstance().hasControlDown();
     }
 
     public static boolean shiftDown() {
-        return Screen.hasShiftDown();
+        return Minecraft.getInstance().hasShiftDown();
     }
 
     public static boolean altDown() {
-        return Screen.hasAltDown();
+        return Minecraft.getInstance().hasAltDown();
     }
 
     private static void registerKeyBinding(KeyMapping keyMapping) {

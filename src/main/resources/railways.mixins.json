@@ -9,13 +9,11 @@
     "client.TrainHUDMixin"
   ],
   "mixins": [
-    "AllKeysMixin",
     "ContainerLevelAccessMixin",
     "DetectorRailBlockMixin",
     "EnderManMixin",
     "FluidHelperMixin",
     "FluidNetworkMixin",
-    "CreateCodecsMixin",
     "ItemStackMixin",
     "TrainMixin",
     "TrainRelocationPacketMixin"

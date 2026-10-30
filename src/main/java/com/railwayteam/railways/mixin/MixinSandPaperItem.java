@@ -55,7 +55,7 @@ public class MixinSandPaperItem {
         level.levelEvent(player, LevelEvent.PARTICLES_SCRAPE, pos, 0); // Spawn particles
 
         if (player != null)
-            stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(p.getUsedItemHand()));
+            stack.hurtAndBreak(1, player, context.getHand());
 
         cir.setReturnValue(InteractionResult.SUCCESS);
     }

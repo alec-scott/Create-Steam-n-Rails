@@ -39,9 +39,9 @@ public class MixinTrackMaterial {
             case "biomesoplenty:cherry", "byg:cherry", "blue_skies:cherry"
                     -> CRTrackMaterials.CHERRY.getId();
             case "biomesoplenty:cherry_wide", "byg:cherry_wide", "blue_skies:cherry_wide"
-                    -> CRTrackMaterials.getWide(CRTrackMaterials.CHERRY).id;
+                    -> CRTrackMaterials.getWide(CRTrackMaterials.CHERRY).getId();
             case "biomesoplenty:cherry_narrow", "byg:cherry_narrow", "blue_skies:cherry_narrow"
-                    -> CRTrackMaterials.getNarrow(CRTrackMaterials.CHERRY).id;
+                    -> CRTrackMaterials.getNarrow(CRTrackMaterials.CHERRY).getId();
             default -> original;
         };
     }

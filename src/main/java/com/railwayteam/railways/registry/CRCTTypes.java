@@ -20,51 +20,28 @@ package com.railwayteam.railways.registry;
 
 import com.railwayteam.railways.Railways;
 import com.zurrtum.create.client.foundation.block.connected.CTType;
-import com.simibubi.create.foundation.block.connected.CTTypeRegistry;
-import com.zurrtum.create.client.foundation.block.connected.ConnectedTextureBehaviour;
-import com.zurrtum.create.client.foundation.block.connected.ConnectedTextureBehaviour.ContextRequirement;
-import com.zurrtum.create.client.catnip.lang.Lang;
-import net.minecraft.resources.Identifier;
 
-public enum CRCTTypes implements CTType {
-    VERTICAL_PINKMACHINE(2, ContextRequirement.builder().vertical().build()) {
-        @Override
-        public int getTextureIndex(ConnectedTextureBehaviour.CTContext context) {
-            return !context.up && !context.down
-                ? 0 // single
-                : !context.up
-                ? 3 // top
-                : !context.down
-                ? 2 // bottom
-                : 1; // middle
-        }
-    }
-    ;
+/**
+ * PORT-NOTE(26.1): Create Fly's {@link CTType} is a class whose texture index comes from a bit mask of connected
+ * steps (was an enum implementing Create's {@code CTType} interface, with a {@code CTContext}).
+ */
+public class CRCTTypes extends CTType {
+    public static final CRCTTypes VERTICAL_PINKMACHINE = new CRCTTypes("vertical_pinkmachine");
 
-    private final Identifier id;
-    private final int sheetSize;
-    private final ContextRequirement contextRequirement;
-
-    CRCTTypes(int sheetSize, ContextRequirement contextRequirement) {
-        this.id = Railways.asResource(Lang.asId(name()));
-        this.sheetSize = sheetSize;
-        this.contextRequirement = contextRequirement;
-
-        CTTypeRegistry.register(this);
+    private CRCTTypes(String name) {
+        super(Railways.asResource(name), VERTICAL);
     }
 
     @Override
-    public Identifier getId() {
-        return id;
-    }
-
-    @Override
-    public int getSheetSize() {
-        return sheetSize;
-    }
-
-    @Override
-    public ContextRequirement getContextRequirement() {
-        return contextRequirement;
+    public int getTextureIndex(int context) {
+        boolean up = (context & UP_FLAG) != 0;
+        boolean down = (context & DOWN_FLAG) != 0;
+        return !up && !down
+            ? 0 // single
+            : !up
+            ? 3 // top
+            : !down
+            ? 2 // bottom
+            : 1; // middle
     }
 }

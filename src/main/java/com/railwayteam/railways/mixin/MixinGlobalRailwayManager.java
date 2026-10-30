@@ -18,6 +18,10 @@
 
 package com.railwayteam.railways.mixin;
 
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.Level;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.railwayteam.railways.mixin_interfaces.IShadowTrain;
@@ -37,12 +41,12 @@ public class MixinGlobalRailwayManager {
     @Shadow private RailwaySavedData savedData;
 
     @WrapOperation(method = "tickTrains", at = @At(value = "FIELD", target = "Lcom/zurrtum/create/content/trains/entity/Train;invalid:Z", opcode = Opcodes.GETFIELD))
-    private boolean removeShadowTrains(Train instance, Operation<Boolean> original) {
+    private boolean removeShadowTrains(Train instance, Operation<Boolean> original, @Local(argsOnly = true) Level level) {
         if (instance instanceof IShadowTrain shadowTrain && shadowTrain.railways$isShadow()) {
             // write all carriages to store their entities
             DimensionPalette dimensions = new DimensionPalette();
             for (Carriage carriage : instance.carriages) {
-                carriage.write(dimensions);
+                carriage.write(TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess()), dimensions);
             }
             ((RailwaySavedDataDuck) savedData).railway$getShadowTrains().put(instance.id, instance);
             ((RailwaySavedDataDuck) savedData).railways$getShadowKeys().put(shadowTrain.railways$getShadowKey(), instance.id);
