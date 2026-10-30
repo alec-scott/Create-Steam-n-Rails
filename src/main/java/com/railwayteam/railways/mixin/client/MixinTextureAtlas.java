@@ -36,7 +36,7 @@ public abstract class MixinTextureAtlas {
 
     @Inject(method = "cycleAnimationFrames", at = @At("RETURN"))
     private void railways$cycleAnimationFrames(CallbackInfo ci) {
-        if (this.location == InventoryMenu.BLOCK_ATLAS || this.location.equals(InventoryMenu.BLOCK_ATLAS)) {
+        if (this.location == TextureAtlas.LOCATION_BLOCKS || this.location.equals(TextureAtlas.LOCATION_BLOCKS)) {
             PhantomSpriteManager.renderTick();
         }
     }

@@ -33,7 +33,7 @@ public class CRDisplaySources {
 	public static RegistryEntry<DisplaySource, SignalDisplaySource> SIGNAL = simple("track_signal_source", SignalDisplaySource::new);
 	
 	private static <T extends DisplaySource> RegistryEntry<DisplaySource, T> simple(String name, Supplier<T> supplier) {
-		return Railways.registrate().displaySource(name, supplier).register();
+		return Railways.registrate().displaySource(name, supplier::get).register();
 	}
 
 	public static void register() {}

@@ -27,6 +27,10 @@ public class CRBlockSetTypes {
     public static final BlockSetType LOCOMETAL = register(new BlockSetType(
         "railways:locometal",
         true,
+        // PORT-NOTE(26.1): newer flags (wind charge, arrows, pressure plate sensitivity) use vanilla's defaults
+        true,
+        true,
+        BlockSetType.PressurePlateSensitivity.EVERYTHING,
         SoundType.METAL,
         SoundEvents.IRON_DOOR_CLOSE,
         SoundEvents.IRON_DOOR_OPEN,

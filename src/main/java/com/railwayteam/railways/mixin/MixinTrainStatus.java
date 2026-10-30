@@ -50,9 +50,8 @@ public class MixinTrainStatus {
         ResourceKey<Level> dimension = bogey.getDimension();
         
         instance = original.call(instance, format);
-        Style style = instance.getStyle().withHoverEvent(new HoverEvent(
-                HoverEvent.Action.SHOW_TEXT,
-                Component.literal((pos == null ? "???" : pos) + " [" + (dimension == null ? "???" : dimension.location()) + "]")
+        Style style = instance.getStyle().withHoverEvent(new HoverEvent.ShowText(
+                Component.literal((pos == null ? "???" : pos) + " [" + (dimension == null ? "???" : dimension.identifier()) + "]")
         ));
         
         return instance.setStyle(style);

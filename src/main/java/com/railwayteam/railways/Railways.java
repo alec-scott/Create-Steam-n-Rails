@@ -18,7 +18,6 @@
 
 package com.railwayteam.railways;
 
-import com.railwayteam.railways.base.registration.MultiRegistryCallback;
 import com.railwayteam.railways.compat.Mods;
 import com.railwayteam.railways.config.CRConfigs;
 import com.railwayteam.railways.multiloader.CommandRegistrar;
@@ -89,9 +88,6 @@ public class Railways {
     registerCommands(CRCommands::register);
     CRPackets.PACKETS.registerC2SListener();
 
-    // everything should be registered (or at least loaded) by now.
-    MultiRegistryCallback.enableFinalizers();
-
     // TODO - Forge entirely breaks with mixin audit, truly incredible
     if (FORCE_MIXIN_AUDIT || Utils.isDevEnv() && !Loader.FORGE.isCurrent() && !Mods.BYG.isLoaded && !Mods.SODIUM.isLoaded && !Utils.isEnvVarTrue("DATAGEN")) // force all mixins to load in dev
       MixinEnvironment.getCurrentEnvironment().audit();
@@ -99,6 +95,7 @@ public class Railways {
 
   public static void postRegistrationInit() {
     com.railwayteam.railways.port.create.bogey.CRBogeyStyleBuilder.resolveBlocks();
+    com.railwayteam.railways.registry.CRExtraRegistration.afterRegistration();
     ModSetupLate.registerPostRegistration();
   }
 

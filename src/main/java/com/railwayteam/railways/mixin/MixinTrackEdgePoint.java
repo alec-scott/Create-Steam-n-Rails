@@ -18,6 +18,9 @@
 
 package com.railwayteam.railways.mixin;
 
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import com.railwayteam.railways.content.coupling.coupler.SecondaryTrackTargetingBehaviour;
 import com.railwayteam.railways.registry.CREdgePointTypes;
 import com.zurrtum.create.content.trains.graph.DimensionPalette;
@@ -37,7 +40,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = TrackEdgePoint.class, remap = false)
 public abstract class MixinTrackEdgePoint {
-    @Shadow public abstract void write(CompoundTag nbt, DimensionPalette dimensions);
+    @Shadow public abstract void write(ValueOutput view, DimensionPalette dimensions);
 
     @Shadow public abstract EdgePointType<?> getType();
 
@@ -46,11 +49,12 @@ public abstract class MixinTrackEdgePoint {
         TrackTargetingBehaviour<?> behaviour = BlockEntityBehaviour.get(level, tilePos, SecondaryTrackTargetingBehaviour.TYPE);
         if (behaviour == null)
             return;
-        CompoundTag migrationData = new CompoundTag();
+        // PORT-NOTE(26.1): as Create Fly's own invalidateAt
+        TagValueOutput view = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
         DimensionPalette dimensions = new DimensionPalette();
-        write(migrationData, dimensions);
-        dimensions.write(migrationData);
-        behaviour.invalidateEdgePoint(migrationData);
+        write(view, dimensions);
+        view.store("DimensionPalette", DimensionPalette.CODEC, dimensions);
+        behaviour.invalidateEdgePoint(view.buildResult());
     }
 
     @Inject(method = "canCoexistWith", at = @At("RETURN"), cancellable = true)

@@ -29,7 +29,7 @@ public class CRDisplayTargets {
 	public static RegistryEntry<DisplayTarget, SemaphoreDisplayTarget> SEMAPHORE = simple("semaphore", SemaphoreDisplayTarget::new);
 
 	private static <T extends DisplayTarget> RegistryEntry<DisplayTarget, T> simple(String name, Supplier<T> supplier) {
-		return Railways.registrate().displayTarget(name, supplier).register();
+		return Railways.registrate().displayTarget(name, supplier::get).register();
 	}
 
 	public static void register() {}

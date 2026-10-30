@@ -63,7 +63,7 @@ public class ClientTextUtils {
                                        double y, boolean transparent, String text) {
         poseStack.pushPose();
         poseStack.translate(0.0D, y, 0.0D);
-        poseStack.mulPose(Minecraft.getInstance().getBlockEntityRenderDispatcher().camera.rotation());
+        poseStack.mulPose(Minecraft.getInstance().gameRenderer.getMainCamera().rotation());
         poseStack.scale(-0.025F, -0.025F, 0.025F);
         Matrix4f matrix4f = poseStack.last().pose();
         float f1 = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);

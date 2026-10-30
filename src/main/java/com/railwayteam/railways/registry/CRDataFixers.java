@@ -18,6 +18,7 @@
 
 package com.railwayteam.railways.registry;
 
+import net.minecraft.util.datafix.DataFixTypes;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.datafixers.DataFixerBuilder;
 import com.mojang.datafixers.schemas.Schema;
@@ -62,7 +63,9 @@ public class CRDataFixers {
         addFixers(builder);
 
         ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("Railways Datafixer Bootstrap").setDaemon(true).setPriority(1).build());
-        api.registerFixer(Railways.DATA_FIXER_VERSION, builder.buildOptimized(SharedConstants.DATA_FIX_TYPES_TO_OPTIMIZE, executor));
+        DataFixerBuilder.Result result = builder.build();
+        result.optimize(DataFixTypes.TYPES_FOR_LEVEL_LIST, executor);
+        api.registerFixer(Railways.DATA_FIXER_VERSION, result.fixer());
     }
 
     private static void addFixers(DataFixerBuilder builder) {

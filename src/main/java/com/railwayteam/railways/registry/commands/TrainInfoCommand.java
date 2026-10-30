@@ -48,7 +48,7 @@ public class TrainInfoCommand {
             .append("' has UUID: "+train.id+", "+count+", total trains found.").append(Component.literal(" [Copy]").withStyle(
                 Style.EMPTY
                     .withColor(ChatFormatting.GOLD)
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, train.id.toString()))
+                    .withClickEvent(new ClickEvent.CopyToClipboard(train.id.toString()))
               )), true);
           return 1;
         }));

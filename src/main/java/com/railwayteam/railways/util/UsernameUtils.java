@@ -42,7 +42,7 @@ public enum UsernameUtils {
     public String getName(UUID uuid) {
         if (uuid == null) return "Unknown";
         if (!uuidNameMap.containsKey(uuid)) {
-            if (Minecraft.getInstance().getUser().getUuid().equals(uuid.toString())) {
+            if (Minecraft.getInstance().getUser().getProfileId().equals(uuid)) {
                 uuidNameMap.put(uuid, Minecraft.getInstance().getUser().getName());
                 return uuidNameMap.get(uuid);
             }

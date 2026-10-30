@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.registry;
 
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.registries.BuiltInRegistries;
 import com.railwayteam.railways.ponder.scenes.ConductorScenes;
 import com.railwayteam.railways.ponder.scenes.DoorScenes;
 import com.railwayteam.railways.ponder.scenes.TrainScenes;
@@ -30,16 +32,18 @@ import net.minecraft.resources.Identifier;
 public class CRPonderIndex {
     public static void register(PonderSceneRegistrationHelper<Identifier> helper) {
         PonderSceneRegistrationHelper<ItemProviderEntry<?, ?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
+        // PORT-NOTE(26.1): Create Fly's blocks are plain blocks, not Registrate entries
+        PonderSceneRegistrationHelper<Block> BLOCK_HELPER = helper.withKeyFunction(BuiltInRegistries.BLOCK::getKey);
         
         HELPER.forComponents(CRBlocks.SEMAPHORE)
             .addStoryBoard("semaphore", TrainScenes::signaling);
         HELPER.forComponents(CRBlocks.TRACK_COUPLER)
                 .addStoryBoard("coupler", TrainScenes::coupling);
-        HELPER.forComponents(CRItems.ITEM_CONDUCTOR_CAP.values())
+        HELPER.forComponents(CRItems.ITEM_CONDUCTOR_CAP.values().toArray(ItemProviderEntry[]::new))
             .addStoryBoard("conductor", ConductorScenes::constructing)
             .addStoryBoard("conductor_redstone", ConductorScenes::redstoning)
             .addStoryBoard("conductor", ConductorScenes::toolboxing);
-        HELPER.forComponents(
+        BLOCK_HELPER.forComponents(
             AllBlocks.ANDESITE_DOOR,
             AllBlocks.BRASS_DOOR,
             AllBlocks.COPPER_DOOR,

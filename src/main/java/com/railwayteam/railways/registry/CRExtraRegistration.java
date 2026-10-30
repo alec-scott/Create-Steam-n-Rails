@@ -19,80 +19,39 @@
 package com.railwayteam.railways.registry;
 
 import com.google.common.collect.ImmutableSet;
-import com.railwayteam.railways.Railways;
-import com.railwayteam.railways.base.registration.MultiRegistryCallback;
 import com.railwayteam.railways.content.palettes.PalettesColor;
 import com.railwayteam.railways.mixin.AccessorBlockEntityType;
-import com.zurrtum.create.Create;
+import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.api.behaviour.display.DisplaySource;
-import com.zurrtum.create.api.registry.CreateRegistries;
-import com.railwayteam.railways.port.create.foundation.data.CreateRegistrate;
-import com.railwayteam.railways.port.registrate.util.entry.BlockEntry;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Attaches Railways content to Create's block entity types.
+ *
+ * <p>PORT-NOTE(fabric): 1.20 waited on both mods' Registrate entries ({@code MultiRegistryCallback}) to work with any
+ * load order. Create Fly registers its block entity types eagerly in {@link AllBlockEntityTypes}, so this runs once
+ * Railways' own blocks exist ({@code Railways.postRegistrationInit}).</p>
+ */
 public class CRExtraRegistration {
-    private static Set<BlockEntityType<?>> modifiedTypes = new HashSet<>();
+    private static final Set<BlockEntityType<?>> modifiedTypes = new HashSet<>();
 
-    private static final CreateRegistrate CREATE_REGISTRATE;
+    public static void register() {}
 
-    static {
-        CreateRegistrate localRegistrate = null;
+    public static void afterRegistration() {
+        DisplaySource.BY_BLOCK_ENTITY.add(AllBlockEntityTypes.TRACK_SIGNAL, CRDisplaySources.SIGNAL.get());
 
-        try {
-            MethodHandles.Lookup lookup = MethodHandles.lookup();
-            MethodHandles.Lookup privateLookup = MethodHandles.privateLookupIn(Create.class, lookup);
-
-            VarHandle handle = privateLookup.findStaticVarHandle(Create.class, "REGISTRATE", CreateRegistrate.class);
-            localRegistrate = (CreateRegistrate) handle.get();
-        } catch (Exception e) {
-            Railways.LOGGER.error("Failed to get Create's Registrate Instance, This should not happen!!", e);
-        }
-
-        CREATE_REGISTRATE = localRegistrate;
-    }
-
-    // register the source, working independently of mod loading order
-    public static void register() {
-        addSignalSource();
-        addVentAsCopycat();
-        addPalettesBlocks();
-        MultiRegistryCallback.addFinalizer(CRExtraRegistration::finalizeBlockEntityTypes);
-    }
-
-    private static void addSignalSource() {
-        MultiRegistryCallback.create(
-            CREATE_REGISTRATE, Registries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath("create", "track_signal"),
-            Railways.registrate(), CreateRegistries.DISPLAY_SOURCE, CRDisplaySources.SIGNAL.getId(),
-            DisplaySource.BY_BLOCK_ENTITY::add
-        );
-    }
-
-    private static void addVentAsCopycat() {
-        addRailwaysBlockToCreateBlockEntity(CRBlocks.CONDUCTOR_VENT, Identifier.fromNamespaceAndPath("create", "copycat"));
-    }
-
-    private static void addPalettesBlocks() {
+        addBlockToBE(AllBlockEntityTypes.COPYCAT, CRBlocks.CONDUCTOR_VENT.get());
         for (PalettesColor color : PalettesColor.values()) {
-            addRailwaysBlockToCreateBlockEntity(CRPalettes.Styles.FLYWHEEL.get(color), Identifier.fromNamespaceAndPath("create", "flywheel"));
-            addRailwaysBlockToCreateBlockEntity(CRPalettes.Styles.SLIDING_DOOR.get(color), Identifier.fromNamespaceAndPath("create", "sliding_door"));
-            addRailwaysBlockToCreateBlockEntity(CRPalettes.Styles.FOLDING_DOOR.get(color), Identifier.fromNamespaceAndPath("create", "sliding_door"));
+            addBlockToBE(AllBlockEntityTypes.FLYWHEEL, CRPalettes.Styles.FLYWHEEL.get(color).get());
+            addBlockToBE(AllBlockEntityTypes.SLIDING_DOOR, CRPalettes.Styles.SLIDING_DOOR.get(color).get());
+            addBlockToBE(AllBlockEntityTypes.SLIDING_DOOR, CRPalettes.Styles.FOLDING_DOOR.get(color).get());
         }
-    }
 
-    private static void addRailwaysBlockToCreateBlockEntity(BlockEntry<?> railwaysBlock, Identifier createBE) {
-        MultiRegistryCallback.create(
-            CREATE_REGISTRATE, Registries.BLOCK_ENTITY_TYPE, createBE,
-            Railways.registrate(), Registries.BLOCK, railwaysBlock.getId(),
-            CRExtraRegistration::addBlockToBE
-        );
+        finalizeBlockEntityTypes();
     }
 
     private static void addBlockToBE(BlockEntityType<?> be, Block block) {
@@ -104,12 +63,7 @@ public class CRExtraRegistration {
             validBlocks.add(block);
             ((AccessorBlockEntityType) be).setValidBlocks(validBlocks);
         }
-
-        if (modifiedTypes != null) {
-            modifiedTypes.add(be);
-        } else {
-            Railways.LOGGER.warn("Added valid block ({}) to block entity type ({}) after finalization. Refreezing will be skipped. This may incur a performance penalty.", block, be);
-        }
+        modifiedTypes.add(be);
     }
 
     // it is likely that an ImmutableSet will be more efficient in terms of memory and query time than a HashSet, so we
@@ -121,6 +75,5 @@ public class CRExtraRegistration {
             ((AccessorBlockEntityType) type).setValidBlocks(ImmutableSet.copyOf(validBlocks));
         }
         modifiedTypes.clear();
-        modifiedTypes = null;
     }
 }

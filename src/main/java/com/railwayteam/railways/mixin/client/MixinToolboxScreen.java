@@ -34,7 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = ToolboxScreen.class, remap = false)
 public abstract class MixinToolboxScreen extends AbstractSimiContainerScreen<ToolboxMenu> {
 	public MixinToolboxScreen(ToolboxMenu container, Inventory inv, Component title) {
-		super(container, inv, title);
+		super(container, inv, title, 0, 0);
 	}
 
 	@Inject(method = "lambda$init$1", at = @At("HEAD"), cancellable = true)

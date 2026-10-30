@@ -214,7 +214,8 @@ public class CRCreativeModeTabs {
 
             List<Item> items = new LinkedList<>();
             Predicate<Item> is3d = Env.unsafeRunForDist(
-                    () -> () -> item -> Minecraft.getInstance().getItemRenderer().getModel(new ItemStack(item), null, null, 0).isGui3d(),
+                    // PORT-NOTE(26.1): no baked item model to ask isGui3d; block items stand in for "3D"
+            () -> () -> item -> item instanceof net.minecraft.world.item.BlockItem,
                     () -> () -> item -> false // don't crash servers
             );
             items.addAll(collectItems(tab, is3d, true, exclusionPredicate));

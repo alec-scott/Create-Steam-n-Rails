@@ -17,6 +17,7 @@
  */
 package com.railwayteam.railways.registry.fabric;
 
+import net.minecraft.core.component.DataComponentMap;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.annotation.multiloader.ImplClass;
 import com.railwayteam.railways.content.palettes.PalettesColor;
@@ -51,8 +52,8 @@ public class CRFluidsImpl {
             new Material(Railways.asResource("fluid/paint_still/white")),
             new Material(Railways.asResource("fluid/paint_flow/white")), null, null));
         AllFluidConfigs.tint(CRFluids.PAINT, (fluid, components) -> {
-            var color = components.get(CRDataComponents.PAINT_COLOR);
-            PalettesColor paint = color == null ? PalettesColor.NETHERITE : color.orElse(PalettesColor.NETHERITE);
+            PalettesColor color = components.get(DataComponentMap.EMPTY, CRDataComponents.PAINT_COLOR);
+            PalettesColor paint = color == null ? PalettesColor.NETHERITE : color;
             return 0xFF000000 | paint.getDiffuseColor();
         });
     }
