@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin.client;
 
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.client.gui.components.Tooltip;
 import com.railwayteam.railways.util.packet.StationLimitPacket;
 import com.google.common.collect.ImmutableList;
 import com.railwayteam.railways.mixin_interfaces.ILimited;
@@ -60,24 +62,17 @@ public abstract class MixinStationScreen extends AbstractStationScreen {
     private void initCheckbox(CallbackInfo ci) {
         int x = guiLeft;
         int y = guiTop;
-        limitEnableCheckbox = new Checkbox(x + background.getWidth() - 98, y + background.getHeight() - 26, 50, 20, Component.translatable("railways.station.train_limit"), station != null && ((ILimited) station).isLimitEnabled(), true) {
-            @Override
-            public void onPress() {
-                super.onPress();
-                CRPackets.PACKETS.send(new StationLimitPacket(blockEntity.getBlockPos(), this.selected()));
-            }
-
-            @Override
-            public void renderWidget(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-                super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
-                if (this.isHoveredOrFocused()) {
-                    guiGraphics.renderComponentTooltip(font, ImmutableList.of(Component.translatable("railways.station.train_limit.tooltip.1"), Component.translatable("railways.station.train_limit.tooltip.2")), mouseX, mouseY);
-                }
-            }
-        };
+        // PORT-NOTE(26.1): checkboxes are built (the hover tooltip is now a widget tooltip)
+        limitEnableCheckbox = Checkbox.builder(Component.translatable("railways.station.train_limit"), font)
+            .pos(x + background.getWidth() - 98, y + background.getHeight() - 26)
+            .selected(station != null && ((ILimited) station).isLimitEnabled())
+            .onValueChange((checkbox, selected) -> CRPackets.PACKETS.send(new StationLimitPacket(blockEntity.getBlockPos(), selected)))
+            .tooltip(Tooltip.create(Component.translatable("railways.station.train_limit.tooltip.1")
+                .append(CommonComponents.NEW_LINE).append(Component.translatable("railways.station.train_limit.tooltip.2"))))
+            .build();
         addRenderableWidget(limitEnableCheckbox);
 
-        iconTypes = TrainIconType.REGISTRY.keySet()
+        iconTypes = TrainIconType.ALL.keySet()
                 .stream()
                 .toList();
         iconTypeScroll = new ScrollInput(x + 4, y + 17, 184, 14).titled(CreateLang.translateDirect("station.icon_type"));
@@ -88,7 +83,7 @@ public abstract class MixinStationScreen extends AbstractStationScreen {
             Train train = displayedTrain.get();
             if (train != null) {
                 train.icon = TrainIconType.byId(iconTypes.get(s));
-                CRPackets.PACKETS.send(new TrainEditPacket(train.id, trainNameBox.getValue(), train.icon.getId(), train.mapColorIndex));
+                minecraft.player.connection.send(new TrainEditPacket(train.id, trainNameBox.getValue(), train.icon.id(), train.mapColorIndex));
             }
         });
         iconTypeScroll.active = false;
@@ -108,7 +103,7 @@ public abstract class MixinStationScreen extends AbstractStationScreen {
 
             if (imminentTrain != null) {
                 iconTypeScroll.active = true;
-                iconTypeScroll.setState(iconTypes.indexOf(imminentTrain.icon.getId()));
+                iconTypeScroll.setState(iconTypes.indexOf(imminentTrain.icon.id()));
                 addRenderableWidget(iconTypeScroll);
             }
         }

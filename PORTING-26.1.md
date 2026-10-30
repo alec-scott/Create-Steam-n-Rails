@@ -133,6 +133,14 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
 - `CRCTTypes` extends Create Fly's class-based `CTType` (bit-mask contexts); `BoilerCTBehaviour` likewise.
 
 ## TODO (not compile errors)
+- **Generated data is still in 1.20 form**: `src/generated/resources/data/railways` uses `recipes`/`loot_tables`/
+  `advancements` (26.1: `recipe`/`loot_table`/`advancement`), and the 1,063 recipe files use 1.20 JSON (`fluidTag`,
+  NBT strings, Railways' "mangled" `railways:amount` fluid units that `MixinProcessingRecipeSerializer` converted;
+  that mixin is gone). Needs a conversion script to Create Fly's 26.1 recipe formats.
+- **Bogey menu preview** shows the bogey block statically (`GuiGameElement`). The animated preview needs a
+  picture-in-picture renderer that can draw a `BogeyRenderState` (which only submits to a `SubmitNodeCollector`).
+- `fabric.mixin.client.LevelRendererMixin` (conductor camera entity override) targets `Camera.entity()` ordinal 3 in
+  `renderLevel`, unverified against 26.1 (`require = 0`, so it silently no-ops if wrong).
 - **Item model definitions** (`assets/railways/items/*.json`, 1.21.4+): none exist yet, so items will render as
   missing models. Generate them from the committed `models/item` files.
 - Custom conductor caps by item name (was `MixinItemModelShaper`): a `minecraft:select` on `minecraft:custom_name` in

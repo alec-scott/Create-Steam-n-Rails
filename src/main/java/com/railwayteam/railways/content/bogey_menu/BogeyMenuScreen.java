@@ -18,13 +18,15 @@
 
 package com.railwayteam.railways.content.bogey_menu;
 
+import org.jetbrains.annotations.Nullable;
 import com.zurrtum.create.content.trains.bogey.BogeySize;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import com.mojang.math.Axis;
 import com.railwayteam.railways.api.bogeymenu.v0.entry.BogeyEntry;
 import com.railwayteam.railways.api.bogeymenu.v0.entry.CategoryEntry;
@@ -95,6 +97,9 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
     // True if the scrollbar is being dragged
     private boolean scrolling;
     private int ticksOpen;
+    private @Nullable GuiGameElement.GuiBlockStateRenderBuilder casingElement;
+    private @Nullable GuiGameElement.GuiBlockStateRenderBuilder bogeyElement;
+    private @Nullable BlockState bogeyElementState;
     private boolean soundPlayed;
     private TooltipArea longBogeyTooltipArea;
     private IconButton favouriteButton;
@@ -171,8 +176,6 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
 
     @Override
     protected void renderWindow(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        PoseStack ms = guiGraphics.pose();
-
         int x = guiLeft;
         int y = guiTop;
 
@@ -183,21 +186,14 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
         MutableComponent header = Component.translatable("railways.gui.bogey_menu.title");
         int halfWidth = background.width / 2;
         int halfHeaderWidth = font.width(header) / 2;
-        guiGraphics.drawString(font, header, x + halfWidth - halfHeaderWidth, y + 4, 0x582424, false);
+        guiGraphics.text(font, header, x + halfWidth - halfHeaderWidth, y + 4, 0xFF582424, false);
 
         // Train casing on right side of screen where arrow is pointing START
-        ms.pushPose();
-        
-        TransformStack.of(ms)
-                .pushPose()
-                .translate(x + background.width + 4, y + background.height + 4, 100)
-                .scale(40)
-                .rotateXDegrees(-22)
-                .rotateYDegrees(63);
-
-        GuiGameElement.of(AllBlocks.RAILWAY_CASING.defaultBlockState()).render(guiGraphics);
-
-        ms.popPose();
+        // PORT-NOTE(26.1): 3D GUI elements are picture-in-picture render states; Create Fly caches one texture per
+        // element, so elements are kept in fields and cleared in removed()
+        if (casingElement == null)
+            casingElement = GuiGameElement.of(AllBlocks.RAILWAY_CASING.defaultBlockState()).rotate(-22, 63, 0).scale(2.5F);
+        casingElement.at(x + background.width + 4, y + background.height + 4).render(guiGraphics);
 
         // Render scroll bar
         // Formula is barPos = startLoc + (endLoc - startLoc) * scrollOffs
@@ -212,12 +208,12 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
                 // Icon
                 Identifier icon = bogeyEntry.iconLocation();
                 if (icon != null)
-                    renderIcon(guiGraphics, ms, icon, x + 20, y + 42 + (i * 18));
+                    renderIcon(guiGraphics, icon, x + 20, y + 42 + (i * 18));
 
                 // Text
                 Component bogeyName = ClientTextUtils.getComponentWithWidthCutoff(bogeyEntry.bogeyStyle().displayName, 55);
                 // button has already been added in init, now just draw text
-                guiGraphics.drawString(font, bogeyName, x + 40, y + 46 + (i * 18), 0xFFFFFF);
+                guiGraphics.text(font, bogeyName, x + 40, y + 46 + (i * 18), 0xFFFFFFFF);
             }
         }
 
@@ -226,7 +222,7 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
             Component displayName = selectedBogey.bogeyStyle().displayName;
             // Bogey Name
             Component bogeyName = ClientTextUtils.getComponentWithWidthCutoff(displayName, 126);
-            guiGraphics.drawCenteredString(font, bogeyName, x + 190, y + 25, 0xFFFFFF);
+            guiGraphics.centeredText(font, bogeyName, x + 190, y + 25, 0xFFFFFFFF);
 
             if (font.width(displayName) > 126) {
                 longBogeyTooltipArea.withTooltip(ImmutableList.of(displayName));
@@ -266,76 +262,30 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
             AbstractBogeyBlock<?> bogeyBlock = style.getBlockForSize(renderSize);
             BlockState bogeyState = bogeyBlock.defaultBlockState().setValue(AbstractBogeyBlock.AXIS, Direction.Axis.Z);
 
-            float defaultScale = BogeyMenuManagerImpl.defaultScale;
-            float scalePercentage = bogeyScale / defaultScale;
-
-            // Push current pose and Setup model view
-            ms.pushPose();
-            PoseStack modelViewStack = RenderSystem.getModelViewStack();
-            modelViewStack.pushPose();
-            modelViewStack.translate(18 * scalePercentage, 6 * scalePercentage, 0);
-            modelViewStack.translate(x + 189.5, y + 86, 1500);
-            modelViewStack.scale(1, 1, -1);
-            RenderSystem.applyModelViewMatrix();
-
-            // Setup pose and lighting correctly
-            ms.translate(0, 0, 1000);
-            ms.scale(bogeyScale, bogeyScale, bogeyScale);
-            Quaternionf zRot = Axis.ZP.rotationDegrees(180);
-            Quaternionf xRot = Axis.XP.rotationDegrees(-20);
-            Quaternionf yRot = Axis.YP.rotationDegrees(45);
-            zRot.mul(xRot);
-            zRot.mul(yRot);
-            ms.mulPose(zRot);
-            Lighting.setupForEntityInInventory();
-
-            // Setup vars for rendering
-            Minecraft mc = Minecraft.getInstance();
-            MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
-            int light = 0xF000F0;
-            int overlay = OverlayTexture.NO_OVERLAY;
-            float wheelAngle = -3 * AnimationTickHolder.getRenderTime();
-
-            // Render Bogey Block & Bogey
-            minecraft.getBlockRenderer().renderSingleBlock(bogeyState, ms, bufferSource, light, overlay);
-            
-            ms.pushPose();
-            ms.translate(0, 0, 1);
-            renderStyle.render(renderSize, partialTicks, ms, bufferSource, light, overlay, wheelAngle, new CompoundTag(), false);
-            ms.popPose();
-            
-            // End batch, pop modelViewStack & apply and pop the pose
-            bufferSource.endBatch();
-            modelViewStack.popPose();
-            RenderSystem.applyModelViewMatrix();
-            ms.popPose();
-
-            // Clear depth rectangle to allow proper tooltips
-            {
-                double x0 = x + 120;
-                double y0 = y + 48;
-                double w = 140;
-                double h = 77;
-                double bottom = y0+h;
-
-                Window window = mc.getWindow();
-                double scale = window.getGuiScale();
-
-                RenderSystem.clearDepth(0.86); // same depth as gui
-                RenderSystem.enableScissor((int) (x0*scale), window.getHeight() - (int) (bottom*scale), (int) (w*scale), (int) (h*scale));
-
-                RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, false);
-
-                RenderSystem.disableScissor();
-                RenderSystem.clearDepth(1.0);
+            // PORT-NOTE(26.1): the 1.20 preview drew the bogey block and the animated bogey straight into buffers with a
+            // custom model view. 26.1 GUIs only draw 3D through picture-in-picture renderers; until the bogey renderer
+            // has one, the preview shows the bogey block statically (see PORTING-26.1.md TODO).
+            if (bogeyElement == null || bogeyElementState != bogeyState) {
+                if (bogeyElement != null)
+                    bogeyElement.clear();
+                bogeyElementState = bogeyState;
+                bogeyElement = GuiGameElement.of(bogeyState).rotate(-20, 45, 0).scale(bogeyScale / 16f);
             }
+            bogeyElement.at(x + 160, y + 55).render(guiGraphics);
         }
     }
 
-    private void renderIcon(GuiGraphicsExtractor guiGraphics, PoseStack ms, Identifier icon, int x, int y) {
-        ms.pushPose();
-        guiGraphics.blit(icon, x, y, 0, 0, 0, 16, 16, 16, 16);
-        ms.popPose();
+    private void renderIcon(GuiGraphicsExtractor guiGraphics, Identifier icon, int x, int y) {
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, icon, x, y, 0, 0, 16, 16, 16, 16);
+    }
+
+    @Override
+    public void removed() {
+        super.removed();
+        if (casingElement != null)
+            casingElement.clear();
+        if (bogeyElement != null)
+            bogeyElement.clear();
     }
 
     private void setupList(CategoryEntry categoryEntry) {
@@ -366,7 +316,8 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent input) {
+        int keyCode = input.key();
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
             if (selectedBogey == null)
                 onClose();
@@ -379,31 +330,32 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
 
             return true;
         } else {
-            return super.keyPressed(keyCode, scanCode, modifiers);
+            return super.keyPressed(input);
         }
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) {
-            if (insideScrollbar(mouseX, mouseY)) {
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
+        if (click.button() == 0) {
+            if (insideScrollbar(click.x(), click.y())) {
                 scrolling = canScroll();
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0)
+    public boolean mouseReleased(MouseButtonEvent click) {
+        if (click.button() == 0)
             scrolling = false;
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(click);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (!scrolling) return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    public boolean mouseDragged(MouseButtonEvent click, double dragX, double dragY) {
+        if (!scrolling) return super.mouseDragged(click, dragX, dragY);
+        double mouseY = click.y();
 
         int scrollbarLeft = guiTop + 41;
         int scrollbarRight = scrollbarLeft + 108;
@@ -415,8 +367,8 @@ public class BogeyMenuScreen extends AbstractSimiScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        super.mouseScrolled(mouseX, mouseY, delta);
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double delta) {
+        super.mouseScrolled(mouseX, mouseY, scrollX, delta);
         if (!canScroll()) return false;
         if (insideCategorySelector(mouseX, mouseY)) return false;
         if (selectedCategory.getBogeyEntryList().size() < 6) return false;

@@ -18,10 +18,11 @@
 
 package com.railwayteam.railways.content.cycle_menu;
 
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import org.joml.Matrix3x2fStack;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.content.bogey_menu.handler.BogeyMenuEventsHandler;
 import com.railwayteam.railways.mixin.client.AccessorToolboxHandlerClient;
 import com.railwayteam.railways.registry.CRKeys;
@@ -70,7 +71,8 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
     protected void renderWindow(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
         float fade = Mth.clamp((ticksOpen + AnimationTickHolder.getPartialTicks()) / 10f, 1 / 512f, 1);
 
-        PoseStack ms = graphics.pose();
+        // PORT-NOTE(26.1): mirrors Create Fly's RadialToolboxMenu (2D GUI poses, render state GUI, input events)
+        Matrix3x2fStack ms = graphics.pose();
 
         hoveredSlot = -1;
         Window window = Minecraft.getInstance().getWindow();
@@ -90,8 +92,8 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
         if (scrollMode && distance > 150)
             scrollMode = false;
 
-        ms.pushPose();
-        ms.translate(width / 2, height / 2, 0);
+        ms.pushMatrix();
+        ms.translate(width / 2, height / 2);
         Component tip = null;
         Identifier tagLoc = tag.location();
         Component title = Component.translatable("tag.item." + tagLoc.getNamespace() + "." + tagLoc.getPath().replace('/', '.'));
@@ -101,14 +103,13 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
          */
 
         for (int slot = 0; slot < slotCount; slot++) {
-            ms.pushPose();
+            ms.pushMatrix();
             double radius = -(5 * slotCount) + (10 * (1 - fade) * (1 - fade));
             double angle = slot * interSlotAngle - interSlotAngle;
-            TransformStack.of(ms)
-                    .rotateZDegrees((float) angle)
-                    .translate(0, radius, 0)
-                    .rotateZDegrees((float) -angle);
-            ms.translate(-12, -12, 0);
+            ms.rotate(Mth.DEG_TO_RAD * (float) angle);
+            ms.translate(0, (float) radius);
+            ms.rotate(Mth.DEG_TO_RAD * (float) -angle);
+            ms.translate(-12, -12);
 
             boolean selected = (slot == (scrollMode ? scrollSlot : hoveredSlot));
 
@@ -121,9 +122,7 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
                 if (minecraft != null) {
 
                     AllGuiTextures.TOOLBELT_SLOT.render(graphics, 0, 0);
-                    GuiGameElement.of(stack)
-                        .at(3, 3)
-                        .render(graphics);
+                    graphics.item(stack, 3, 3);
 
 
                     if (selected) {
@@ -136,7 +135,7 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
                 AllGuiTextures.TOOLBELT_EMPTY_SLOT.render(graphics, 0, 0);
             }
 
-            ms.popPose();
+            ms.popMatrix();
         }
 
         /*
@@ -149,14 +148,14 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
                 i1 = 255;
 
             if (i1 > 8) {
-                ms.pushPose();
-                ms.translate(0, -80, 0.0F);
+                ms.pushMatrix();
+                ms.translate(0, -80);
                 drawComponent(graphics, title, i1);
             }
         }
 
 
-        ms.popPose();
+        ms.popMatrix();
 
         if (tip != null) {
             int i1 = (int) (fade * 255.0F);
@@ -164,8 +163,8 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
                 i1 = 255;
 
             if (i1 > 8) {
-                ms.pushPose();
-                ms.translate((float) (width / 2), (float) (height - 68), 0.0F);
+                ms.pushMatrix();
+                ms.translate((float) (width / 2), (float) (height - 68));
                 drawComponent(graphics, tip, i1);
             }
         }
@@ -173,22 +172,17 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
 
     @SuppressWarnings("DuplicatedCode")
     private void drawComponent(GuiGraphicsExtractor graphics, Component title, int i1) {
-        PoseStack ms = graphics.pose();
+        Matrix3x2fStack ms = graphics.pose();
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
         int k1 = 16777215;
         int k = i1 << 24 & -16777216;
         int l = font.width(title);
-        graphics.drawString(font, title, (-l / 2), (int) -4.0F, k1 | k);
-        RenderSystem.disableBlend();
-        ms.popPose();
+        graphics.text(font, title, Math.round(-l / 2f), -4, k1 | k, false);
+        ms.popMatrix();
     }
 
     @Override
-    public void renderBackground(GuiGraphicsExtractor guiGraphics) {
-        PoseStack ms = guiGraphics.pose();
-
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         int a = ((int) (0x50 * Math.min(1, (ticksOpen + AnimationTickHolder.getPartialTicks()) / 20f))) << 24;
         guiGraphics.fillGradient(0, 0, this.width, this.height, 0x101010 | a, 0x101010 | a);
     }
@@ -200,8 +194,9 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
     }
 
     @Override
-    public boolean mouseClicked(double x, double y, int button) {
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
         int selected = scrollMode ? scrollSlot : hoveredSlot;
+        int button = click.button();
 
         if (button == 0) {
             if (selected >= 0 && selected < cycle.size()) {
@@ -214,12 +209,12 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
             }
         }
 
-        return super.mouseClicked(x, y, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @SuppressWarnings("IntegerDivisionInFloatingPointContext")
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double delta) {
         Window window = Minecraft.getInstance().getWindow();
         double hoveredX = mouseX - window.getGuiScaledWidth() / 2;
         double hoveredY = mouseY - window.getGuiScaledHeight() / 2;
@@ -238,16 +233,16 @@ public class RadialTagCycleMenu extends AbstractSimiScreen {
             return true;
         }
 
-        return super.mouseScrolled(mouseX, mouseY, delta);
+        return super.mouseScrolled(mouseX, mouseY, scrollX, delta);
     }
 
     @Override
-    public boolean keyReleased(int code, int scanCode, int modifiers) {
-        InputConstants.Key mouseKey = InputConstants.getKey(code, scanCode);
+    public boolean keyReleased(KeyEvent input) {
+        InputConstants.Key mouseKey = InputConstants.getKey(input);
         if (ClientUtils.isActiveAndMatches(CRKeys.CYCLE_MENU.getKeybind(), mouseKey)) {
             onClose();
             return true;
         }
-        return super.keyReleased(code, scanCode, modifiers);
+        return super.keyReleased(input);
     }
 }
