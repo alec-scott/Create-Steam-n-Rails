@@ -130,7 +130,6 @@
     "client.MixinCarriageParticles",
     "client.MixinCarriageSounds",
     "client.MixinContraptionHandlerClient",
-    "client.MixinDebugRenderer",
     "client.MixinEntityHats",
     "client.MixinFlywheelVisual",
     "client.MixinGlobalRailwayManager",
