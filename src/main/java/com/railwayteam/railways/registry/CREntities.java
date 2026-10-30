@@ -64,7 +64,7 @@ public class CREntities {
     public static final EntityEntry<ConductorEntity> CONDUCTOR = REGISTRATE.entity("conductor", ConductorEntity::new, MobCategory.CREATURE)
             .renderer(() -> ConductorRenderer::new)
             .lang("Conductor")
-            .properties(configure(c -> c.size(0.6f, 1.5f).fireImmune()))
+            .properties(configure(c -> c.size(0.6f, 1.5f).eyeHeight(1.5f * 0.76f).fireImmune()))
             .tag(EntityTypeTags.FALL_DAMAGE_IMMUNE)
             .loot((table, type) -> table.add(type, new LootTable.Builder().withPool(
                     LootPool.lootPool()

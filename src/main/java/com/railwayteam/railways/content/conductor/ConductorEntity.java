@@ -23,6 +23,8 @@ import com.railwayteam.railways.port.minecraft.NbtCompat;
 import net.minecraft.world.level.storage.ValueOutput;
 
 import net.minecraft.world.level.storage.ValueInput;
+import com.mojang.serialization.Codec;
+import com.railwayteam.railways.util.CRValueIO;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.authlib.GameProfile;
@@ -98,6 +100,8 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -281,24 +285,22 @@ public class ConductorEntity extends AbstractGolem {
       );
     }
 
-    public CompoundTag write() {
-      CompoundTag tag = new CompoundTag();
+    public void write(ValueOutput output) {
       for (var freq : this.entries().entrySet()) {
         if (freq.getValue().isPresent()) {
-          CompoundTag subTag = new CompoundTag();
-          subTag.put("first", freq.getValue().get().getFirst().getStack().save(new CompoundTag()));
-          subTag.put("second", freq.getValue().get().getSecond().getStack().save(new CompoundTag()));
-          tag.put(freq.getKey(), subTag);
+          ValueOutput subOutput = output.child(freq.getKey());
+          subOutput.store("first", ItemStack.OPTIONAL_CODEC, freq.getValue().get().getFirst().getStack());
+          subOutput.store("second", ItemStack.OPTIONAL_CODEC, freq.getValue().get().getSecond().getStack());
         }
       }
-      return tag;
     }
 
-    public FrequencyHolder read(CompoundTag tag) {
+    public FrequencyHolder read(ValueInput input) {
       for (var freq : this.setters().entrySet()) {
-        if (tag.contains(freq.getKey(), Tag.TAG_COMPOUND)) {
-          ItemStack first = ItemStack.of(tag.getCompound(freq.getKey()).getCompound("first"));
-          ItemStack second = ItemStack.of(tag.getCompound(freq.getKey()).getCompound("second"));
+        Optional<ValueInput> subInput = input.child(freq.getKey());
+        if (subInput.isPresent()) {
+          ItemStack first = subInput.get().read("first", ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
+          ItemStack second = subInput.get().read("second", ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
           freq.getValue().accept(Optional.of(Couple.create(Frequency.of(first), Frequency.of(second))));
         } else {
           freq.getValue().accept(Optional.empty());
@@ -452,7 +454,7 @@ public class ConductorEntity extends AbstractGolem {
   }
 
   public void teleportToForce(double x, double y, double z) {
-    this.absMoveTo(x, y, z, this.getYRot(), this.getXRot());
+    this.absSnapTo(x, y, z, this.getYRot(), this.getXRot());
     this.getSelfAndPassengers().forEach(entity -> {
       for (Entity entity2 : entity.getPassengers()) {
         entity.positionRider(entity2);//, Entity::moveTo);
@@ -460,7 +462,7 @@ public class ConductorEntity extends AbstractGolem {
     });
 
     if (level instanceof ServerLevel serverLevel) {
-      serverLevel.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, new ChunkPos(this.blockPosition()), 5, this.getId());
+      serverLevel.getChunkSource().addTicketWithRadius(TicketType.ENDER_PEARL, ChunkPos.containing(this.blockPosition()), 5);
     }
 
     firstGoodX = x;
@@ -471,7 +473,7 @@ public class ConductorEntity extends AbstractGolem {
     lastGoodZ = z;
     ServerPlayer player;
     if (isPossessed() && (player = currentlyViewing.get()) != null) {
-      CRPackets.PACKETS.sendTo(player, new CameraMovePacket(this, new ServerboundMovePlayerPacket.PosRot(x, y, z, this.getYRot(), this.getXRot(), this.onGround())));
+      CRPackets.PACKETS.sendTo(player, new CameraMovePacket(this, new ServerboundMovePlayerPacket.PosRot(x, y, z, this.getYRot(), this.getXRot(), this.onGround(), this.horizontalCollision)));
     }
   }
 
@@ -506,14 +508,14 @@ public class ConductorEntity extends AbstractGolem {
     if (current != null && current.getCamera() == this && current.isAlive() && current != player) {
       return false;
     }
-    ServerLevel serverLevel = player.serverLevel();
+    ServerLevel serverLevel = player.level();
     if (serverLevel != level) {
       return false;
     }
     currentlyViewing = new WeakReference<>(player);
     oldSectionPos = null;
     SectionPos chunkPos = SectionPos.of(blockPosition());
-    int viewDistance = player.server.getPlayerList().getViewDistance();
+    int viewDistance = player.level().getServer().getPlayerList().getViewDistance();
 
     if (player.getCamera() instanceof ConductorEntity conductor)
       conductor.stopViewing(player);
@@ -558,7 +560,7 @@ public class ConductorEntity extends AbstractGolem {
         if (state.getBlock() instanceof VentBlock ventBlock) {
           ventBlock.teleportConductor(level, pos, this, hitResult.getDirection().getOpposite());
         } else {
-          state.use(level, fakePlayer, InteractionHand.MAIN_HAND, hitResult);
+          state.useWithoutItem(level, fakePlayer, hitResult);
         }
       }
     }
@@ -578,7 +580,7 @@ public class ConductorEntity extends AbstractGolem {
   }
 
   @Environment(EnvType.CLIENT)
-  public PlayerModel<?> visualBaseModel;
+  public PlayerModel visualBaseModel;
   @Environment(EnvType.CLIENT)
   public Player visualBaseEntity;
 
@@ -709,8 +711,8 @@ public class ConductorEntity extends AbstractGolem {
   }
 
   @Override
-  public boolean isControlledByLocalInstance() {
-    return super.isControlledByLocalInstance() || isPossessedAndClient();
+  protected boolean isLocalClientAuthoritative() {
+    return super.isLocalClientAuthoritative() || isPossessedAndClient();
   }
 
   private boolean suffocatesAt(BlockPos pos) {
@@ -807,7 +809,6 @@ public class ConductorEntity extends AbstractGolem {
 
   public ConductorEntity(EntityType<? extends AbstractGolem> type, Level level) {
     super(type, level);
-    this.setMaxUpStep(0.5f);
   }
 
   public boolean isHoldingSchedules() {
@@ -825,15 +826,15 @@ public class ConductorEntity extends AbstractGolem {
   }
 
   @Override
-  protected void defineSynchedData() {
-    super.defineSynchedData();
-    this.entityData.define(COLOR, idFrom(defaultColor()));
-    this.entityData.define(BLOCK, this.blockPosition());
-    this.entityData.define(JOB, Job.DEFAULT.ordinal());
-    this.entityData.define(HOLDING_SCHEDULES, this.isHoldingSchedules());
+  protected void defineSynchedData(SynchedEntityData.Builder builder) {
+    super.defineSynchedData(builder);
+    builder.define(COLOR, idFrom(defaultColor()));
+    builder.define(BLOCK, this.blockPosition());
+    builder.define(JOB, Job.DEFAULT.ordinal());
+    builder.define(HOLDING_SCHEDULES, this.isHoldingSchedules());
     for (Map.Entry<String, Couple<EntityDataAccessor<ItemStack>>> entry : FREQUENCY_DATA.entrySet()) {
       for (boolean first : Iterate.trueAndFalse) {
-        this.entityData.define(entry.getValue().get(first), ItemStack.EMPTY);
+        builder.define(entry.getValue().get(first), ItemStack.EMPTY);
       }
     }
   }
@@ -865,7 +866,8 @@ public class ConductorEntity extends AbstractGolem {
       .add(Attributes.MOVEMENT_SPEED, 0.25D)
       .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
       .add(Attributes.ARMOR, 8.0D)
-      .add(Attributes.ARMOR_TOUGHNESS, 8.0D);
+      .add(Attributes.ARMOR_TOUGHNESS, 8.0D)
+      .add(Attributes.STEP_HEIGHT, 0.5D);
   }
 
   @Override
@@ -880,22 +882,17 @@ public class ConductorEntity extends AbstractGolem {
   }
 
   @Override
-  public boolean hurt(@NotNull DamageSource pSource, float pAmount) {
+  public boolean hurtServer(ServerLevel level, @NotNull DamageSource pSource, float pAmount) {
     if (getRootVehicle() instanceof CarriageContraptionEntity) // no damage when riding
       return false;
     if (pSource.getEntity() instanceof LivingEntity living && living.getMainHandItem().is(AllItems.WRENCH))
       pAmount = 10;
-    return super.hurt(pSource, pAmount);
+    return super.hurtServer(level, pSource, pAmount);
   }
 
   @Override
   protected int decreaseAirSupply(int pAir) {
     return pAir;
-  }
-
-  @Override
-  protected float getStandingEyeHeight(@NotNull Pose pPose, @NotNull EntityDimensions pDimensions) {
-    return pDimensions.height * 0.76f;
   }
 
   public boolean canReach(Vec3i pos) {
@@ -986,8 +983,8 @@ public class ConductorEntity extends AbstractGolem {
 
   @Override
   protected @NotNull InteractionResult mobInteract(Player player, @NotNull InteractionHand hand) {
-    if (player.getItemInHand(hand).getItem() instanceof DyeItem di) {
-      setColor (di.getDyeColor());
+    if (player.getItemInHand(hand).getItem() instanceof DyeItem && player.getItemInHand(hand).has(DataComponents.DYE)) {
+      setColor(player.getItemInHand(hand).get(DataComponents.DYE));
       if (!player.isCreative()) player.getItemInHand(hand).shrink(1);
       return InteractionResult.SUCCESS;
     } else if (player.getItemInHand(hand).getItem().equals(new ItemStack(AllBlocks.ANDESITE_CASING).getItem())) {
@@ -1014,7 +1011,7 @@ public class ConductorEntity extends AbstractGolem {
       }
       this.entityData.set(HOLDING_SCHEDULES, false);
       getHeldSchedules().clear();
-    } else if (getJob() == Job.DEFAULT && AllBlocks.REDSTONE_LINK.isIn(player.getItemInHand(hand))) {
+    } else if (getJob() == Job.DEFAULT && player.getItemInHand(hand).is(AllBlocks.REDSTONE_LINK.asItem())) {
       setJob(Job.REMOTE_CONTROL);
       player.getItemInHand(hand).shrink(1);
       return InteractionResult.SUCCESS;
@@ -1083,10 +1080,10 @@ public class ConductorEntity extends AbstractGolem {
       }
       if ((Object) currentlyViewing.get() instanceof ServerPlayer player) {
         SectionPos chunkPos = SectionPos.of(blockPosition());
-        int viewDistance = player.server.getPlayerList().getViewDistance();
+        int viewDistance = player.level().getServer().getPlayerList().getViewDistance();
         for (int x = chunkPos.getX() - viewDistance; x <= chunkPos.getX() + viewDistance; x++) {
           for (int z = chunkPos.getZ() - viewDistance; z <= chunkPos.getZ() + viewDistance; z++) {
-            serverLevel.getChunkSource().addRegionTicket(TicketType.FORCED, new ChunkPos(x, z), 3, new ChunkPos(x, z));
+            serverLevel.getChunkSource().addTicketWithRadius(TicketType.ENDER_PEARL, new ChunkPos(x, z), 3);
           }
         }
       }
@@ -1100,7 +1097,8 @@ public class ConductorEntity extends AbstractGolem {
     ConductorEntity result = new ConductorEntity(CREntities.CONDUCTOR.get(), level);
     result.setPos(pos.getX()+0.5, pos.getY(), pos.getZ()+0.5);
     result.setColor(cap.color);
-    result.equipItemIfPossible(stack);
+    if (level instanceof ServerLevel serverLevel)
+      result.equipItemIfPossible(serverLevel, stack);
     level.addFreshEntity(result);
     return result;
   }
@@ -1157,21 +1155,21 @@ public class ConductorEntity extends AbstractGolem {
   }
 
   @Override
-  protected void dropCustomDeathLoot(@NotNull DamageSource pSource, int pLooting, boolean pRecentlyHit) {
-    super.dropCustomDeathLoot(pSource, pLooting, pRecentlyHit);
+  protected void dropCustomDeathLoot(ServerLevel level, @NotNull DamageSource pSource, boolean pRecentlyHit) {
+    super.dropCustomDeathLoot(level, pSource, pRecentlyHit);
     Job job = getJob();
     ItemStack holdingStack = this.unequipToolbox();
     if (!holdingStack.isEmpty()) {
-      this.spawnAtLocation(holdingStack);
+      this.spawnAtLocation(level, holdingStack);
     }
     if (isHoldingSchedules()) {
       for (ItemStack scheduleStack : getHeldSchedules())
-        this.spawnAtLocation(scheduleStack);
+        this.spawnAtLocation(level, scheduleStack);
     }
     if (job == Job.REMOTE_CONTROL)
-      this.spawnAtLocation(new ItemStack(AllBlocks.REDSTONE_LINK));
+      this.spawnAtLocation(level, new ItemStack(AllBlocks.REDSTONE_LINK));
     else if (job == Job.SPY)
-      this.spawnAtLocation(new ItemStack(AllItems.GOGGLES));
+      this.spawnAtLocation(level, new ItemStack(AllItems.GOGGLES));
   }
 
   static class JobBasedGoal extends Goal {
@@ -1461,7 +1459,7 @@ public class ConductorEntity extends AbstractGolem {
           return;
         boolean canUse = state.getShape(level, pos).isEmpty() || EntityUtils.handleUseEvent(fake, InteractionHand.MAIN_HAND, hitResult);
         if (canUse) {
-          state.use(level, fake, InteractionHand.MAIN_HAND, hitResult);
+          state.useWithoutItem(level, fake, hitResult);
         }
       }
     }
@@ -1493,7 +1491,7 @@ public class ConductorEntity extends AbstractGolem {
             BlockState state = this.conductor.level.getBlockState(at);
             if (this.conductor.canUseBlock(state)) {
               ClipContext context = new ClipContext(this.conductor.getEyePosition(), new Vec3(at.getX(), at.getY(), at.getZ()),
-                  ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, null);
+                  ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, CollisionContext.empty());
               BlockHitResult hitResult = this.conductor.level.clip(context);
               if (hitResult.getBlockPos().equals(at)) {
                 this.target = at;
@@ -1515,58 +1513,39 @@ public class ConductorEntity extends AbstractGolem {
   @Override
   public void addAdditionalSaveData(ValueOutput nbt) {
     super.addAdditionalSaveData(nbt);
-    nbt.put("target", NbtCompat.writeBlockPos(getEntityData().get(BLOCK)));
+    CRValueIO.put(nbt, "target", NbtCompat.writeBlockPos(getEntityData().get(BLOCK)));
     nbt.putByte("color", getEntityData().get(COLOR));
     if (toolbox != null) {
-      CompoundTag toolboxTag = new CompoundTag();
-      toolbox.write(toolboxTag, false);
-      nbt.put("toolboxHolder", toolboxTag);
+      toolbox.write(nbt.child("toolboxHolder"), false);
     }
     if (!getHeldSchedules().isEmpty()) {
-      ListTag schedulesTag = new ListTag();
-      boolean hasItem = false;
+      ValueOutput.TypedOutputList<ItemStack> schedulesList = nbt.list("heldSchedules", ItemStack.CODEC);
       for (ItemStack heldSchedule : heldSchedules) {
-        if (!heldSchedule.isEmpty()) {
-          schedulesTag.add(heldSchedule.save(new CompoundTag()));
-          hasItem = true;
-        }
+        if (!heldSchedule.isEmpty())
+          schedulesList.add(heldSchedule);
       }
-      if (hasItem)
-        nbt.put("heldSchedules", schedulesTag);
     }
     nbt.putString("job", getJob().name());
-    nbt.put("frequencies", frequencies.write());
+    frequencies.write(nbt.child("frequencies"));
   }
 
   @Override
   public void readAdditionalSaveData(ValueInput nbt) {
     super.readAdditionalSaveData(nbt);
-    if (nbt.contains("color", Tag.TAG_BYTE)) {
-      getEntityData().set(COLOR, nbt.getByteOr("color", (byte) 0));
+    nbt.read("color", Codec.BYTE).ifPresent(color -> getEntityData().set(COLOR, color));
+    if (CRValueIO.contains(nbt, "target")) {
+      getEntityData().set(BLOCK, NbtCompat.readBlockPos(CRValueIO.getCompound(nbt, "target")));
     }
-    if (nbt.contains("target", Tag.TAG_COMPOUND)) {
-      getEntityData().set(BLOCK, NbtCompat.readBlockPos(nbt.childOrEmpty("target")));
-    }
-    if (nbt.contains("toolboxHolder", Tag.TAG_COMPOUND)) {
-      setToolbox(MountedToolbox.read(this, nbt.childOrEmpty("toolboxHolder")));
-    } else {
-      setToolbox(null);
-    }
-    if (nbt.contains("job", Tag.TAG_STRING)) {
-      setJob(Job.valueOf(nbt.getStringOr("job", "")));
-    } else {
-      setJob(Job.DEFAULT);
-    }
+    nbt.child("toolboxHolder").ifPresentOrElse(
+        toolboxInput -> setToolbox(MountedToolbox.read(this, toolboxInput)),
+        () -> setToolbox(null));
+    setJob(nbt.getString("job").map(Job::valueOf).orElse(Job.DEFAULT));
     getHeldSchedules().clear();
-    if (nbt.contains("heldSchedules", Tag.TAG_LIST)) {
-      ListTag schedulesTag = nbt.getList("heldSchedules", Tag.TAG_COMPOUND);
-      for (int i = 0; i < schedulesTag.size(); i++) {
-        ItemStack stack = ItemStack.of(schedulesTag.getCompound(i));
-        if (!stack.isEmpty())
-          getHeldSchedules().add(stack);
-      }
+    for (ItemStack stack : nbt.listOrEmpty("heldSchedules", ItemStack.OPTIONAL_CODEC)) {
+      if (!stack.isEmpty())
+        getHeldSchedules().add(stack);
     }
-    if (!level.isClientSide()) {
+    if (!level().isClientSide()) {
       getEntityData().set(HOLDING_SCHEDULES, isHoldingSchedules());
       frequencies.read(nbt.childOrEmpty("frequencies"));
       updateFrequencyListeners();

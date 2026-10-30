@@ -120,6 +120,12 @@ public class MountedToolbox extends ToolboxBlockEntity {
     return holder;
   }
 
+  public static MountedToolbox read(ConductorEntity parent, ValueInput input) {
+    MountedToolbox holder = new MountedToolbox(parent, DyeColor.BROWN);
+    holder.read(input, false);
+    return holder;
+  }
+
   @Override
   public MountedToolboxContainer createMenu(int id, @NotNull Inventory inv, @NotNull Player player, RegistryFriendlyByteBuf extraData) {
     sendToMenu(extraData);
