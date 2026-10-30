@@ -22,15 +22,16 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 @Environment(EnvType.CLIENT)
 public abstract class CustomAnimatedTextureSheetParticle extends SingleQuadParticle {
-    protected CustomAnimatedTextureSheetParticle(ClientLevel clientLevel, double d, double e, double f) {
-        super(clientLevel, d, e, f);
+    protected CustomAnimatedTextureSheetParticle(ClientLevel clientLevel, double d, double e, double f, TextureAtlasSprite sprite) {
+        super(clientLevel, d, e, f, sprite);
     }
 
-    protected CustomAnimatedTextureSheetParticle(ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
-        super(clientLevel, d, e, f, g, h, i);
+    protected CustomAnimatedTextureSheetParticle(ClientLevel clientLevel, double d, double e, double f, double g, double h, double i, TextureAtlasSprite sprite) {
+        super(clientLevel, d, e, f, g, h, i, sprite);
     }
 
     protected abstract double getAnimationProgress();
@@ -47,13 +48,13 @@ public abstract class CustomAnimatedTextureSheetParticle extends SingleQuadParti
     protected float getV0() {
         int frames = (this.sprite.contents().height() * frameWidthFactor()) / (this.sprite.contents().width() * frameHeightFactor());
         int frameNumber = (int) (frames * getAnimationProgress());
-        return this.sprite.getV(16. * ((double) frameNumber / frames));
+        return this.sprite.getV((float) ((double) frameNumber / frames));
     }
 
     @Override
     protected float getV1() {
         int frames = (this.sprite.contents().height() * frameWidthFactor()) / (this.sprite.contents().width() * frameHeightFactor());
         int frameNumber = (int) (frames * getAnimationProgress());
-        return this.sprite.getV(16. * ((double) frameNumber + 1) / frames);
+        return this.sprite.getV((float) (((double) frameNumber + 1) / frames));
     }
 }

@@ -18,14 +18,6 @@
 
 package com.railwayteam.railways.content.smokestack.particles.legacy;
 
-import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
-import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import com.railwayteam.railways.config.CRConfigs;
 import com.zurrtum.create.catnip.animation.LerpedFloat;
@@ -33,14 +25,14 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SimpleAnimatedParticle;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
@@ -60,31 +52,6 @@ public class SmokeParticle extends SimpleAnimatedParticle {
 			this.name = name;
 		}
 	}
-
-	public static final ParticleRenderType TRANSPARENT_SMOKE = new ParticleRenderType() {
-		@Override
-		public void begin(BufferBuilder builder, TextureManager manager) {
-			RenderSystem.depthMask(false);
-			RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
-			RenderSystem.enableBlend();
-			RenderSystem.enableDepthTest();
-			RenderSystem.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
-			builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
-		}
-
-		@Override
-		public void end(Tesselator tesselator) {
-			tesselator.end();
-			RenderSystem.depthMask(true);
-			RenderSystem.disableBlend();
-			RenderSystem.defaultBlendFunc();
-		}
-
-		@Override
-		public String toString() {
-			return "TRANSPARENT_SMOKE";
-		}
-	};
 
 	private LerpedFloat ascendScale = LerpedFloat.linear().startWithValue(1.0);
 	private double baseYd;
@@ -113,9 +80,10 @@ public class SmokeParticle extends SimpleAnimatedParticle {
 		stationarySource = data.stationary;
 	}
 
+	// PORT-NOTE(26.1): was the custom TRANSPARENT_SMOKE render type (blended, no depth writes).
 	@Override
-	public @NotNull ParticleRenderType getRenderType() {
-		return TRANSPARENT_SMOKE;
+	public @NotNull Layer getLayer() {
+		return Layer.TRANSLUCENT;
 	}
 
 	@Override
@@ -145,16 +113,17 @@ public class SmokeParticle extends SimpleAnimatedParticle {
 	}
 
 	@Override
-	public void render(@NotNull VertexConsumer buffer, @NotNull Camera renderInfo, float partialTicks) {
-		render(buffer, renderInfo, partialTicks, 0.0f, 1.0f, 1.0f);
+	public void extract(@NotNull QuadParticleRenderState state, @NotNull Camera renderInfo, float partialTicks) {
+		extract(state, renderInfo, partialTicks, 0.0f, 1.0f, 1.0f);
 		if (CRConfigs.client().thickerSmoke.get()) {
-			render(buffer, renderInfo, partialTicks, 0.3f, 0.5f, 0.75f);
-			render(buffer, renderInfo, partialTicks, -0.3f, 0.5f, 0.75f);
+			extract(state, renderInfo, partialTicks, 0.3f, 0.5f, 0.75f);
+			extract(state, renderInfo, partialTicks, -0.3f, 0.5f, 0.75f);
 		}
 	}
 
-	private void render(VertexConsumer buffer, Camera renderInfo, float partialTicks, float offsetDepth, float size, float alphaFactor) {
-		Vec3 vec3 = renderInfo.getPosition();
+	// PORT-NOTE(26.1): U is mirrored to match the 1.20 vertex order; the depth offset moves the quad centre.
+	private void extract(QuadParticleRenderState state, Camera renderInfo, float partialTicks, float offsetDepth, float size, float alphaFactor) {
+		Vec3 vec3 = renderInfo.position();
 		float f = (float)(Mth.lerp((double)partialTicks, this.xo, this.x) - vec3.x());
 		float g = (float)(Mth.lerp((double)partialTicks, this.yo, this.y) - vec3.y());
 		float h = (float)(Mth.lerp((double)partialTicks, this.zo, this.z) - vec3.z());
@@ -171,25 +140,17 @@ public class SmokeParticle extends SimpleAnimatedParticle {
 		quaternion.mul(Axis.YP.rotationDegrees(((this.random.nextFloat()*2) - 1) * 3));
 		quaternion.mul(Axis.ZP.rotationDegrees(((this.random.nextFloat()*2) - 1) * 3));*/
 
-		Vector3f[] vector3fs = new Vector3f[]{new Vector3f(-size, -size, offsetDepth), new Vector3f(-size, size, offsetDepth), new Vector3f(size, size, offsetDepth), new Vector3f(size, -size, offsetDepth)};
 		float j = this.getQuadSize(partialTicks);
-
-		for(int k = 0; k < 4; ++k) {
-			Vector3f vector3f2 = vector3fs[k];
-			vector3f2.rotate(quaternion);
-			vector3f2.mul(j);
-			vector3f2.add(f, g, h);
-		}
+		Vector3f offset = new Vector3f(0, 0, offsetDepth).rotate(quaternion).mul(j);
 
 		float l = this.getU0();
 		float m = this.getU1();
 		float n = this.getV0();
 		float o = this.getV1();
-		int p = this.getLightColor(partialTicks);
-		buffer.vertex((double)vector3fs[0].x(), (double)vector3fs[0].y(), (double)vector3fs[0].z()).uv(m, o).color(this.rCol, this.gCol, this.bCol, this.alpha*alphaFactor).uv2(p).endVertex();
-		buffer.vertex((double)vector3fs[1].x(), (double)vector3fs[1].y(), (double)vector3fs[1].z()).uv(m, n).color(this.rCol, this.gCol, this.bCol, this.alpha*alphaFactor).uv2(p).endVertex();
-		buffer.vertex((double)vector3fs[2].x(), (double)vector3fs[2].y(), (double)vector3fs[2].z()).uv(l, n).color(this.rCol, this.gCol, this.bCol, this.alpha*alphaFactor).uv2(p).endVertex();
-		buffer.vertex((double)vector3fs[3].x(), (double)vector3fs[3].y(), (double)vector3fs[3].z()).uv(l, o).color(this.rCol, this.gCol, this.bCol, this.alpha*alphaFactor).uv2(p).endVertex();
+		int p = this.getLightCoords(partialTicks);
+		int color = ARGB.colorFromFloat(this.alpha * alphaFactor, this.rCol, this.gCol, this.bCol);
+		state.add(getLayer(), f + offset.x, g + offset.y, h + offset.z, quaternion.x, quaternion.y, quaternion.z, quaternion.w,
+			size * j, m, l, n, o, color, p);
 	}
 
     /*	@Override
@@ -253,7 +214,7 @@ public class SmokeParticle extends SimpleAnimatedParticle {
 	}*/
 
 	@Override
-	public int getLightColor(float partialTick) {
+	public int getLightCoords(float partialTick) {
 		BlockPos blockpos = BlockPos.containing(this.x, this.y, this.z);
 		return this.level.isLoaded(blockpos) ? LevelRenderer.getLightCoords(level, blockpos) : 0;
 	}
@@ -266,7 +227,7 @@ public class SmokeParticle extends SimpleAnimatedParticle {
 		}
 
 		public Particle createParticle(SmokeParticleData data, ClientLevel worldIn, double x, double y, double z,
-									   double xSpeed, double ySpeed, double zSpeed) {
+									   double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
 			return new SmokeParticle(worldIn, data, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet);
 		}
 	}

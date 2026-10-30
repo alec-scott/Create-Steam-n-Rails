@@ -24,8 +24,8 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.NotNull;
@@ -36,8 +36,8 @@ public class PuffSmokeParticle extends CustomAnimatedTextureSheetParticle {
     public static final int DOUBLE_SPEED_SENTINEL = 42;
     protected final boolean stationarySource;
     protected final RandomSource random;
-    protected PuffSmokeParticle(ClientLevel level, double x, double y, double z, RandomSource random, boolean stationarySource, double ySpeed) {
-        super(level, x, y, z, 0.0, ySpeed, 0.0);
+    protected PuffSmokeParticle(ClientLevel level, double x, double y, double z, RandomSource random, boolean stationarySource, double ySpeed, TextureAtlasSprite sprite) {
+        super(level, x, y, z, 0.0, ySpeed, 0.0, sprite);
         if (Mth.equal(DOUBLE_SPEED_SENTINEL, ySpeed)) {
             this.yd *= 1.5;
         }
@@ -72,8 +72,8 @@ public class PuffSmokeParticle extends CustomAnimatedTextureSheetParticle {
     }
 
     @Override
-    public @NotNull ParticleRenderType getRenderType() {
-        return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+    protected @NotNull Layer getLayer() {
+        return Layer.OPAQUE;
     }
 
     @Environment(EnvType.CLIENT)
@@ -85,8 +85,7 @@ public class PuffSmokeParticle extends CustomAnimatedTextureSheetParticle {
 
         @Nullable
         @Override
-        public Particle createParticle(@NotNull T type, @NotNull ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-            PuffSmokeParticle particle = new PuffSmokeParticle(level, x, y, z, level.getRandom(), type.stationary, ySpeed);
+        public Particle createParticle(@NotNull T type, @NotNull ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, @NotNull RandomSource random) {
             int textureCount = 3 + 16;
             int idx = 0;
             if (Mth.equal(type.red, -1) && Mth.equal(type.green, -1) && Mth.equal(type.blue, -1)) {
@@ -96,7 +95,8 @@ public class PuffSmokeParticle extends CustomAnimatedTextureSheetParticle {
             } else if (Mth.equal(type.red, type.green) && Mth.equal(type.green, type.blue) && type.red < -2 && type.red >= -18) {
                 idx = ((int) Math.abs(type.red));
             }
-            particle.setSprite(spriteSet.get(idx, textureCount - 1));
+            PuffSmokeParticle particle = new PuffSmokeParticle(level, x, y, z, level.getRandom(), type.stationary, ySpeed,
+                spriteSet.get(idx, textureCount - 1));
             particle.age = level.getRandom().nextInt(5);
             if (idx == 0) {
                 particle.rCol = type.red;

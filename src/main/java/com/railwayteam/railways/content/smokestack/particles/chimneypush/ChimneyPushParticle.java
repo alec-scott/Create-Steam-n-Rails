@@ -18,7 +18,6 @@
 
 package com.railwayteam.railways.content.smokestack.particles.chimneypush;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.railwayteam.railways.content.smokestack.particles.CustomAnimatedTextureSheetParticle;
 import net.fabricmc.api.EnvType;
@@ -27,8 +26,10 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
@@ -42,8 +43,8 @@ public class ChimneyPushParticle extends CustomAnimatedTextureSheetParticle {
     protected final boolean leadOnly;
     protected final RandomSource random;
     protected final boolean small;
-    protected ChimneyPushParticle(ClientLevel level, double x, double y, double z, RandomSource random, boolean leadOnly, boolean small) {
-        super(level, x, y, z, 0.0, 0, 0.0);
+    protected ChimneyPushParticle(ClientLevel level, double x, double y, double z, RandomSource random, boolean leadOnly, boolean small, TextureAtlasSprite sprite) {
+        super(level, x, y, z, 0.0, 0, 0.0, sprite);
         this.small = small;
         this.xd = 0;
         this.yd = 0;
@@ -71,60 +72,42 @@ public class ChimneyPushParticle extends CustomAnimatedTextureSheetParticle {
         return Mth.clamp(lifeFactor, 0, 1) * getAnimationFactor();
     }
 
+    /**
+     * PORT-NOTE(26.1): particles extract quads instead of writing vertices. The quad faces the camera around Y only,
+     * with U mirrored like the 1.20 vertex order. A render-state quad is square, so the 1:2 small particle is two
+     * stacked quads splitting the V range.
+     */
     @Override
-    public void render(@NotNull VertexConsumer buffer, @NotNull Camera renderInfo, float partialTicks) {
-        Vec3 vec3 = renderInfo.getPosition();
+    public void extract(@NotNull QuadParticleRenderState state, @NotNull Camera renderInfo, float partialTicks) {
+        Vec3 vec3 = renderInfo.position();
         float quadSize = this.getQuadSize(partialTicks);
         float x = (float)(Mth.lerp(partialTicks, this.xo, this.x) - vec3.x());
         float y = (float)(Mth.lerp(partialTicks, this.yo, this.y) - vec3.y()) + (quadSize/2);
         float z = (float)(Mth.lerp(partialTicks, this.zo, this.z) - vec3.z());
         Quaternionf facing;
         if (this.roll == 0.0F) {
-            facing = Axis.YP.rotationDegrees(-renderInfo.getYRot());//renderInfo.rotation();
+            facing = Axis.YP.rotationDegrees(-renderInfo.yRot());//renderInfo.rotation();
         } else {
-            facing = new Quaternionf(Axis.YP.rotationDegrees(-renderInfo.getYRot()));
+            facing = new Quaternionf(Axis.YP.rotationDegrees(-renderInfo.yRot()));
             float i = Mth.lerp(partialTicks, this.oRoll, this.roll);
             facing.mul(Axis.ZP.rotation(i));
-        }
-
-        Vector3f[] vertices = new Vector3f[]{
-            new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)
-        };
-
-        for(int i = 0; i < 4; ++i) {
-            Vector3f vertex = vertices[i];
-            vertex.rotate(facing);
-            vertex.mul(quadSize);
-            if (small)
-                vertex.mul(1, 2, 1);
-            vertex.add(x, y, z);
         }
 
         float u0 = this.getU0();
         float u1 = this.getU1();
         float v0 = this.getV0();
         float v1 = this.getV1();
-        int packedLight = this.getLightColor(partialTicks);
-        buffer.vertex(vertices[0].x(), vertices[0].y(), vertices[0].z())
-            .uv(u1, v1)
-            .color(this.rCol, this.gCol, this.bCol, this.alpha)
-            .uv2(packedLight)
-            .endVertex();
-        buffer.vertex(vertices[1].x(), vertices[1].y(), vertices[1].z())
-            .uv(u1, v0)
-            .color(this.rCol, this.gCol, this.bCol, this.alpha)
-            .uv2(packedLight)
-            .endVertex();
-        buffer.vertex(vertices[2].x(), vertices[2].y(), vertices[2].z())
-            .uv(u0, v0)
-            .color(this.rCol, this.gCol, this.bCol, this.alpha)
-            .uv2(packedLight)
-            .endVertex();
-        buffer.vertex(vertices[3].x(), vertices[3].y(), vertices[3].z())
-            .uv(u0, v1)
-            .color(this.rCol, this.gCol, this.bCol, this.alpha)
-            .uv2(packedLight)
-            .endVertex();
+        int color = ARGB.colorFromFloat(this.alpha, this.rCol, this.gCol, this.bCol);
+        int packedLight = this.getLightCoords(partialTicks);
+        if (!small) {
+            state.add(getLayer(), x, y, z, facing.x, facing.y, facing.z, facing.w, quadSize, u1, u0, v0, v1, color, packedLight);
+            return;
+        }
+
+        Vector3f up = new Vector3f(0, quadSize, 0).rotate(facing);
+        float vMid = (v0 + v1) / 2;
+        state.add(getLayer(), x + up.x, y + up.y, z + up.z, facing.x, facing.y, facing.z, facing.w, quadSize, u1, u0, v0, vMid, color, packedLight);
+        state.add(getLayer(), x - up.x, y - up.y, z - up.z, facing.x, facing.y, facing.z, facing.w, quadSize, u1, u0, vMid, v1, color, packedLight);
     }
 
     public void setOldPos() {
@@ -142,8 +125,8 @@ public class ChimneyPushParticle extends CustomAnimatedTextureSheetParticle {
     }
 
     @Override
-    public @NotNull ParticleRenderType getRenderType() {
-        return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+    protected @NotNull Layer getLayer() {
+        return Layer.OPAQUE;
     }
 
     @Environment(EnvType.CLIENT)
@@ -155,8 +138,7 @@ public class ChimneyPushParticle extends CustomAnimatedTextureSheetParticle {
 
         @Nullable
         @Override
-        public Particle createParticle(@NotNull T type, @NotNull ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-            ChimneyPushParticle particle = new ChimneyPushParticle(level, x, y, z, level.getRandom(), type.leadOnly, type instanceof ChimneyPushParticleData.Small);
+        public Particle createParticle(@NotNull T type, @NotNull ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, @NotNull RandomSource random) {
             int textureCount = 2 + 16;
             int idx = 0;
             if (Mth.equal(type.red, -1) && Mth.equal(type.green, -1) && Mth.equal(type.blue, -1)) {
@@ -164,7 +146,8 @@ public class ChimneyPushParticle extends CustomAnimatedTextureSheetParticle {
             } else if (Mth.equal(type.red, type.green) && Mth.equal(type.green, type.blue) && type.red < -1 && type.red >= -17) {
                 idx = ((int) Math.abs(type.red));
             }
-            particle.setSprite(spriteSet.get(idx, textureCount - 1));
+            ChimneyPushParticle particle = new ChimneyPushParticle(level, x, y, z, level.getRandom(), type.leadOnly, type instanceof ChimneyPushParticleData.Small,
+                spriteSet.get(idx, textureCount - 1));
             particle.age = level.getRandom().nextInt(5);
             if (idx == 0) {
                 particle.rCol = type.red;

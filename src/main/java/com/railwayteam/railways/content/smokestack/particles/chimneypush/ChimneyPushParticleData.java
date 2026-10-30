@@ -18,21 +18,22 @@
 
 package com.railwayteam.railways.content.smokestack.particles.chimneypush;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.railwayteam.railways.registry.CRParticleTypes;
 import com.railwayteam.railways.port.create.foundation.particle.ICustomParticleDataWithSprite;
-import net.minecraft.client.particle.ParticleEngine;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.DyeColor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Locale;
 
 public abstract class ChimneyPushParticleData<T extends ChimneyPushParticleData<T>> implements ParticleOptions, ICustomParticleDataWithSprite<T> {
 	
@@ -42,8 +43,8 @@ public abstract class ChimneyPushParticleData<T extends ChimneyPushParticleData<
 		T create(boolean stationary, float red, float green, float blue);
 	}
 
-	protected static <T extends ChimneyPushParticleData<T>> Codec<T> makeCodec(Constructor<T> constructor) {
-		return RecordCodecBuilder.create(i -> i
+	protected static <T extends ChimneyPushParticleData<T>> MapCodec<T> makeCodec(Constructor<T> constructor) {
+		return RecordCodecBuilder.mapCodec(i -> i
 			.group(Codec.BOOL.fieldOf("leadOnly")
 					.forGetter(p -> p.leadOnly),
 				Codec.FLOAT.fieldOf("red") // -1, -1, -1 indicates un-dyed
@@ -55,27 +56,14 @@ public abstract class ChimneyPushParticleData<T extends ChimneyPushParticleData<
 			.apply(i, constructor::create));
 	}
 
-	@SuppressWarnings("deprecation")
-	protected static <T extends ChimneyPushParticleData<T>> Deserializer<T> makeDeserializer(Constructor<T> constructor) {
-		return new Deserializer<>() {
-            public @NotNull T fromCommand(@NotNull ParticleType<T> particleTypeIn,
-										  @NotNull StringReader reader) throws CommandSyntaxException {
-                reader.expect(' ');
-                boolean stationary = reader.readBoolean();
-                reader.expect(' ');
-                float red = reader.readFloat();
-                reader.expect(' ');
-                float green = reader.readFloat();
-                reader.expect(' ');
-                float blue = reader.readFloat();
-                return constructor.create(stationary, red, green, blue);
-            }
-
-            public @NotNull T fromNetwork(@NotNull ParticleType<T> particleTypeIn,
-										  @NotNull FriendlyByteBuf buffer) {
-                return constructor.create(buffer.readBoolean(), buffer.readFloat(), buffer.readFloat(), buffer.readFloat());
-            }
-        };
+	// PORT-NOTE(26.1): replaces the 1.20 Deserializer/writeToNetwork pair (commands use the codec now).
+	protected static <T extends ChimneyPushParticleData<T>> StreamCodec<RegistryFriendlyByteBuf, T> makeStreamCodec(Constructor<T> constructor) {
+		return StreamCodec.composite(
+			ByteBufCodecs.BOOL, p -> p.leadOnly,
+			ByteBufCodecs.FLOAT, p -> p.red,
+			ByteBufCodecs.FLOAT, p -> p.green,
+			ByteBufCodecs.FLOAT, p -> p.blue,
+			constructor::create);
 	}
 	
 	boolean leadOnly;
@@ -114,27 +102,13 @@ public abstract class ChimneyPushParticleData<T extends ChimneyPushParticleData<
 	}
 
 	@Override
-	public void writeToNetwork(FriendlyByteBuf buffer) {
-		buffer.writeBoolean(leadOnly);
-		buffer.writeFloat(red);
-		buffer.writeFloat(green);
-		buffer.writeFloat(blue);
+	public abstract MapCodec<T> getCodec(ParticleType<T> type);
+
+	@Environment(EnvType.CLIENT)
+	@Override
+	public ParticleProviderRegistry.PendingParticleProvider<T> getMetaFactory() {
+		return ChimneyPushParticle.Factory::new;
 	}
-
-	@Override
-	public @NotNull String writeToString() {
-		return String.format(Locale.ROOT, "%s %b %f %f %f", getParticleType().parameter(), leadOnly, red, green, blue);
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public abstract Deserializer<T> getDeserializer();
-
-	@Override
-	public abstract Codec<T> getCodec(ParticleType<T> type);
-
-	@Override
-	public abstract ParticleEngine.SpriteParticleRegistration<T> getMetaFactory();
 
 	public abstract float getQuadSize();
 
@@ -160,10 +134,9 @@ public abstract class ChimneyPushParticleData<T extends ChimneyPushParticleData<
 	}
 
 	public static class Small extends ChimneyPushParticleData<Small> {
-		public static final Codec<Small> CODEC = makeCodec(Small::new);
+		public static final MapCodec<Small> CODEC = makeCodec(Small::new);
 
-		@SuppressWarnings("deprecation")
-		public static final Deserializer<Small> DESERIALIZER = makeDeserializer(Small::new);
+		public static final StreamCodec<RegistryFriendlyByteBuf, Small> STREAM_CODEC = makeStreamCodec(Small::new);
 
 		public Small() {}
 
@@ -188,20 +161,14 @@ public abstract class ChimneyPushParticleData<T extends ChimneyPushParticleData<
 			return CRParticleTypes.CHIMNEYPUSH_SMALL;
 		}
 
-		@SuppressWarnings("deprecation")
 		@Override
-		public Deserializer<Small> getDeserializer() {
-			return DESERIALIZER;
+		public StreamCodec<? super RegistryFriendlyByteBuf, Small> getStreamCodec() {
+			return STREAM_CODEC;
 		}
 
 		@Override
-		public Codec<Small> getCodec(ParticleType<Small> type) {
+		public MapCodec<Small> getCodec(ParticleType<Small> type) {
 			return CODEC;
-		}
-
-		@Override
-		public ParticleEngine.SpriteParticleRegistration<Small> getMetaFactory() {
-			return ChimneyPushParticle.Factory::new;
 		}
 
 		@Override
@@ -211,10 +178,9 @@ public abstract class ChimneyPushParticleData<T extends ChimneyPushParticleData<
 	}
 
 	public static class Medium extends ChimneyPushParticleData<Medium> {
-		public static final Codec<Medium> CODEC = makeCodec(Medium::new);
+		public static final MapCodec<Medium> CODEC = makeCodec(Medium::new);
 
-		@SuppressWarnings("deprecation")
-		public static final Deserializer<Medium> DESERIALIZER = makeDeserializer(Medium::new);
+		public static final StreamCodec<RegistryFriendlyByteBuf, Medium> STREAM_CODEC = makeStreamCodec(Medium::new);
 
 		public Medium() {}
 
@@ -239,20 +205,14 @@ public abstract class ChimneyPushParticleData<T extends ChimneyPushParticleData<
 			return CRParticleTypes.CHIMNEYPUSH_MEDIUM;
 		}
 
-		@SuppressWarnings("deprecation")
 		@Override
-		public Deserializer<Medium> getDeserializer() {
-			return DESERIALIZER;
+		public StreamCodec<? super RegistryFriendlyByteBuf, Medium> getStreamCodec() {
+			return STREAM_CODEC;
 		}
 
 		@Override
-		public Codec<Medium> getCodec(ParticleType<Medium> type) {
+		public MapCodec<Medium> getCodec(ParticleType<Medium> type) {
 			return CODEC;
-		}
-
-		@Override
-		public ParticleEngine.SpriteParticleRegistration<Medium> getMetaFactory() {
-			return ChimneyPushParticle.Factory::new;
 		}
 
 		@Override
