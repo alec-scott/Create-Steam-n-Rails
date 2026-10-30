@@ -196,7 +196,7 @@ public class HandcarItem extends BlockItem implements IDeployAnywayBlockItem {
             return false;
 
         CRPackets.PACKETS.send(new CurvedTrackHandcarPlacementPacket(be.getBlockPos(), loc.curveTarget(),
-            loc.segment(), front, player.getInventory().selected));
+            loc.segment(), front, player.getInventory().getSelectedSlot()));
         return true;
     }
 

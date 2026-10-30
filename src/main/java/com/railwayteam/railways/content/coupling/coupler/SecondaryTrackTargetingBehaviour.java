@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.coupling.coupler;
 
+import com.railwayteam.railways.port.minecraft.NbtCompat;
+
 import net.minecraft.core.UUIDUtil;
 
 import net.minecraft.world.level.storage.ValueOutput;
@@ -57,7 +59,7 @@ public class SecondaryTrackTargetingBehaviour<T extends TrackEdgePoint> extends 
     public void write(ValueOutput nbt, boolean clientPacket) {
         AccessorTrackTargetingBehavior accessor = (AccessorTrackTargetingBehavior) this;
         nbt.store("SecondaryId", UUIDUtil.CODEC, accessor.getId());
-        nbt.put("SecondaryTargetTrack", NbtUtils.writeBlockPos(accessor.getTargetTrack()));
+        nbt.put("SecondaryTargetTrack", NbtCompat.writeBlockPos(accessor.getTargetTrack()));
         nbt.putBoolean("SecondaryOrtho", accessor.isOrthogonal());
         nbt.putBoolean("SecondaryTargetDirection", accessor.getTargetDirection() == Direction.AxisDirection.POSITIVE);
         if (accessor.getRotatedDirection() != null)
@@ -69,7 +71,7 @@ public class SecondaryTrackTargetingBehaviour<T extends TrackEdgePoint> extends 
         if (accessor.getTargetBezier() != null) {
             CompoundTag bezierNbt = new CompoundTag();
             bezierNbt.putInt("Segment", accessor.getTargetBezier().segment());
-            bezierNbt.put("Key", NbtUtils.writeBlockPos(accessor.getTargetBezier().curveTarget()
+            bezierNbt.put("Key", NbtCompat.writeBlockPos(accessor.getTargetBezier().curveTarget()
                 .subtract(getPos())));
             nbt.put("SecondaryBezier", bezierNbt);
         }
@@ -79,7 +81,7 @@ public class SecondaryTrackTargetingBehaviour<T extends TrackEdgePoint> extends 
     public void read(ValueInput nbt, boolean clientPacket) {
         AccessorTrackTargetingBehavior accessor = (AccessorTrackTargetingBehavior) this;
         accessor.setId(nbt.contains("SecondaryId") ? nbt.read("SecondaryId", UUIDUtil.CODEC).orElseThrow() : UUID.randomUUID());
-        accessor.setTargetTrack(NbtUtils.readBlockPos(nbt.childOrEmpty("SecondaryTargetTrack")));
+        accessor.setTargetTrack(NbtCompat.readBlockPos(nbt.childOrEmpty("SecondaryTargetTrack")));
         accessor.setTargetDirection(nbt.getBooleanOr("SecondaryTargetDirection", false) ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
         accessor.setOrthogonal(nbt.getBooleanOr("SecondaryOrtho", false));
         if (nbt.contains("SecondaryPrevAxis"))
@@ -92,9 +94,9 @@ public class SecondaryTrackTargetingBehaviour<T extends TrackEdgePoint> extends 
             accessor.setEdgePoint(null);
         if (nbt.contains("SecondaryBezier")) {
             CompoundTag bezierNbt = nbt.childOrEmpty("SecondaryBezier");
-            BlockPos key = NbtUtils.readBlockPos(bezierNbt.getCompound("Key"));
+            BlockPos key = NbtCompat.readBlockPos(bezierNbt.getCompoundOrEmpty("Key"));
             accessor.setTargetBezier(new BezierTrackPointLocation(bezierNbt.contains("FromStack") ? key : key.offset(getPos()),
-                bezierNbt.getInt("Segment")));
+                bezierNbt.getIntOr("Segment", 0)));
         }
     }
 }

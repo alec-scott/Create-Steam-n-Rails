@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin;
 
+import com.railwayteam.railways.port.minecraft.NbtCompat;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -253,7 +255,7 @@ public abstract class MixinTrain implements IOccupiedCouplers, IIndexedSchedule,
         CompoundTag tag = cir.getReturnValue();
         tag.put("OccupiedCouplers", NBTHelper.writeCompoundList(railways$occupiedCouplers, uid -> {
             CompoundTag compoundTag = new CompoundTag();
-            compoundTag.putUUID("Id", uid);
+            NbtCompat.putUUID(compoundTag, "Id", uid);
             return compoundTag;
         }));
         tag.putInt("ScheduleHolderIndex", railways$index);
@@ -267,13 +269,13 @@ public abstract class MixinTrain implements IOccupiedCouplers, IIndexedSchedule,
     private static void readOccupiedCouplers(CompoundTag tag, Map<UUID, TrackGraph> trackNetworks,
                                              DimensionPalette dimensions, CallbackInfoReturnable<Train> cir,
                                              @Local Train train) {
-        NBTHelper.iterateCompoundList(tag.getList("OccupiedCouplers", Tag.TAG_COMPOUND),
-            c -> ((IOccupiedCouplers) train).railways$getOccupiedCouplers().add(c.getUUID("Id")));
-        ((IIndexedSchedule) train).railways$setIndex(tag.getInt("ScheduleHolderIndex"));
-        ((IHandcarTrain) train).railways$setHandcar(tag.getBoolean("IsHandcar"));
+        NBTHelper.iterateCompoundList(tag.getListOrEmpty("OccupiedCouplers"),
+            c -> ((IOccupiedCouplers) train).railways$getOccupiedCouplers().add(NbtCompat.getUUID(c, "Id")));
+        ((IIndexedSchedule) train).railways$setIndex(tag.getIntOr("ScheduleHolderIndex", 0));
+        ((IHandcarTrain) train).railways$setHandcar(tag.getBooleanOr("IsHandcar", false));
 
-        if (tag.contains("ShadowKey", Tag.TAG_STRING)) {
-            ((IShadowTrain) train).railways$setShadow(Identifier.parse(tag.getString("ShadowKey")));
+        if (tag.contains("ShadowKey")) {
+            ((IShadowTrain) train).railways$setShadow(Identifier.parse(tag.getStringOr("ShadowKey", "")));
         } else {
             ((IShadowTrain) train).railways$clearShadow();
         }

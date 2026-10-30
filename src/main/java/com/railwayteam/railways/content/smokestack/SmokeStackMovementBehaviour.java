@@ -169,7 +169,7 @@ public class SmokeStackMovementBehaviour extends MovementBehaviour {
 
         data.offset = Vec3.ZERO;
         if (context.blockEntityData != null) {
-            int height = context.blockEntityData.getInt("height");
+            int height = context.blockEntityData.getIntOr("height", 0);
             data.offset = context.rotation.apply(new Vec3(0, SmokeStackBlockEntity.getHeightOffset(height), 0));
         }
 
@@ -216,7 +216,7 @@ public class SmokeStackMovementBehaviour extends MovementBehaviour {
         }
 
         // Mostly copied from CampfireBlock and CampfireBlockEntity
-        RandomSource random = context.world.random;
+        RandomSource random = context.world.getRandom();
         SmokeEmissionParams emissionParams = ((SmokeStackBlock) context.state.getBlock()).emissionParams;
         double speedModifierTarget = 5 * (0.5+maxModifier);
         speedMultiplierChaser.chase(speedModifierTarget, 0.4, LerpedFloat.Chaser.LINEAR);
@@ -225,11 +225,11 @@ public class SmokeStackMovementBehaviour extends MovementBehaviour {
         DyeColor color = null;
         boolean isSoul = false;
         if (context.blockEntityData != null) {
-            if (context.blockEntityData.contains("color", Tag.TAG_INT)) {
-                int colorOrdinal = context.blockEntityData.getInt("color");
+            if (context.blockEntityData.contains("color")) {
+                int colorOrdinal = context.blockEntityData.getIntOr("color", 0);
                 color = DyeColor.byId(colorOrdinal);
             }
-            isSoul = context.blockEntityData.getBoolean("isSoul");
+            isSoul = context.blockEntityData.getBooleanOr("isSoul", false);
         }
 
         // chimney push

@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.ponder.scenes;
 
+import net.minecraft.resources.Identifier;
+
 import net.minecraft.world.item.ItemStack;
 
 import com.zurrtum.create.AllItems;
@@ -126,7 +128,7 @@ public class DoorScenes {
             .pointAt(blockSurface)
             .placeNearTarget()
             .attachKeyFrame()
-            .sharedText(Create.asResource("behaviour_modify_value_panel"));
+            .sharedText(Identifier.fromNamespaceAndPath("create", "behaviour_modify_value_panel"));
         scene.idle(70);
 
         Vec3 upperDoorSurface = util.vector().blockSurface(doorTopPos, Direction.NORTH);

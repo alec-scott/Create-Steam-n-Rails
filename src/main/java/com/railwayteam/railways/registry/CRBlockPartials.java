@@ -548,7 +548,7 @@ public class CRBlockPartials {
     );
 
     private static PartialModel createBlock(String path) {
-        return PartialModel.of(Create.asResource("block/" + path));
+        return PartialModel.of(Identifier.fromNamespaceAndPath("create", "block/" + path));
     }
 
     private static PartialModel block(String path) {

@@ -82,7 +82,7 @@ public class ConductorSecondaryHeadLayer<T extends ConductorEntity, M extends En
             CompoundTag compoundTag;
             matrixStack.scale(1.1875f, -1.1875f, -1.1875f);
             GameProfile gameProfile = null;
-            if (itemStack.hasTag() && (compoundTag = itemStack.getTag()).contains("SkullOwner", 10)) {
+            if (itemStack.hasTag() && (compoundTag = itemStack.getTag()).contains("SkullOwner")) {
                 gameProfile = NbtUtils.readGameProfile(compoundTag.getCompound("SkullOwner"));
             }
             matrixStack.translate(-0.5, 0.0, -0.5);

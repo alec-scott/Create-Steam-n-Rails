@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin;
 
+import com.railwayteam.railways.port.minecraft.NbtCompat;
+
 import com.railwayteam.railways.config.CRConfigs;
 import com.railwayteam.railways.content.conductor.ConductorEntity;
 import com.railwayteam.railways.mixin_interfaces.ICarriageConductors;
@@ -78,15 +80,15 @@ public abstract class MixinStationBlock {
                 GlobalStation station = stationBe.getStation();
                 if (station != null && station.getPresentTrain() == null) {
                     CompoundTag stackTag = itemInHand.getTag();
-                    if (stackTag == null || !stackTag.hasUUID("SelectedTrain") || !stackTag.hasUUID("SelectedConductor")) {
+                    if (stackTag == null || !NbtCompat.hasUUID(stackTag, "SelectedTrain") || !NbtCompat.hasUUID(stackTag, "SelectedConductor")) {
                         cir.setReturnValue(InteractionResult.FAIL);
                         return;
                     }
                     BlockPos pos = stationBe.edgePoint.getPos();
                     Level level = pPlayer.level();
 
-                    UUID trainId = stackTag.getUUID("SelectedTrain");
-                    UUID conductorId = stackTag.getUUID("SelectedConductor");
+                    UUID trainId = NbtCompat.getUUID(stackTag, "SelectedTrain");
+                    UUID conductorId = NbtCompat.getUUID(stackTag, "SelectedConductor");
                     Train train = Create.RAILWAYS.trains.get(trainId);
                     if (!Create.RAILWAYS.trains.containsKey(trainId))
                         return;
@@ -105,7 +107,7 @@ public abstract class MixinStationBlock {
                     if (!foundConductor)
                         return;
 
-                    stackTag.put("SelectedPos", NbtUtils.writeBlockPos(pos));
+                    stackTag.put("SelectedPos", NbtCompat.writeBlockPos(pos));
                     stackTag.remove("Bezier");
                     itemInHand.setTag(stackTag);
 
@@ -120,9 +122,9 @@ public abstract class MixinStationBlock {
                         if (!scheduleStack.isEmpty()) {
                             for (CompoundTag passengerTag : ((AccessorCarriage) conductorCarriage).getSerialisedPassengers().values()) {
                                 if (passengerTag.contains("PlayerPassenger")) continue;
-                                if (passengerTag.contains("id") && CREntities.CONDUCTOR.getId().equals(Identifier.parse(passengerTag.getString("id")))) {
+                                if (passengerTag.contains("id") && CREntities.CONDUCTOR.getId().equals(Identifier.parse(passengerTag.getStringOr("id", "")))) {
                                     // It is a conductor
-                                    if (passengerTag.hasUUID("UUID") && passengerTag.getUUID("UUID").equals(conductorId)) {
+                                    if (NbtCompat.hasUUID(passengerTag, "UUID") && NbtCompat.getUUID(passengerTag, "UUID").equals(conductorId)) {
                                         // It is the targeted conductor
                                         // Place the schedule in the conductor
                                         ListTag schedulesList;
@@ -130,7 +132,7 @@ public abstract class MixinStationBlock {
                                             schedulesList = new ListTag();
                                             passengerTag.put("heldSchedules", schedulesList);
                                         } else {
-                                            schedulesList = passengerTag.getList("heldSchedules", Tag.TAG_COMPOUND);
+                                            schedulesList = passengerTag.getListOrEmpty("heldSchedules");
                                         }
                                         schedulesList.add(scheduleStack.save(new CompoundTag()));
                                         scheduleStack.setCount(0);
@@ -184,8 +186,8 @@ public abstract class MixinStationBlock {
                                 .forEach(p -> {
                                     if (p instanceof ConductorEntity conductor && !found.get()) {
                                         CompoundTag stackTag = itemInHand.getOrCreateTag();
-                                        stackTag.putUUID("SelectedTrain", train.id);
-                                        stackTag.putUUID("SelectedConductor", conductor.getUUID());
+                                        NbtCompat.putUUID(stackTag, "SelectedTrain", train.id);
+                                        NbtCompat.putUUID(stackTag, "SelectedConductor", conductor.getUUID());
                                         stackTag.putByte("SelectedColor", conductor.getEntityData().get(ConductorEntity.COLOR));
                                         itemInHand.setTag(stackTag);
                                         pPlayer.setItemInHand(pHand, itemInHand);

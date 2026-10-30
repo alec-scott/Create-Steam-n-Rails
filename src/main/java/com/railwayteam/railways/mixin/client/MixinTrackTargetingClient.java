@@ -62,7 +62,7 @@ public abstract class MixinTrackTargetingClient {
         if (CustomTrackOverlayRendering.CUSTOM_OVERLAYS.containsKey(lastType)) {
             Minecraft mc = Minecraft.getInstance();
             BlockPos pos = lastHovered;
-            int light = LevelRenderer.getLightColor(mc.level, pos);
+            int light = LevelRenderer.getLightCoords(mc.level, pos);
             Direction.AxisDirection direction = lastDirection ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE;
 
             ms.pushPose();

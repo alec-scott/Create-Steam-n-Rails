@@ -101,7 +101,7 @@ public class FuelTankMountedStorage extends WrapperMountedFluidStorage<Handler> 
 	}
 
 	public static FuelTankMountedStorage fromLegacy(CompoundTag nbt) {
-		int capacity = nbt.getInt("Capacity");
+		int capacity = nbt.getIntOr("Capacity", 0);
 		FluidStack fluid = FluidStack.loadFluidStackFromNBT(nbt);
 		return new FuelTankMountedStorage(capacity, fluid);
 	}

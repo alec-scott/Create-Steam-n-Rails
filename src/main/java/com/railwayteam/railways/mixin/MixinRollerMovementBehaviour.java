@@ -59,7 +59,7 @@ public abstract class MixinRollerMovementBehaviour {
     @Inject(method = "triggerPaver", at = @At("HEAD"), cancellable = true)
     private void skipTracksAndPaveTracks(MovementContext context, BlockPos pos, CallbackInfo ci) {
         BlockState stateToPaveWith = getStateToPaveWith(context);
-        int mode = context.blockEntityData.getInt("ScrollValue");
+        int mode = context.blockEntityData.getIntOr("ScrollValue", 0);
         if (mode == 3) { // TRACK_REPLACE
             ci.cancel();
             TrackReplacePaver.pave(context, pos, stateToPaveWith, createHeightProfileForTracks(context));

@@ -84,17 +84,17 @@ public final class MultiRegistryCallback<A, B> {
         A a = getEntry(typeA, idA);
         B b = getEntry(typeB, idB);
         if (a != null) {
-            LOGGER.info("Found existing entry for {} in {}", idA, typeA.location());
+            LOGGER.info("Found existing entry for {} in {}", idA, typeA.identifier());
             storeA(a);
         } else {
-            LOGGER.info("Registering callback for {} in {}", idA, typeA.location());
+            LOGGER.info("Registering callback for {} in {}", idA, typeA.identifier());
             registrateA.addRegisterCallback(idA.getPath(), typeA, this::storeA);
         }
         if (b != null) {
-            LOGGER.info("Found existing entry for {} in {}", idB, typeB.location());
+            LOGGER.info("Found existing entry for {} in {}", idB, typeB.identifier());
             storeB(b);
         } else {
-            LOGGER.info("Registering callback for {} in {}", idB, typeB.location());
+            LOGGER.info("Registering callback for {} in {}", idB, typeB.identifier());
             registrateB.addRegisterCallback(idB.getPath(), typeB, this::storeB);
         }
     }

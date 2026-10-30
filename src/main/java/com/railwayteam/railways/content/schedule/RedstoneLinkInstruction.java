@@ -155,8 +155,8 @@ public class RedstoneLinkInstruction extends ScheduleInstruction {
 
     @Override
     protected void readAdditional(CompoundTag tag) {
-        if (tag.contains("Frequency", Tag.TAG_LIST))
-            freq = Couple.deserializeEach(tag.getList("Frequency", Tag.TAG_COMPOUND), c -> RedstoneLinkNetworkHandler.Frequency.of(ItemStack.of(c)));
+        if (tag.contains("Frequency"))
+            freq = Couple.deserializeEach(tag.getListOrEmpty("Frequency"), c -> RedstoneLinkNetworkHandler.Frequency.of(ItemStack.of(c)));
         else
             freq = Couple.create(() -> RedstoneLinkNetworkHandler.Frequency.EMPTY);
     }

@@ -51,7 +51,7 @@ public class MixinSandPaperItem {
         ItemStack stack = context.getItemInHand();
 
         target.repaint(PalettesColor.NETHERITE);
-        AllSoundEvents.SANDING_LONG.play(level, player, pos, 1, 1 + (level.random.nextFloat() * 0.5f - 1f) / 5f);
+        AllSoundEvents.SANDING_LONG.play(level, player, pos, 1, 1 + (level.getRandom().nextFloat() * 0.5f - 1f) / 5f);
         level.levelEvent(player, LevelEvent.PARTICLES_SCRAPE, pos, 0); // Spawn particles
 
         if (player != null)

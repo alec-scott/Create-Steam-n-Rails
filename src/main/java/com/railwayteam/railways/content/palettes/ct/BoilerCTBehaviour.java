@@ -42,7 +42,7 @@ public class BoilerCTBehaviour extends ConnectedTextureBehaviour.Base {
     }
 
     private boolean connectsTo(BlockAndTintGetter reader, BlockPos pos, BlockState state, Direction offset) {
-        BlockPos otherPos = pos.offset(offset.getNormal());
+        BlockPos otherPos = pos.offset(offset.getUnitVec3i());
         BlockState other = reader.getBlockState(otherPos);
 
         if (other.getBlock() != state.getBlock())

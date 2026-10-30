@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.conductor.whistle;
 
+import com.railwayteam.railways.port.minecraft.NbtCompat;
+
 import net.minecraft.world.item.component.TooltipDisplay;
 
 import java.util.function.Consumer;
@@ -107,9 +109,9 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
     public void appendHoverText(@NotNull ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, display, tooltip, flag);
         CompoundTag tag = stack.getTag();
-        if (tag != null && tag.hasUUID("SelectedTrain") && tag.hasUUID("SelectedConductor")) {
-            UUID trainId = tag.getUUID("SelectedTrain");
-            UUID conductorId = tag.getUUID("SelectedConductor");
+        if (tag != null && NbtCompat.hasUUID(tag, "SelectedTrain") && NbtCompat.hasUUID(tag, "SelectedConductor")) {
+            UUID trainId = NbtCompat.getUUID(tag, "SelectedTrain");
+            UUID conductorId = NbtCompat.getUUID(tag, "SelectedConductor");
             String trainName = "NOT FOUND";
             GlobalRailwayManager railways = Create.RAILWAYS.sided(level);
             if (railways != null && railways.trains.containsKey(trainId))
@@ -143,8 +145,8 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
             Train train = cce.getCarriage().train;
             if (train.owner == pPlayer.getUUID() || !CRConfigs.server().conductors.whistleRequiresOwning.get()) {
                 CompoundTag stackTag = pStack.getOrCreateTag();
-                stackTag.putUUID("SelectedTrain", train.id);
-                stackTag.putUUID("SelectedConductor", conductor.getUUID());
+                NbtCompat.putUUID(stackTag, "SelectedTrain", train.id);
+                NbtCompat.putUUID(stackTag, "SelectedConductor", conductor.getUUID());
                 stackTag.putByte("SelectedColor", conductor.getEntityData().get(ConductorEntity.COLOR));
                 pPlayer.sendOverlayMessage(Component.translatable("railways.whistle.set"));
                 pStack.setTag(stackTag);
@@ -168,7 +170,7 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
         Player player = pContext.getPlayer();
         CompoundTag stackTag = stack.getTag();
         if(stackTag == null) return InteractionResult.FAIL;
-        UUID trainId = stackTag.getUUID("SelectedTrain");
+        UUID trainId = NbtCompat.getUUID(stackTag, "SelectedTrain");
         Train train = Create.RAILWAYS.trains.get(trainId);
 
         if (player == null || train == null)
@@ -194,10 +196,10 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
 
             String stationName = "";
 
-            if (!stackTag.hasUUID("SelectedTrain") || !stackTag.hasUUID("SelectedConductor"))
+            if (!NbtCompat.hasUUID(stackTag, "SelectedTrain") || !NbtCompat.hasUUID(stackTag, "SelectedConductor"))
                 return fail(player, "not_bound");
 
-            UUID conductorId = stackTag.getUUID("SelectedConductor");
+            UUID conductorId = NbtCompat.getUUID(stackTag, "SelectedConductor");
 
 
             if (!Create.RAILWAYS.trains.containsKey(trainId))
@@ -223,7 +225,7 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
                 boolean front = track.getNearestTrackAxis(level, pos, state, lookAngle)
                         .getSecond() == Direction.AxisDirection.POSITIVE;
 
-                stackTag.put("SelectedPos", NbtUtils.writeBlockPos(pos));
+                stackTag.put("SelectedPos", NbtCompat.writeBlockPos(pos));
                 stackTag.putBoolean("SelectedDirection", front);
                 stackTag.remove("Bezier");
                 stack.setTag(stackTag);
@@ -269,10 +271,10 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
                 level.setBlock(placePos, placeState, 11);
                 CompoundTag teTag = new CompoundTag();
                 teTag.putString("Name", stationName);
-                teTag.putByte("SelectedColor", stackTag.getByte("SelectedColor"));
-                teTag.putBoolean("TargetDirection", stackTag.getBoolean("SelectedDirection"));
-                BlockPos selectedPos = NbtUtils.readBlockPos(stackTag.getCompound("SelectedPos"));
-                teTag.put("TargetTrack", NbtUtils.writeBlockPos(selectedPos.subtract(placePos)));
+                teTag.putByte("SelectedColor", stackTag.getByteOr("SelectedColor", (byte) 0));
+                teTag.putBoolean("TargetDirection", stackTag.getBooleanOr("SelectedDirection", false));
+                BlockPos selectedPos = NbtCompat.readBlockPos(stackTag.getCompoundOrEmpty("SelectedPos"));
+                teTag.put("TargetTrack", NbtCompat.writeBlockPos(selectedPos.subtract(placePos)));
                 stackTag.put("BlockEntityTag", teTag);
                 stack.setTag(stackTag);
 
@@ -301,9 +303,9 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
                 if (!scheduleStack.isEmpty()) {
                     for (CompoundTag passengerTag : ((AccessorCarriage) conductorCarriage).getSerialisedPassengers().values()) {
                         if (passengerTag.contains("PlayerPassenger")) continue;
-                        if (passengerTag.contains("id") && CREntities.CONDUCTOR.getId().equals(Identifier.parse(passengerTag.getString("id")))) {
+                        if (passengerTag.contains("id") && CREntities.CONDUCTOR.getId().equals(Identifier.parse(passengerTag.getStringOr("id", "")))) {
                             // It is a conductor
-                            if (passengerTag.hasUUID("UUID") && passengerTag.getUUID("UUID").equals(conductorId)) {
+                            if (NbtCompat.hasUUID(passengerTag, "UUID") && NbtCompat.getUUID(passengerTag, "UUID").equals(conductorId)) {
                                 // It is the targeted conductor
                                 // Place the schedule in the conductor
                                 ListTag schedulesList;
@@ -311,7 +313,7 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
                                     schedulesList = new ListTag();
                                     passengerTag.put("heldSchedules", schedulesList);
                                 } else {
-                                    schedulesList = passengerTag.getList("heldSchedules", Tag.TAG_COMPOUND);
+                                    schedulesList = passengerTag.getListOrEmpty("heldSchedules");
                                 }
                                 schedulesList.add(scheduleStack.save(new CompoundTag()));
                                 scheduleStack.setCount(0);
@@ -367,13 +369,13 @@ public class ConductorWhistleItem extends TrackTargetingBlockItem {
         if (isSelected && level instanceof ServerLevel serverLevel
             && (serverLevel.getGameTime() + entity.hashCode() + slotId) % CRConfigs.server().conductors.whistleRebindRate.get() == 0) {
             CompoundTag tag = stack.getTag();
-            if (tag != null && tag.hasUUID("SelectedTrain") && tag.hasUUID("SelectedConductor")) {
-                UUID trainId = tag.getUUID("SelectedTrain");
-                UUID conductorId = tag.getUUID("SelectedConductor");
+            if (tag != null && NbtCompat.hasUUID(tag, "SelectedTrain") && NbtCompat.hasUUID(tag, "SelectedConductor")) {
+                UUID trainId = NbtCompat.getUUID(tag, "SelectedTrain");
+                UUID conductorId = NbtCompat.getUUID(tag, "SelectedConductor");
 
                 if (serverLevel.getEntity(conductorId) instanceof ConductorEntity conductor) {
                     if (conductor.getVehicle() instanceof CarriageContraptionEntity cce && !trainId.equals(cce.trainId)) {
-                        tag.putUUID("SelectedTrain", cce.trainId);
+                        NbtCompat.putUUID(tag, "SelectedTrain", cce.trainId);
                     }
                 }
             }

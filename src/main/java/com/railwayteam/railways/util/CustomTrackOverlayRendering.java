@@ -104,7 +104,7 @@ public class CustomTrackOverlayRendering {
                 .translate(.5, 0, .5)
                 .scale(scale)
                 .translate(offsetToSide ? .5 : -.5, 0, -.5)
-                .light(LevelRenderer.getLightColor(level, pos))
+                .light(LevelRenderer.getLightCoords(level, pos))
                 .renderInto(ms, buffer.getBuffer(RenderType.cutoutMipped()));
 
         ms.popPose();

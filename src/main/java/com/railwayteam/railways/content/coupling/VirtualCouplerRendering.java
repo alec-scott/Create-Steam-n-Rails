@@ -45,7 +45,7 @@ public final class VirtualCouplerRendering {
         if (te.getBlockState().getBlock() instanceof AbstractBogeyBlock<?> bogeyBlock) {
             Vec3 anchor = bogeyBlock.getConnectorAnchorOffset(false).multiply(front ? -1 : 1, 1, front ? -1 : 1);
 //                .add(Vec3.atBottomCenterOf(te.getBlockPos()));
-            Vec3 anchor2 = anchor.add(Vec3.atLowerCornerOf(direction.getNormal()).scale(couplingDistance));
+            Vec3 anchor2 = anchor.add(Vec3.atLowerCornerOf(direction.getUnitVec3i()).scale(couplingDistance));
 
             double diffX = anchor2.x - anchor.x;
             double diffY = anchor2.y - anchor.y;

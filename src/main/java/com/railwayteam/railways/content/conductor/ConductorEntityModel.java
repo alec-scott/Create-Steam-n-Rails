@@ -84,7 +84,7 @@ public class ConductorEntityModel<T extends ConductorEntity> extends HumanoidMod
     boolean fallFlying = entity.visualBaseEntity != null && entity.visualBaseEntity.getFallFlyingTicks() > 4;
     boolean visuallySwimming = entity.visualBaseEntity != null && entity.visualBaseEntity.isVisuallySwimming();
     float swimAmount = entity.visualBaseModel != null ? entity.visualBaseModel.swimAmount : this.swimAmount;
-    this.head.xRot = fallFlying ? -0.7853982f : (swimAmount > 0.0f ? (visuallySwimming ? this.rotlerpRad(swimAmount, this.head.xRot, -0.7853982f) : this.rotlerpRad(swimAmount, this.head.xRot, headPitch * ((float)Math.PI / 180))) : headPitch * ((float)Math.PI / 180));
+    this.head.xRot = fallFlying ? -0.7853982f : (swimAmount > 0.0f ? (visuallySwimming ? Mth.rotLerpRad(swimAmount, this.head.xRot, -0.7853982f) : Mth.rotLerpRad(swimAmount, this.head.xRot, headPitch * ((float)Math.PI / 180))) : headPitch * ((float)Math.PI / 180));
     this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
 
     this.hat.xRot = (float) (this.head.xRot + (-10 * (Math.PI / 180)));
@@ -155,27 +155,27 @@ public class ConductorEntityModel<T extends ConductorEntity> extends HumanoidMod
       float h = swimAmount;
       float i = swimAmount;
       if (g < 14.0f) {
-        this.leftArm.xRot = this.rotlerpRad(i, this.leftArm.xRot, 0.0f);
+        this.leftArm.xRot = Mth.rotLerpRad(i, this.leftArm.xRot, 0.0f);
         this.rightArm.xRot = Mth.lerp(h, this.rightArm.xRot, 0.0f);
-        this.leftArm.yRot = this.rotlerpRad(i, this.leftArm.yRot, (float) Math.PI);
+        this.leftArm.yRot = Mth.rotLerpRad(i, this.leftArm.yRot, (float) Math.PI);
         this.rightArm.yRot = Mth.lerp(h, this.rightArm.yRot, (float) Math.PI);
-        this.leftArm.zRot = this.rotlerpRad(i, this.leftArm.zRot, (float) Math.PI + 1.8707964f * this.quadraticArmUpdate(g) / this.quadraticArmUpdate(14.0f));
+        this.leftArm.zRot = Mth.rotLerpRad(i, this.leftArm.zRot, (float) Math.PI + 1.8707964f * this.quadraticArmUpdate(g) / this.quadraticArmUpdate(14.0f));
         this.rightArm.zRot = Mth.lerp(h, this.rightArm.zRot, (float) Math.PI - 1.8707964f * this.quadraticArmUpdate(g) / this.quadraticArmUpdate(14.0f));
       } else if (g >= 14.0f && g < 22.0f) {
         j = (g - 14.0f) / 8.0f;
-        this.leftArm.xRot = this.rotlerpRad(i, this.leftArm.xRot, 1.5707964f * j);
+        this.leftArm.xRot = Mth.rotLerpRad(i, this.leftArm.xRot, 1.5707964f * j);
         this.rightArm.xRot = Mth.lerp(h, this.rightArm.xRot, 1.5707964f * j);
-        this.leftArm.yRot = this.rotlerpRad(i, this.leftArm.yRot, (float) Math.PI);
+        this.leftArm.yRot = Mth.rotLerpRad(i, this.leftArm.yRot, (float) Math.PI);
         this.rightArm.yRot = Mth.lerp(h, this.rightArm.yRot, (float) Math.PI);
-        this.leftArm.zRot = this.rotlerpRad(i, this.leftArm.zRot, 5.012389f - 1.8707964f * j);
+        this.leftArm.zRot = Mth.rotLerpRad(i, this.leftArm.zRot, 5.012389f - 1.8707964f * j);
         this.rightArm.zRot = Mth.lerp(h, this.rightArm.zRot, 1.2707963f + 1.8707964f * j);
       } else if (g >= 22.0f && g < 26.0f) {
         j = (g - 22.0f) / 4.0f;
-        this.leftArm.xRot = this.rotlerpRad(i, this.leftArm.xRot, 1.5707964f - 1.5707964f * j);
+        this.leftArm.xRot = Mth.rotLerpRad(i, this.leftArm.xRot, 1.5707964f - 1.5707964f * j);
         this.rightArm.xRot = Mth.lerp(h, this.rightArm.xRot, 1.5707964f - 1.5707964f * j);
-        this.leftArm.yRot = this.rotlerpRad(i, this.leftArm.yRot, (float) Math.PI);
+        this.leftArm.yRot = Mth.rotLerpRad(i, this.leftArm.yRot, (float) Math.PI);
         this.rightArm.yRot = Mth.lerp(h, this.rightArm.yRot, (float) Math.PI);
-        this.leftArm.zRot = this.rotlerpRad(i, this.leftArm.zRot, (float) Math.PI);
+        this.leftArm.zRot = Mth.rotLerpRad(i, this.leftArm.zRot, (float) Math.PI);
         this.rightArm.zRot = Mth.lerp(h, this.rightArm.zRot, (float) Math.PI);
       }
       this.leftLeg.xRot = Mth.lerp(swimAmount, this.leftLeg.xRot, 0.3f * Mth.cos(limbSwing * 0.33333334f + (float)Math.PI));

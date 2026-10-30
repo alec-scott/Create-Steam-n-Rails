@@ -75,7 +75,7 @@ public class PalettesDemoCommand {
                                 origin,
                                 origin,
                                 new StructurePlaceSettings().addProcessor(new LocometalSubstituteProcessor(palettesColor)),
-                                level.random,
+                                level.getRandom(),
                                 Block.UPDATE_CLIENTS
                             );
 

@@ -208,7 +208,7 @@ public abstract class MixinCarriageContraptionEntity extends OrientedContraption
                 if (leadingBogeyPos == null) {
                     leadingBogeyPos = info.getKey();
                 } else if (trailingBogeyPos == null) {
-                    if (normalize(info.getKey().subtract(leadingBogeyPos)).equals(cc.getAssemblyDirection().getNormal())) {
+                    if (normalize(info.getKey().subtract(leadingBogeyPos)).equals(cc.getAssemblyDirection().getUnitVec3i())) {
                         trailingBogeyPos = info.getKey();
                     } else {
                         trailingBogeyPos = leadingBogeyPos;

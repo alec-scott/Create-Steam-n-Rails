@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin.client;
 
+import com.railwayteam.railways.port.minecraft.NbtCompat;
+
 import com.railwayteam.railways.content.conductor.ConductorEntity;
 import com.railwayteam.railways.util.EntityUtils;
 import com.zurrtum.create.client.content.equipment.toolbox.ToolboxHandlerClient;
@@ -45,10 +47,10 @@ public class MixinToolboxHandlerClient {
     CompoundTag toolboxData = EntityUtils.getPersistentData(player).getCompound("CreateToolboxData");
     String slotKey = String.valueOf(slot);
 
-    CompoundTag data = toolboxData.getCompound(slotKey);
-    if (!data.hasUUID("EntityUUID"))
+    CompoundTag data = toolboxData.getCompoundOrEmpty(slotKey);
+    if (!NbtCompat.hasUUID(data, "EntityUUID"))
       return null;
-    UUID uuid = data.getUUID("EntityUUID");
+    UUID uuid = NbtCompat.getUUID(data, "EntityUUID");
     // can't do UUID lookup on clients...
     ConductorEntity conductor = null;
     for (ConductorEntity ce : ConductorEntity.WITH_TOOLBOXES.get(mc.level)) {
@@ -79,7 +81,7 @@ public class MixinToolboxHandlerClient {
   )
   @SuppressWarnings("DataFlowIssue")
   private static BlockPos railways$useConductorToolboxDistance(BlockPos pos) {
-    ConductorEntity conductor = railways$getConductorForSlot(Minecraft.getInstance().player.getInventory().selected);
+    ConductorEntity conductor = railways$getConductorForSlot(Minecraft.getInstance().player.getInventory().getSelectedSlot());
     railways$conductorForSelectedSlot = conductor;
     return conductor == null ? pos : conductor.blockPosition();
   }

@@ -52,7 +52,7 @@ public abstract class DataFixesInternals {
     @Contract(pure = true)
     @Range(from = 0, to = Integer.MAX_VALUE)
     public static int getModDataVersion(@NotNull CompoundTag compound) {
-        return compound.getInt("Railways_DataVersion");
+        return compound.getIntOr("Railways_DataVersion", 0);
     }
 
     @Contract(pure = true)

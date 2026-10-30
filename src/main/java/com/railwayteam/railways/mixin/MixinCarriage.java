@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin;
 
+import com.railwayteam.railways.port.minecraft.NbtCompat;
+
 import com.railwayteam.railways.port.create.track.TrackMaterialData;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -128,7 +130,7 @@ public abstract class MixinCarriage implements ICarriageConductors, ICarriageBuf
         ListTag listTag = new ListTag();
         for (UUID uuid : railways$controllingConductors) {
             CompoundTag uuidTag = new CompoundTag();
-            uuidTag.putUUID("UUID", uuid);
+            NbtCompat.putUUID(uuidTag, "UUID", uuid);
             listTag.add(uuidTag);
         }
         tag.put("ControllingConductors", listTag);
@@ -144,20 +146,20 @@ public abstract class MixinCarriage implements ICarriageConductors, ICarriageBuf
         Carriage carriage = cir.getReturnValue();
         List<UUID> controllingConductors = ((ICarriageConductors) carriage).railways$getControllingConductors();
         controllingConductors.clear();
-        if (tag.contains("ControllingConductors", Tag.TAG_LIST)) {
-            ListTag listTag = tag.getList("ControllingConductors", Tag.TAG_COMPOUND);
+        if (tag.contains("ControllingConductors")) {
+            ListTag listTag = tag.getListOrEmpty("ControllingConductors");
             for (Tag item : listTag) {
-                if (item instanceof CompoundTag uuidTag && uuidTag.hasUUID("UUID")) {
-                    controllingConductors.add(uuidTag.getUUID("UUID"));
+                if (item instanceof CompoundTag uuidTag && NbtCompat.hasUUID(uuidTag, "UUID")) {
+                    controllingConductors.add(NbtCompat.getUUID(uuidTag, "UUID"));
                 }
             }
         }
 
-        if (tag.contains("LeadingBufferDistance", Tag.TAG_INT))
-            ((ICarriageBufferDistanceTracker) carriage).railways$setLeadingDistance(tag.getInt("LeadingBufferDistance"));
+        if (tag.contains("LeadingBufferDistance"))
+            ((ICarriageBufferDistanceTracker) carriage).railways$setLeadingDistance(tag.getIntOr("LeadingBufferDistance", 0));
 
-        if (tag.contains("TrailingBufferDistance", Tag.TAG_INT))
-            ((ICarriageBufferDistanceTracker) carriage).railways$setTrailingDistance(tag.getInt("TrailingBufferDistance"));
+        if (tag.contains("TrailingBufferDistance"))
+            ((ICarriageBufferDistanceTracker) carriage).railways$setTrailingDistance(tag.getIntOr("TrailingBufferDistance", 0));
     }
 
     @Inject(method = "travel", at = @At("HEAD"))

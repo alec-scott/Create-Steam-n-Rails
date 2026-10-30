@@ -117,8 +117,8 @@ public class BogeyMenuHandlerClient {
             if (tag == null)
                 return;
 
-            if (tag.contains("Favorites", Tag.TAG_LIST)) {
-                ListTag favoritesList = tag.getList("Favorites", Tag.TAG_STRING);
+            if (tag.contains("Favorites")) {
+                ListTag favoritesList = tag.getListOrEmpty("Favorites");
                 if (favorites == null)
                     favorites = new ArrayList<>();
                 favorites.clear();

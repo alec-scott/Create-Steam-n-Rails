@@ -95,7 +95,7 @@ public abstract class MixinRadialToolboxMenu extends AbstractSimiScreen {
 		if (!(selectedBox instanceof MountedToolbox mounted))
 			return;
 		int selected = (scrollMode ? scrollSlot : hoveredSlot);
-		int hotbarSlot = minecraft.player.getInventory().selected;
+		int hotbarSlot = minecraft.player.getInventory().getSelectedSlot();
 		CRPackets.PACKETS.send(new MountedToolboxEquipPacket(mounted.getParent(), selected, hotbarSlot));
 		// cancel is safe
 		// for first, returns afterwards anyway
@@ -117,7 +117,7 @@ public abstract class MixinRadialToolboxMenu extends AbstractSimiScreen {
 		if (!(selectedBox instanceof MountedToolbox mounted))
 			return;
 		int selected = (scrollMode ? scrollSlot : hoveredSlot);
-		int hotbarSlot = minecraft.player.getInventory().selected;
+		int hotbarSlot = minecraft.player.getInventory().getSelectedSlot();
 		CRPackets.PACKETS.send(new MountedToolboxEquipPacket(mounted.getParent(), selected, hotbarSlot));
 		// cancel is safe, sets state and returns true, replicated here
 		state = State.SELECT_BOX;

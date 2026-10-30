@@ -41,7 +41,7 @@ public interface TrackGenTemplate {
             }
 
             if (material == CRTrackMaterials.NARROW_GAUGE_ANDESITE || material == CRTrackMaterials.WIDE_GAUGE_ANDESITE) {
-                return Create.asResource("block/" + key.getPath());
+                return Identifier.fromNamespaceAndPath("create", "block/" + key.getPath());
             }
 
             String resName;
@@ -65,7 +65,7 @@ public interface TrackGenTemplate {
             } else if (TrackMaterialData.of(material).trackType == CRTrackMaterials.CRTrackType.WIDE_GAUGE) {
                 prefix = Railways.asResource("block/wide_gauge_base/");
             } else {
-                prefix = Create.asResource("block/track/");
+                prefix = Identifier.fromNamespaceAndPath("create", "block/track/");
             }
 
             return prefix.withSuffix(model);

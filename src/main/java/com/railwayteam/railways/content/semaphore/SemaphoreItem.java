@@ -49,7 +49,7 @@ public class SemaphoreItem extends BlockItem {
         BlockPos pos = pContext.getClickedPos();
         if(!pContext.replacingClickedOnBlock())
         {
-            pos = pos.offset(pContext.getClickedFace().getOpposite().getNormal());
+            pos = pos.offset(pContext.getClickedFace().getOpposite().getUnitVec3i());
         }
         BlockState state = world.getBlockState(pos);
         double pHitDistance = EntityUtils.getReachDistance(player);

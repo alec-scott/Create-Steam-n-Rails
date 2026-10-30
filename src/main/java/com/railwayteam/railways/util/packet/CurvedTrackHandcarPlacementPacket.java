@@ -76,7 +76,7 @@ public class CurvedTrackHandcarPlacementPacket implements C2SPacket {
     }
 
     protected void actuallyHandle(ServerPlayer player, TrackBlockEntity be) {
-        if (player.getInventory().selected != slot)
+        if (player.getInventory().getSelectedSlot() != slot)
             return;
         ItemStack stack = player.getInventory().getItem(slot);
         if (!(stack.getItem() instanceof HandcarItem handcarItem))

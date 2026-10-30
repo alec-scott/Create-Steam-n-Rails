@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.ponder.scenes;
 
+import com.railwayteam.railways.port.minecraft.NbtCompat;
+
 import net.minecraft.world.item.ItemStack;
 
 import com.railwayteam.railways.content.coupling.coupler.TrackCouplerBlock;
@@ -1014,7 +1016,7 @@ public class TrainScenes {
 
     // Coupler Ponder only code
     public static void movePlate(SceneBuilder scene, SceneBuildingUtil util, BlockPos couplerPos, BlockPos plate, int idleTicks) {
-        scene.world().modifyBlockEntityNBT(util.select().position(couplerPos), TrackCouplerBlockEntity.class, nbt -> nbt.put("SecondaryTargetTrack", NbtUtils.writeBlockPos(plate)));
+        scene.world().modifyBlockEntityNBT(util.select().position(couplerPos), TrackCouplerBlockEntity.class, nbt -> nbt.put("SecondaryTargetTrack", NbtCompat.writeBlockPos(plate)));
         scene.idle(idleTicks);
     }
 

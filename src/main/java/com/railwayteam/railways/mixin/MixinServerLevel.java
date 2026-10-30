@@ -75,7 +75,7 @@ public class MixinServerLevel {
         if (!(instance.getBlockState(pos).getBlock() instanceof TrackBlock))
             return instance.setBlockAndUpdate(pos, state);
 
-        if (instance.getBlockEntity(pos) instanceof TrackBlockEntity be && instance.random.nextInt(2) == 0) {
+        if (instance.getBlockEntity(pos) instanceof TrackBlockEntity be && instance.getRandom().nextInt(2) == 0) {
             for (BezierConnection bc : be.getConnections().values()) {
                 IHasTrackCasing hasCasing = ((IHasTrackCasing) bc);
                 if (hasCasing.railways$getTrackCasing() == null) {
@@ -94,7 +94,7 @@ public class MixinServerLevel {
                 be.notifyUpdate();
             return true;
         } else if (existingCasing == Blocks.SNOW && instance.getGameRules().getInt(GameRules.RULE_SNOW_ACCUMULATION_HEIGHT) >= 3) {
-            if (IHasTrackCasing.isAlternate(instance, pos) && instance.random.nextInt(4) == 0) {
+            if (IHasTrackCasing.isAlternate(instance, pos) && instance.getRandom().nextInt(4) == 0) {
                 IHasTrackCasing.setAlternateModel(instance, pos, false);
                 if (instance.getBlockEntity(pos) instanceof TrackBlockEntity be)
                     be.notifyUpdate();

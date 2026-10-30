@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.conductor;
 
+import com.railwayteam.railways.port.minecraft.NbtCompat;
+
 import net.minecraft.world.level.storage.ValueOutput;
 
 import net.minecraft.world.level.storage.ValueInput;
@@ -1513,7 +1515,7 @@ public class ConductorEntity extends AbstractGolem {
   @Override
   public void addAdditionalSaveData(ValueOutput nbt) {
     super.addAdditionalSaveData(nbt);
-    nbt.put("target", NbtUtils.writeBlockPos(getEntityData().get(BLOCK)));
+    nbt.put("target", NbtCompat.writeBlockPos(getEntityData().get(BLOCK)));
     nbt.putByte("color", getEntityData().get(COLOR));
     if (toolbox != null) {
       CompoundTag toolboxTag = new CompoundTag();
@@ -1543,7 +1545,7 @@ public class ConductorEntity extends AbstractGolem {
       getEntityData().set(COLOR, nbt.getByteOr("color", (byte) 0));
     }
     if (nbt.contains("target", Tag.TAG_COMPOUND)) {
-      getEntityData().set(BLOCK, NbtUtils.readBlockPos(nbt.childOrEmpty("target")));
+      getEntityData().set(BLOCK, NbtCompat.readBlockPos(nbt.childOrEmpty("target")));
     }
     if (nbt.contains("toolboxHolder", Tag.TAG_COMPOUND)) {
       setToolbox(MountedToolbox.read(this, nbt.childOrEmpty("toolboxHolder")));

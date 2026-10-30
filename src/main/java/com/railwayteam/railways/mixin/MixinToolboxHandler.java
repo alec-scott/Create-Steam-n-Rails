@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin;
 
+import com.railwayteam.railways.port.minecraft.NbtCompat;
+
 import com.llamalad7.mixinextras.sugar.Local;
 import com.railwayteam.railways.content.conductor.ConductorEntity;
 import com.railwayteam.railways.content.conductor.toolbox.MountedToolbox;
@@ -71,9 +73,9 @@ public abstract class MixinToolboxHandler {
   private static void railways$connectConductorToolboxes(Entity entity, Level world, CallbackInfo ci,
                                                          @Local ServerPlayer player, @Local(ordinal = 0) CompoundTag compound, @Local(ordinal = 0) int i,
                                                          @Local String key, @Local(ordinal = 1) CompoundTag data, @Local(ordinal = 1) int slot) {
-    if (!data.hasUUID("EntityUUID") || !(world instanceof ServerLevel level))
+    if (!NbtCompat.hasUUID(data, "EntityUUID") || !(world instanceof ServerLevel level))
       return;
-    UUID uuid = data.getUUID("EntityUUID");
+    UUID uuid = NbtCompat.getUUID(data, "EntityUUID");
     Entity toolboxHolder = level.getEntity(uuid);
     if (toolboxHolder instanceof ConductorEntity conductor) {
       MountedToolbox toolbox = conductor.getToolbox();
@@ -100,10 +102,10 @@ public abstract class MixinToolboxHandler {
       return be;
     CompoundTag toolboxData = EntityUtils.getPersistentData(player).getCompound("CreateToolboxData");
     String key = String.valueOf(hotbarSlot);
-    CompoundTag data = toolboxData.getCompound(key);
-    if (!data.hasUUID("EntityUUID"))
+    CompoundTag data = toolboxData.getCompoundOrEmpty(key);
+    if (!NbtCompat.hasUUID(data, "EntityUUID"))
       return be;
-    UUID uuid = data.getUUID("EntityUUID");
+    UUID uuid = NbtCompat.getUUID(data, "EntityUUID");
     Entity entity = level.getEntity(uuid);
     if (!(entity instanceof ConductorEntity conductor) || !conductor.isCarryingToolbox())
       return be;

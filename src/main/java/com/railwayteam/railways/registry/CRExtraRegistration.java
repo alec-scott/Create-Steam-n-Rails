@@ -69,21 +69,21 @@ public class CRExtraRegistration {
 
     private static void addSignalSource() {
         MultiRegistryCallback.create(
-            CREATE_REGISTRATE, Registries.BLOCK_ENTITY_TYPE, Create.asResource("track_signal"),
+            CREATE_REGISTRATE, Registries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath("create", "track_signal"),
             Railways.registrate(), CreateRegistries.DISPLAY_SOURCE, CRDisplaySources.SIGNAL.getId(),
             DisplaySource.BY_BLOCK_ENTITY::add
         );
     }
 
     private static void addVentAsCopycat() {
-        addRailwaysBlockToCreateBlockEntity(CRBlocks.CONDUCTOR_VENT, Create.asResource("copycat"));
+        addRailwaysBlockToCreateBlockEntity(CRBlocks.CONDUCTOR_VENT, Identifier.fromNamespaceAndPath("create", "copycat"));
     }
 
     private static void addPalettesBlocks() {
         for (PalettesColor color : PalettesColor.values()) {
-            addRailwaysBlockToCreateBlockEntity(CRPalettes.Styles.FLYWHEEL.get(color), Create.asResource("flywheel"));
-            addRailwaysBlockToCreateBlockEntity(CRPalettes.Styles.SLIDING_DOOR.get(color), Create.asResource("sliding_door"));
-            addRailwaysBlockToCreateBlockEntity(CRPalettes.Styles.FOLDING_DOOR.get(color), Create.asResource("sliding_door"));
+            addRailwaysBlockToCreateBlockEntity(CRPalettes.Styles.FLYWHEEL.get(color), Identifier.fromNamespaceAndPath("create", "flywheel"));
+            addRailwaysBlockToCreateBlockEntity(CRPalettes.Styles.SLIDING_DOOR.get(color), Identifier.fromNamespaceAndPath("create", "sliding_door"));
+            addRailwaysBlockToCreateBlockEntity(CRPalettes.Styles.FOLDING_DOOR.get(color), Identifier.fromNamespaceAndPath("create", "sliding_door"));
         }
     }
 

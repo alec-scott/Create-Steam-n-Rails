@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.conductor.remote_lens;
 
+import com.railwayteam.railways.port.minecraft.NbtCompat;
+
 import net.minecraft.world.item.component.TooltipDisplay;
 
 import java.util.function.Consumer;
@@ -55,8 +57,8 @@ public class RemoteLensItem extends Item {
     public void appendHoverText(@NotNull ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, display, tooltip, flag);
         CompoundTag tag = stack.getTag();
-        if (tag != null && tag.hasUUID("SelectedConductor")) {
-            UUID conductorId = tag.getUUID("SelectedConductor");
+        if (tag != null && NbtCompat.hasUUID(tag, "SelectedConductor")) {
+            UUID conductorId = NbtCompat.getUUID(tag, "SelectedConductor");
 
             tooltip.accept(Component.translatable("railways.whistle.tool.bound").withStyle(ChatFormatting.DARK_GREEN));
             tooltip.accept(TextUtils.translateWithFormatting("railways.whistle.tool.conductor_id", conductorId.toString().substring(0, 5)));
@@ -73,7 +75,7 @@ public class RemoteLensItem extends Item {
             return InteractionResult.CONSUME;
         if (pInteractionTarget instanceof ConductorEntity conductor && conductor.getJob() == ConductorEntity.Job.SPY) {
             CompoundTag stackTag = pStack.getOrCreateTag();
-            stackTag.putUUID("SelectedConductor", conductor.getUUID());
+            NbtCompat.putUUID(stackTag, "SelectedConductor", conductor.getUUID());
             pPlayer.sendOverlayMessage(Component.translatable("railways.remote_lens.set"));
             pStack.setTag(stackTag);
             pPlayer.setItemInHand(pUsedHand, pStack);
@@ -95,9 +97,9 @@ public class RemoteLensItem extends Item {
         ItemStack stack = player.getItemInHand(usedHand);
         if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer) {
             CompoundTag stackTag = stack.getTag();
-            if (stackTag == null || !stackTag.hasUUID("SelectedConductor"))
+            if (stackTag == null || !NbtCompat.hasUUID(stackTag, "SelectedConductor"))
                 return InteractionResult.FAIL;
-            UUID conductorId = stackTag.getUUID("SelectedConductor");
+            UUID conductorId = NbtCompat.getUUID(stackTag, "SelectedConductor");
             if (player.isShiftKeyDown()) {
                 stack.removeTagKey("SelectedConductor");
                 AllSoundEvents.CONTROLLER_CLICK.play(level, null, player.blockPosition(), .5f, 1.1f);

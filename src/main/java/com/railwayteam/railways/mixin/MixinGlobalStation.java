@@ -71,7 +71,7 @@ public abstract class MixinGlobalStation implements ILimitedGlobalStation {
 
     @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;ZLcom/zurrtum/create/content/trains/graph/DimensionPalette;)V", at = @At("TAIL"), remap = true)
     private void readLimit(CompoundTag nbt, boolean migration, DimensionPalette dimensions, CallbackInfo ci) {
-        limitEnabled = nbt.getBoolean("LimitEnabled");
+        limitEnabled = nbt.getBooleanOr("LimitEnabled", false);
     }
 
     @Inject(method = "read(Lnet/minecraft/network/FriendlyByteBuf;Lcom/zurrtum/create/content/trains/graph/DimensionPalette;)V", at = @At("TAIL"), remap = true)

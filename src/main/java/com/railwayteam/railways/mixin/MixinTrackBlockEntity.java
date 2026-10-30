@@ -154,7 +154,7 @@ public abstract class MixinTrackBlockEntity extends SmartBlockEntity implements 
     @Inject(method = "read", at = @At("RETURN"))
     private void readCasing(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
         if (tag.contains("AlternateModel")) {
-            this.railways$setAlternate(tag.getBoolean("AlternateModel"));
+            this.railways$setAlternate(tag.getBooleanOr("AlternateModel", false));
         } else {
             this.railways$setAlternate(false);
         }

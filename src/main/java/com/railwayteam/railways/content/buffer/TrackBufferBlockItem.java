@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.content.buffer;
 
+import com.railwayteam.railways.port.minecraft.NbtCompat;
+
 import com.railwayteam.railways.port.create.track.TrackMaterialData;
 
 
@@ -133,14 +135,14 @@ public class TrackBufferBlockItem extends TrackTargetingBlockItem {
             CompoundTag stackTag = stack.getOrCreateTag();
             stack.setTag(stackTag);
             
-            CompoundTag oldTeTag = stackTag.getCompound("BlockEntityTag");
+            CompoundTag oldTeTag = stackTag.getCompoundOrEmpty("BlockEntityTag");
             
             CompoundTag teTag = new CompoundTag();
             if (oldTeTag != null) {
-                if (oldTeTag.contains("Material", Tag.TAG_COMPOUND))
+                if (oldTeTag.contains("Material"))
                     //noinspection DataFlowIssue
                     teTag.put("Material", oldTeTag.get("Material"));
-                if (oldTeTag.contains("Color", Tag.TAG_INT))
+                if (oldTeTag.contains("Color"))
                     //noinspection DataFlowIssue
                     teTag.put("Color", oldTeTag.get("Color"));
             }
@@ -160,7 +162,7 @@ public class TrackBufferBlockItem extends TrackTargetingBlockItem {
                 placeDirection = context.getClickedFace();
             }
             
-            teTag.put("TargetTrack", NbtUtils.writeBlockPos(pos.subtract(placedPos)));
+            teTag.put("TargetTrack", NbtCompat.writeBlockPos(pos.subtract(placedPos)));
             stackTag.put("BlockEntityTag", teTag);
             
             TrackShape shape = state.getValue(TrackBlock.SHAPE);

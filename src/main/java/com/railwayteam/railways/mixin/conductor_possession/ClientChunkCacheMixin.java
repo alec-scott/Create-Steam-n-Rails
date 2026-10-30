@@ -92,8 +92,8 @@ public abstract class ClientChunkCacheMixin {
 			if (chunk != null) {
 				ChunkPos pos = chunk.getPos();
 
-				if (newStorage.inRange(pos.x, pos.z))
-					newStorage.replace(newStorage.getIndex(pos.x, pos.z), chunk);
+				if (newStorage.inRange(pos.x(), pos.z()))
+					newStorage.replace(newStorage.getIndex(pos.x(), pos.z()), chunk);
 			}
 		}
 
@@ -111,7 +111,7 @@ public abstract class ClientChunkCacheMixin {
 			int i = cameraStorage.getIndex(x, z);
 			LevelChunk chunk = cameraStorage.getChunk(i);
 
-			if (chunk != null && chunk.getPos().x == x && chunk.getPos().z == z) {
+			if (chunk != null && chunk.getPos().x() == x && chunk.getPos().z() == z) {
 				Utils.postChunkEventClient(chunk, false);
 				cameraStorage.replace(i, chunk, null);
 			}
@@ -155,7 +155,7 @@ public abstract class ClientChunkCacheMixin {
 		if (ClientHandler.isPlayerMountedOnCamera() && ConductorPossessionController.getCameraStorage().inRange(x, z)) {
 			LevelChunk chunk = ConductorPossessionController.getCameraStorage().getChunk(ConductorPossessionController.getCameraStorage().getIndex(x, z));
 
-			if (chunk != null && chunk.getPos().x == x && chunk.getPos().z == z)
+			if (chunk != null && chunk.getPos().x() == x && chunk.getPos().z() == z)
 				callback.setReturnValue(chunk);
 		}
 	}

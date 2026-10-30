@@ -40,13 +40,13 @@ public class NbtUtilsMixin {
 
     @Inject(method = "readBlockState", at = @At("HEAD"))
     private static void railways$upgradeBlocks(HolderGetter<Block> blockGetter, CompoundTag tag, CallbackInfoReturnable<BlockState> cir) {
-        if (tag.contains("Name", Tag.TAG_STRING)) {
+        if (tag.contains("Name")) {
             /*
              * MonoBogey Fixer
              */
             if (tag.getString("Name").equals("railways:mono_bogey_upside_down")) {
                 tag.putString("Name", "railways:mono_bogey");
-                CompoundTag properties = tag.getCompound("Properties");
+                CompoundTag properties = tag.getCompoundOrEmpty("Properties");
                 properties.putString("upside_down", "true");
                 tag.put("Properties", properties);
             }
@@ -67,7 +67,7 @@ public class NbtUtilsMixin {
     @Unique
     private static void railways$fixCherryTrackData(CompoundTag tag, String name) {
         tag.putString("Name", name);
-        CompoundTag properties = tag.getCompound("Properties");
+        CompoundTag properties = tag.getCompoundOrEmpty("Properties");
         tag.put("Properties", properties);
     }
 }

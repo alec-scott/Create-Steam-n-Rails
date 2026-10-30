@@ -57,7 +57,7 @@ public class TrackReplacePaver {
         }
         if ((replacedState = context.world.getBlockState(trackPos)).getBlock() instanceof ITrackBlock
                 && stateToPaveWith.getBlock() instanceof ITrackBlock newTrackBlock) {
-            FilterItemStack filter = FilterItemStack.of(context.blockEntityData.getCompound("Filter"));
+            FilterItemStack filter = FilterItemStack.of(context.blockEntityData.getCompoundOrEmpty("Filter"));
             if (replacedState.getBlock() != stateToPaveWith.getBlock()) {
                 boolean restoreBE = false;
                 Pair<Block, Boolean> casingData = null;
