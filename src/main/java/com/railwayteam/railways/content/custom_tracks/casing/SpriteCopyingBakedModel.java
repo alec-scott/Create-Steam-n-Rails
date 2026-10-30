@@ -19,104 +19,105 @@
 package com.railwayteam.railways.content.custom_tracks.casing;
 
 import com.railwayteam.railways.Railways;
-import com.simibubi.create.foundation.model.BakedQuadHelper;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.resources.model.cuboid.ItemTransforms;
+import com.zurrtum.create.catnip.data.Iterate;
+import com.zurrtum.create.client.foundation.model.BakedModelHelper;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad.MaterialInfo;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.zurrtum.create.client.catnip.render.SpriteShiftEntry.getUnInterpolatedU;
-import static com.zurrtum.create.client.catnip.render.SpriteShiftEntry.getUnInterpolatedV;
+/**
+ * {@code baseModel}'s geometry, textured with {@code spriteSourceModel}'s sprite for each side.
+ *
+ * <p>PORT-NOTE(26.1): BakedModel.getQuads(state, side, random) is gone, so the quads are copied once into fixed
+ * parts (both models are state-less here: a partial model and a block's default state).</p>
+ */
+public class SpriteCopyingBakedModel implements BlockStateModel {
 
-public class SpriteCopyingBakedModel implements BakedModel {
+    private final List<BlockStateModelPart> parts = new ArrayList<>();
+    private final Material.Baked particleMaterial;
+    private final int materialFlags;
 
-    protected final BakedModel baseModel;
-    protected final BakedModel spriteSourceModel;
+    public SpriteCopyingBakedModel(BlockStateModel baseModel, BlockStateModel spriteSourceModel) {
+        RandomSource random = RandomSource.create(42L);
+        List<BlockStateModelPart> sourceParts = new ArrayList<>();
+        spriteSourceModel.collectParts(random, sourceParts);
+        List<BlockStateModelPart> baseParts = new ArrayList<>();
+        baseModel.collectParts(random, baseParts);
 
-    public SpriteCopyingBakedModel(BakedModel baseModel, BakedModel spriteSourceModel) {
-        this.baseModel = baseModel;
-        this.spriteSourceModel = spriteSourceModel;
+        boolean ao = sourceParts.isEmpty() || sourceParts.getFirst().useAmbientOcclusion();
+        for (BlockStateModelPart part : baseParts) {
+            QuadCollection.Builder builder = new QuadCollection.Builder();
+            for (Direction side : Iterate.directions) {
+                BakedQuad overrideQuad = findSourceQuad(sourceParts, side);
+                for (BakedQuad quad : part.getQuads(side))
+                    builder.addCulledFace(side, copySprite(quad, overrideQuad, side));
+            }
+            BakedQuad overrideQuad = findSourceQuad(sourceParts, null);
+            for (BakedQuad quad : part.getQuads(null))
+                builder.addUnculledFace(copySprite(quad, overrideQuad, null));
+            parts.add(new SimpleModelWrapper(builder.build(), ao, spriteSourceModel.particleMaterial()));
+        }
+        this.particleMaterial = spriteSourceModel.particleMaterial();
+        this.materialFlags = baseModel.materialFlags();
     }
 
-    @Override
-    public List<BakedQuad> getQuads(@Nullable BlockState pState, @Nullable Direction pSide, RandomSource pRand) {
-        ArrayList<BakedQuad> quads = new ArrayList<>();
-        TextureAtlasSprite overrideSprite = spriteSourceModel.getParticleIcon();
-        BakedQuad overrideQuad = null;
-        List<BakedQuad> sourceQuads = spriteSourceModel.getQuads(pState, pSide, pRand);
-        if (!sourceQuads.isEmpty()) {
-            overrideSprite = sourceQuads.get(0).getSprite();
-            overrideQuad = sourceQuads.get(0);
-            //Railways.LOGGER.warn("Overridesprite: "+ overrideSprite.toString());
-        } else if (pSide != null) {
-            List<BakedQuad> nullQuads = spriteSourceModel.getQuads(pState, null, pRand);
-            if (!nullQuads.isEmpty()) {
-                overrideSprite = nullQuads.get(0).getSprite();
-                overrideQuad = nullQuads.get(0);
+    private static @Nullable BakedQuad findSourceQuad(List<BlockStateModelPart> sourceParts, @Nullable Direction side) {
+        for (BlockStateModelPart part : sourceParts) {
+            List<BakedQuad> quads = part.getQuads(side);
+            if (!quads.isEmpty())
+                return quads.getFirst();
+        }
+        if (side != null) {
+            for (BlockStateModelPart part : sourceParts) {
+                List<BakedQuad> quads = part.getQuads(null);
+                if (!quads.isEmpty())
+                    return quads.getFirst();
             }
         }
-        for (BakedQuad quad : baseModel.getQuads(pState, pSide, pRand)) {
-            if (overrideSprite == null || overrideQuad == null) {
-                Railways.LOGGER.error("No overriding sprites found for side " + (pSide == null ? "null" : pSide.toString()) + " blockstate: " + (pState == null ? "null" : pState.toString()));
-            }
-            quads.add(new BakedQuad(transformVertices(quad.getVertices(), quad.getSprite(), (overrideQuad != null ? overrideQuad : quad)), quad.getTintIndex(), quad.getDirection(),
-                overrideSprite != null ? overrideSprite : quad.getSprite(), true));
+        return null;
+    }
+
+    private BakedQuad copySprite(BakedQuad quad, @Nullable BakedQuad overrideQuad, @Nullable Direction side) {
+        if (overrideQuad == null) {
+            Railways.LOGGER.error("No overriding sprites found for side " + (side == null ? "null" : side.toString()));
+            return quad;
         }
-        return quads;
-    }
-
-    private int[] transformVertices(int[] baseVertices, TextureAtlasSprite baseSprite, BakedQuad uvSource) {
-        TextureAtlasSprite goalSprite = uvSource.getSprite();
-        int[] newVertices = baseVertices.clone();
-        for (int vertex = 0; vertex < 4; vertex++) {
-            float u = BakedQuadHelper.getU(newVertices, vertex);
-            float v = BakedQuadHelper.getV(newVertices, vertex);
-            BakedQuadHelper.setU(newVertices, vertex, goalSprite.getU(getUnInterpolatedU(baseSprite, u)));
-            BakedQuadHelper.setV(newVertices, vertex, goalSprite.getV(getUnInterpolatedV(baseSprite, v)));
-        }
-        return newVertices;
-    }
-
-    @Override
-    public boolean useAmbientOcclusion() {
-        return spriteSourceModel.useAmbientOcclusion();
+        MaterialInfo info = quad.materialInfo();
+        TextureAtlasSprite baseSprite = info.sprite();
+        TextureAtlasSprite goalSprite = overrideQuad.materialInfo().sprite();
+        return BakedModelHelper.replaceBakedQuadUV(
+            quad,
+            BakedModelHelper.calcSpriteUv(quad.packedUV0(), baseSprite, goalSprite),
+            BakedModelHelper.calcSpriteUv(quad.packedUV1(), baseSprite, goalSprite),
+            BakedModelHelper.calcSpriteUv(quad.packedUV2(), baseSprite, goalSprite),
+            BakedModelHelper.calcSpriteUv(quad.packedUV3(), baseSprite, goalSprite),
+            new MaterialInfo(goalSprite, info.layer(), info.itemRenderType(), info.tintIndex(), true, info.lightEmission())
+        );
     }
 
     @Override
-    public boolean isGui3d() {
-        return spriteSourceModel.isGui3d();
+    public void collectParts(RandomSource random, List<BlockStateModelPart> output) {
+        output.addAll(parts);
     }
 
     @Override
-    public boolean usesBlockLight() {
-        return spriteSourceModel.usesBlockLight();
+    public Material.Baked particleMaterial() {
+        return particleMaterial;
     }
 
     @Override
-    public boolean isCustomRenderer() {
-        return baseModel.isCustomRenderer();
-    }
-
-    @Override
-    public TextureAtlasSprite getParticleIcon() {
-        return spriteSourceModel.getParticleIcon();
-    }
-
-    @Override
-    public ItemTransforms getTransforms() {
-        return ItemTransforms.NO_TRANSFORMS;
-    }
-
-    @Override
-    public ItemOverrides getOverrides() {
-        return baseModel.getOverrides();
+    public int materialFlags() {
+        return materialFlags;
     }
 }

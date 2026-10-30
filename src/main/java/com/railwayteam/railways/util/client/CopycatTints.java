@@ -21,7 +21,7 @@ import com.zurrtum.create.client.AllBlockTints;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;

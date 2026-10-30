@@ -64,6 +64,14 @@ public abstract class ModelProvider<T extends ModelBuilder<T>> implements DataPr
         throw DatagenStubs.unsupported();
     }
 
+    public T cubeColumn(final String name, final Identifier side, final Identifier end) {
+        throw DatagenStubs.unsupported();
+    }
+
+    public T cubeColumnHorizontal(final String name, final Identifier side, final Identifier end) {
+        throw DatagenStubs.unsupported();
+    }
+
     public ModelFile.ExistingModelFile getExistingFile(final Identifier path) {
         throw DatagenStubs.unsupported();
     }

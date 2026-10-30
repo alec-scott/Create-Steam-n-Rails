@@ -53,6 +53,11 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
   `port/create/track` recreates `TrackType` and `TrackMaterialFactory`, a mixin attaches the extra data to Create
   Fly's `TrackMaterial`, and two small mixins make Create Fly compare track types. Materials Railways doesn't
   extend keep Create Fly's behaviour (their type is their id). Candidate for the Create Fly fork later.
+- **Custom block models**: the 26.1 Fabric Renderer API moved (`fabric.api.client.renderer.v1`) and 1.20's
+  `BakedModel`/`emitBlockQuads` is gone. Railways' models extend Create Fly's `WrapperBlockStateModel` (or
+  `CopycatModel`/`FluidTankModel`) and build vanilla `BlockStateModelPart`s in `addPartsWithInfo`; Create Fly's
+  mixins call that for world rendering with or without FRAPI. Registered through `CreateRegistrate.blockModel` →
+  Create Fly `AllModels`. Per-quad `MaterialInfo` carries the render layer, so 1.20's material fix-up is gone.
 
 ## Port mechanics (how things map)
 
@@ -71,3 +76,35 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
   Fabric API 0.155.3 / Create Fly 26.1.2-6.0.9-4 / Forge Config API Port 26.1.5.
 - Import remap with the CBC tooling: 380 Create/Catnip/Ponder/Flywheel imports resolved, 47 classes Create Fly lacks.
 - First compile: 3918 errors.
+- Ported, one commit each: track materials + mechanical renames; networking/events/platform glue; block method
+  signatures, configs, coupler/switch client splits; edge points, util platform code (obsolete mixins dropped);
+  palettes, paint fluid (data component), creative/registry generics; fuel tank, portable fuel interface, mounted
+  toolbox, conductor cap, movement renders; casing effects, smokestack extender, copycat headstock/transform.
+- End of session: 251 errors in 48 files.
+
+### 2026-10-30
+- Remaining at start (251 errors / 48 files): ConductorEntity (~57, `PlayerModel` generics, `spawnAtLocation`,
+  overrides), the custom baked models (Fabric Renderer API `renderer.v1.model/mesh/material/render` is gone in 26.1:
+  copycat headstock/bars/vent, buffer, generic crossing, sprite-copying casing, fuel tank), particle data codecs,
+  `FabricValueInput.contains`, ~25 client mixins/renderers with 1-4 errors each.
+- **The 251 was only javac's symbol-resolution pass.** Once the missing types resolved, attribution of method bodies
+  ran and the count rose to ~960 across ~200 files (expected; not a regression).
+- **Custom block models → Create Fly's `WrapperBlockStateModel`** (see Decisions). Ported: copycat headstock + bars,
+  buffer (sprite swap + diagonal rotation), generic crossing, conductor vent, fuel tank (now just a Create Fly
+  `FluidTankModel` with our CT shifts), casing `SpriteCopyingBakedModel` (precomputed `BlockStateModel`).
+  `BufferModelUtils.addSwappedParts` replaces the per-model FRAPI sprite-replacing wrappers.
+- Dropped `fabric.mixin.client.CopycatModelMixin` + `FilteredRenderAttachedBlockView` (they patched upstream Create's
+  FRAPI copycat path; Create Fly's copycats don't filter connected textures by `canConnectTexturesToward` either) and
+  `MixinItemModelShaper` (name-based conductor cap item models; see TODO).
+- `AccessorSegmentAngles` invoker: Create Fly bakes track segments with `bc.getBakedSegments(SegmentAngles::new)` and
+  the constructor is package-private.
+
+## TODO (not compile errors)
+- **Item model definitions** (`assets/railways/items/*.json`, 1.21.4+): none exist yet, so items will render as
+  missing models. Generate them from the committed `models/item` files.
+- Custom conductor caps by item name (was `MixinItemModelShaper`): a `minecraft:select` on `minecraft:custom_name` in
+  the cap item definitions, or a custom `ItemModel`.
+- Buffer / copycat headstock **items** no longer show the stack's material/colour (1.20 wrapped the item baked model);
+  needs a custom `ItemModel.Unbaked` reading `block_entity_data`. Copycat headstock item tint likewise.
+- Copycat headstock: connected-texture filtering via `canConnectTexturesToward` (needs a filtering
+  `BlockAndTintGetter`), matching upstream rather than Create Fly.

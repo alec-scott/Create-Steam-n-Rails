@@ -21,391 +21,132 @@ package com.railwayteam.railways.content.buffer.headstock.fabric;
 import com.railwayteam.railways.content.buffer.IDyedBuffer;
 import com.railwayteam.railways.content.buffer.headstock.CopycatHeadstockBarsBlock;
 import com.railwayteam.railways.content.buffer.headstock.CopycatHeadstockBlock;
-import com.railwayteam.railways.content.buffer.headstock.CopycatHeadstockBlockEntity;
 import com.railwayteam.railways.registry.CRBlocks;
-import com.zurrtum.create.AllBlocks;
+import com.zurrtum.create.catnip.data.Iterate;
+import com.zurrtum.create.client.foundation.model.BakedModelHelper;
+import com.zurrtum.create.client.infrastructure.model.CopycatModel;
 import com.zurrtum.create.content.decoration.copycat.CopycatBlock;
 import com.zurrtum.create.content.decoration.copycat.CopycatSpecialCases;
-import com.simibubi.create.content.decoration.copycat.FilteredBlockAndTintGetter;
-import com.zurrtum.create.client.foundation.model.BakedModelHelper;
-import com.zurrtum.create.catnip.data.Iterate;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
-import net.fabricmc.fabric.api.renderer.v1.material.BlendMode;
-import net.fabricmc.fabric.api.renderer.v1.material.MaterialFinder;
-import net.fabricmc.fabric.api.renderer.v1.material.RenderMaterial;
-import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
-import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
-import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
-import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
-import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
-import net.fabricmc.fabric.api.renderer.v1.model.SpriteFinder;
-import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.resources.model.cuboid.ItemTransforms;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+import static com.railwayteam.railways.content.buffer.BufferModelUtils.addSwappedParts;
 import static com.railwayteam.railways.content.buffer.BufferModelUtils.getSwapper;
-import static com.zurrtum.create.client.infrastructure.model.CopycatModel.getModelOf;
 
+/**
+ * PORT-NOTE(26.1): FRAPI quad transforms -> Create Fly's {@link CopycatModel} parts. Faces culled by neighbours now
+ * keep their cull face on the cropped quad (as Create Fly's copycat step/panel do) instead of the 1.20 occlusion pass,
+ * and connected textures are not filtered by {@code canConnectTexturesToward} (Create Fly's copycats don't either).
+ * The item renders the plain model; it no longer reads material/colour from the stack.
+ */
 @Environment(EnvType.CLIENT)
-public class CopycatHeadstockModel extends ForwardingBakedModel {
+public class CopycatHeadstockModel extends CopycatModel {
 
-    protected static final AABB CUBE_AABB = new AABB(BlockPos.ZERO);
+    private static final Identifier COPYCAT_BASE = Identifier.fromNamespaceAndPath("create", "block/copycat_base");
 
-    public CopycatHeadstockModel(BakedModel wrapped) {
-        this.wrapped = wrapped;
-    }
-
-    private void gatherOcclusionData(BlockAndTintGetter world, BlockPos pos, BlockState state, BlockState material,
-                                     OcclusionData occlusionData, CopycatBlock copycatBlock) {
-        BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
-        for (Direction face : Iterate.directions) {
-            if (!copycatBlock.canFaceBeOccluded(state, face))
-                continue;
-            BlockPos.MutableBlockPos neighbourPos = mutablePos.setWithOffset(pos, face);
-            if (!Block.shouldRenderFace(material, world, pos, face, neighbourPos))
-                occlusionData.occlude(face);
-        }
-    }
-
-    @Override
-    public boolean isVanillaAdapter() {
-        return false;
+    public CopycatHeadstockModel(BlockState state, UnbakedRoot unbaked) {
+        super(state, unbaked);
     }
 
     private static boolean filterCopycatParts(BakedQuad quad) {
-        return !quad.getSprite().contents().name().equals(Identifier.fromNamespaceAndPath("create", "block/copycat_base"));
+        return !quad.materialInfo().sprite().contents().name().equals(COPYCAT_BASE);
     }
 
     @Override
-    public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context) {
-        BlockState material;
+    protected void addPartsWithInfo(BlockAndTintGetter world, BlockPos pos, BlockState state, CopycatBlock block,
+                                    BlockState material, RandomSource random, List<BlockStateModelPart> parts) {
         UnaryOperator<TextureAtlasSprite> colorSwapper = null;
-
-        if (blockView.getBlockEntity(pos) instanceof IDyedBuffer be) {
+        if (world.getBlockEntity(pos) instanceof IDyedBuffer be)
             colorSwapper = getSwapper(be.getColor());
-        }
 
-        if (blockView.getBlockEntity(pos) instanceof CopycatHeadstockBlockEntity be) {
-            material = be.getMaterial();
-        } else {
-            material = AllBlocks.COPYCAT_BASE.defaultBlockState();
-        }
+        // the headstock itself, minus the copycat base quads
+        addSwappedParts(model, random, colorSwapper, CopycatHeadstockModel::filterCopycatParts, null, parts);
 
-        if (colorSwapper != null) {
-            new SpriteReplacingBakedModel(colorSwapper, CopycatHeadstockModel::filterCopycatParts).emitBlockQuads(blockView, state, pos, randomSupplier, context);
-        } else {
-            new SpriteReplacingBakedModel(CopycatHeadstockModel::filterCopycatParts).emitBlockQuads(blockView, state, pos, randomSupplier, context);
-        }
-
-        // copycat model face emission
-
-        OcclusionData occlusionData = new OcclusionData();
-        if (state.getBlock() instanceof CopycatBlock copycatBlock) {
-            gatherOcclusionData(blockView, pos, state, material, occlusionData, copycatBlock);
-        }
-
-        CullFaceRemovalData cullFaceRemovalData = new CullFaceRemovalData();
-        if (state.getBlock() instanceof CopycatBlock copycatBlock) {
-            for (Direction cullFace : Iterate.directions) {
-                if (copycatBlock.shouldFaceAlwaysRender(state, cullFace)) {
-                    cullFaceRemovalData.remove(cullFace);
-                }
-            }
-        }
-
-        // fabric: If it is the default state do not push transformations, will cause issues with GhostBlockRenderer
-        boolean shouldTransform = material != AllBlocks.COPYCAT_BASE.defaultBlockState();
-
-        // fabric: need to change the default render material
-        if (shouldTransform)
-            context.pushTransform(MaterialFixer.create(material));
-
-        BlockAndTintGetter filteredView;
-        if (state.getBlock() instanceof CopycatBlock copycatBlock) {
-            filteredView = new FilteredBlockAndTintGetter(blockView, targetPos -> copycatBlock.canConnectTexturesToward(blockView, pos, targetPos, state));
-        } else {
-            filteredView = blockView;
-        }
-
-        emitBlockQuadsInner(filteredView, state, pos, randomSupplier, context, material, cullFaceRemovalData, occlusionData);
-
-        // fabric: pop the material changer transform
-        if (shouldTransform)
-            context.popTransform();
-    }
-
-    protected void emitBlockQuadsInner(@Nullable BlockAndTintGetter blockView, @Nullable BlockState state, @Nullable BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context, BlockState material, CullFaceRemovalData cullFaceRemovalData, OcclusionData occlusionData) {
-        Direction facing = state == null ? Direction.NORTH : state.getOptionalValue(CopycatHeadstockBlock.FACING)
-            .orElse(Direction.NORTH);
-        boolean upsideDown = state != null && state.getValue(CopycatHeadstockBlock.UPSIDE_DOWN);
+        Direction facing = state.getOptionalValue(CopycatHeadstockBlock.FACING).orElse(Direction.NORTH);
+        boolean upsideDown = state.getValue(CopycatHeadstockBlock.UPSIDE_DOWN);
 
         if (CopycatSpecialCases.isBarsMaterial(material)) {
             BlockState specialState = CRBlocks.COPYCAT_HEADSTOCK_BARS.getDefaultState()
                 .setValue(CopycatHeadstockBarsBlock.FACING, facing)
                 .setValue(CopycatHeadstockBarsBlock.UPSIDE_DOWN, upsideDown);
 
-            BakedModel specialModel = getModelOf(specialState);
-            if (specialModel instanceof CopycatHeadstockBarsModel cm) {
-                cm.emitBlockQuadsInner(blockView, state, pos, randomSupplier, context, material, cullFaceRemovalData.shouldRemove, occlusionData.occluded);
+            if (getModelOf(specialState) instanceof CopycatHeadstockBarsModel cm) {
+                cm.addBarsParts(world, pos, state, block, material, random, parts);
                 return;
             }
         }
 
-        BakedModel model = getModelOf(material);
+        List<BlockStateModelPart> materialParts = getMaterialParts(world, pos, material, random, getModelOf(material));
+        if (materialParts.isEmpty())
+            return;
 
-        Vec3 normal = Vec3.atLowerCornerOf(facing.getNormal());
+        Vec3 normal = Vec3.atLowerCornerOf(facing.getUnitVec3i());
         Vec3 normalScaled14 = normal.scale(14 / 16f);
+        DirectionData directionData = gatherDirectionData(block, state);
 
-        SpriteFinder spriteFinder = SpriteFinder.get(Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS));
-
-        // Use a mesh to defer quad emission since quads cannot be emitted inside a transform
-        MeshBuilder meshBuilder = RendererAccess.INSTANCE.getRenderer().meshBuilder();
-        QuadEmitter emitter = meshBuilder.getEmitter();
-        context.pushTransform(quad -> {
-            if (cullFaceRemovalData.shouldRemove(quad.cullFace())) {
-                quad.cullFace(null);
-            } else if (occlusionData.isOccluded(quad.cullFace())) {
-                // Add quad to mesh and do not render original quad to preserve quad render order
-                // copyTo does not copy the material
-                RenderMaterial quadMaterial = quad.material();
-                quad.copyTo(emitter);
-                emitter.material(quadMaterial);
-                emitter.emit();
-                return false;
+        for (BlockStateModelPart part : materialParts) {
+            QuadCollection.Builder builder = new QuadCollection.Builder();
+            for (BakedQuad quad : part.getQuads(null))
+                addPieces(builder, null, quad, facing, normal, normalScaled14, upsideDown);
+            for (Direction cullFace : Iterate.directions) {
+                Direction target = directionData.isUncull(cullFace) ? null : cullFace;
+                for (BakedQuad quad : part.getQuads(cullFace))
+                    addPieces(builder, target, quad, facing, normal, normalScaled14, upsideDown);
             }
+            parts.add(new SimpleModelWrapper(builder.build(), part.useAmbientOcclusion(), part.particleMaterial()));
+        }
+    }
 
-            // 4 Pieces
-            for (boolean top : Iterate.trueAndFalse) {
-                for (boolean front : Iterate.trueAndFalse) {
-                    Vec3 offset = normal.scale(front ? 0 : -13 / 16f);
-                    float contract = 16 - (front ? 1 : 2);
-                    AABB bb = CUBE_AABB.contract(normal.x * contract / 16, 10 / 16., normal.z * contract / 16);
-                    if (!front)
-                        bb = bb.move(normalScaled14);
-                    if (top)
-                        bb = bb.move(0, 10 / 16., 0);
-                    else
-                        offset = offset.add(0, 4 / 16., 0);
+    // 4 Pieces
+    private static void addPieces(QuadCollection.Builder builder, Direction cullFace, BakedQuad quad, Direction facing,
+                                  Vec3 normal, Vec3 normalScaled14, boolean upsideDown) {
+        Direction direction = quad.direction();
+        for (boolean top : Iterate.trueAndFalse) {
+            for (boolean front : Iterate.trueAndFalse) {
+                if (front && direction == facing)
+                    continue;
+                if (!front && direction == facing.getOpposite())
+                    continue;
+                if (top && direction == Direction.DOWN)
+                    continue;
+                if (!top && direction == Direction.UP)
+                    continue;
 
-                    if (upsideDown)
-                        offset = offset.add(0, -4 / 16., 0);
+                Vec3 offset = normal.scale(front ? 0 : -13 / 16f);
+                float contract = 16 - (front ? 1 : 2);
+                AABB bb = CUBE_AABB.contract(normal.x * contract / 16, 10 / 16., normal.z * contract / 16);
+                if (!front)
+                    bb = bb.move(normalScaled14);
+                if (top)
+                    bb = bb.move(0, 10 / 16., 0);
+                else
+                    offset = offset.add(0, 4 / 16., 0);
 
-                    //noinspection ConstantValue
-                    if (false) { // debug explode
-                        if (front) {
-                            offset = offset.add(-normal.x / 16, 0, -normal.z / 16);
-                        }
-                        if (top) {
-                            offset = offset.add(0, 1 / 16., 0);
-                        }
-                    }
+                if (upsideDown)
+                    offset = offset.add(0, -4 / 16., 0);
 
-                    Direction direction = quad.lightFace();
-
-                    if (front && direction == facing)
-                        continue;
-                    if (!front && direction == facing.getOpposite())
-                        continue;
-                    if (top && direction == Direction.DOWN)
-                        continue;
-                    if (!top && direction == Direction.UP)
-                        continue;
-
-                    // copyTo does not copy the material
-                    RenderMaterial quadMaterial = quad.material();
-                    quad.copyTo(emitter);
-                    emitter.material(quadMaterial);
-                    BakedModelHelper.cropAndMove(emitter, spriteFinder.find(emitter, 0), bb, offset);
-                    emitter.emit();
-                }
+                BakedQuad cropped = BakedModelHelper.cropAndMove(quad, bb, offset);
+                if (cullFace == null)
+                    builder.addUnculledFace(cropped);
+                else
+                    builder.addCulledFace(cullFace, cropped);
             }
-
-            return false;
-        });
-        if (blockView == null || pos == null || state == null) {
-            ((FabricBakedModel) model).emitItemQuads(new ItemStack(material.getBlock().asItem()), randomSupplier, context);
-        } else {
-            ((FabricBakedModel) model).emitBlockQuads(blockView, material, pos, randomSupplier, context);
-        }
-        context.popTransform();
-        context.meshConsumer().accept(meshBuilder.build());
-    }
-
-    @Override
-    public void emitItemQuads(ItemStack stack, Supplier<RandomSource> randomSupplier, RenderContext context) {
-        BlockState material = AllBlocks.COPYCAT_BASE.defaultBlockState();
-        UnaryOperator<TextureAtlasSprite> colorSwapper = null;
-
-        if (stack.hasTag()) {
-            CompoundTag tag = stack.getTag();
-            if (tag.contains("BlockEntityTag", Tag.TAG_COMPOUND)) {
-                CompoundTag blockEntityTag = tag.getCompound("BlockEntityTag");
-                if (blockEntityTag.contains("Material", Tag.TAG_COMPOUND)) {
-                    material = NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(), blockEntityTag.getCompound("Material"));
-                }
-                if (blockEntityTag.contains("Color", Tag.TAG_INT)) {
-                    colorSwapper = getSwapper(DyeColor.byId(blockEntityTag.getInt("Color")));
-                }
-            }
-        }
-        if (colorSwapper != null) {
-            new SpriteReplacingBakedModel(colorSwapper, CopycatHeadstockModel::filterCopycatParts).emitItemQuads(stack, randomSupplier, context);
-        } else {
-            new SpriteReplacingBakedModel(CopycatHeadstockModel::filterCopycatParts).emitItemQuads(stack, randomSupplier, context);
-        }
-
-        // copycat model face emission
-
-        OcclusionData occlusionData = new OcclusionData();
-
-        CullFaceRemovalData cullFaceRemovalData = new CullFaceRemovalData();
-
-        emitBlockQuadsInner(null, null, null, randomSupplier, context, material, cullFaceRemovalData, occlusionData);
-    }
-
-    private class SpriteReplacingBakedModel implements BakedModel {
-
-        private final UnaryOperator<TextureAtlasSprite> spriteSwapper;
-        private final Predicate<BakedQuad> filter;
-
-        private SpriteReplacingBakedModel(UnaryOperator<TextureAtlasSprite> spriteSwapper) {
-            this(spriteSwapper, quad -> true);
-        }
-
-        private SpriteReplacingBakedModel(Predicate<BakedQuad> filter) {
-            this(sprite -> sprite, filter);
-        }
-
-        private SpriteReplacingBakedModel(UnaryOperator<TextureAtlasSprite> spriteSwapper, Predicate<BakedQuad> filter) {
-            this.spriteSwapper = spriteSwapper;
-            this.filter = filter;
-        }
-
-        protected @NotNull List<BakedQuad> filterQuads(@NotNull List<BakedQuad> quads) {
-            return quads.stream().filter(filter).toList();
-        }
-
-        @Override
-        public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction direction, RandomSource random) {
-            return BakedModelHelper.swapSprites(filterQuads(wrapped.getQuads(state, direction, random)), this.spriteSwapper);
-        }
-
-        @Override
-        public boolean useAmbientOcclusion() {
-            return wrapped.useAmbientOcclusion();
-        }
-
-        @Override
-        public boolean isGui3d() {
-            return wrapped.isGui3d();
-        }
-
-        @Override
-        public boolean usesBlockLight() {
-            return wrapped.usesBlockLight();
-        }
-
-        @Override
-        public boolean isCustomRenderer() {
-            return wrapped.isCustomRenderer();
-        }
-
-        @Override
-        public TextureAtlasSprite getParticleIcon() {
-            return wrapped.getParticleIcon();
-        }
-
-        @Override
-        public ItemTransforms getTransforms() {
-            return wrapped.getTransforms();
-        }
-
-        @Override
-        public ItemOverrides getOverrides() {
-            return wrapped.getOverrides();
-        }
-    }
-
-    protected static class OcclusionData {
-        private final boolean[] occluded;
-
-        public OcclusionData() {
-            occluded = new boolean[6];
-        }
-
-        public void occlude(Direction face) {
-            occluded[face.get3DDataValue()] = true;
-        }
-
-        public boolean isOccluded(@Nullable Direction face) {
-            return face != null && occluded[face.get3DDataValue()];
-        }
-    }
-
-    protected static class CullFaceRemovalData {
-        private final boolean[] shouldRemove;
-
-        public CullFaceRemovalData() {
-            shouldRemove = new boolean[6];
-        }
-
-        public void remove(Direction face) {
-            shouldRemove[face.get3DDataValue()] = true;
-        }
-
-        public boolean shouldRemove(@Nullable Direction face) {
-            return face != null && shouldRemove[face.get3DDataValue()];
-        }
-    }
-
-    private record MaterialFixer(RenderMaterial materialDefault) implements RenderContext.QuadTransform {
-        @Override
-        public boolean transform(MutableQuadView quad) {
-            if (quad.material().blendMode() == BlendMode.DEFAULT) {
-                // default needs to be changed from the Copycat's default (cutout) to the wrapped material's default.
-                quad.material(materialDefault);
-            }
-            return true;
-        }
-
-        public static MaterialFixer create(BlockState materialState) {
-            RenderType type = ItemBlockRenderTypes.getChunkRenderType(materialState);
-            BlendMode blendMode = BlendMode.fromRenderLayer(type);
-            MaterialFinder finder = Objects.requireNonNull(RendererAccess.INSTANCE.getRenderer()).materialFinder();
-            RenderMaterial renderMaterial = finder.blendMode(0, blendMode).find();
-            return new MaterialFixer(renderMaterial);
         }
     }
 }

@@ -67,9 +67,8 @@ import com.railwayteam.railways.registry.CRPalettes.Wrapping;
 import com.railwayteam.railways.registry.CRTags;
 import com.railwayteam.railways.util.TextUtils;
 import com.zurrtum.create.AllBlocks;
-import com.zurrtum.create.Create;
 import com.zurrtum.create.content.decoration.MetalLadderBlock;
-import com.zurrtum.create.content.decoration.copycat.CopycatBlock;
+import com.railwayteam.railways.util.client.CopycatTints;
 import com.zurrtum.create.content.kinetics.flywheel.FlywheelBlock;
 import com.railwayteam.railways.port.create.foundation.data.AssetLookup;
 import com.railwayteam.railways.port.create.foundation.data.BlockStateGen;
@@ -356,7 +355,7 @@ public class BuilderTransformersImpl {
                 String main = join("/", "block", "palettes", color.getSerializedName(), ladderType+"_ladder");
                 String hoop = main + "_hoop";
                 p.horizontalBlock(c.get(), p.models()
-                    .withExistingParent(main, Create.asResource("block/ladder"))
+                    .withExistingParent(main, Identifier.fromNamespaceAndPath("create", "block/ladder"))
                     .texture("0", p.modLoc(hoop))
                     .texture("1", p.modLoc(main))
                     .texture("particle", p.modLoc(main))
@@ -383,7 +382,7 @@ public class BuilderTransformersImpl {
                 Identifier flywheelTex = p.modLoc(join("/", "block", "palettes", color.getSerializedName(), "flywheel"));
                 BlockStateGen.axisBlock(
                     c, p,
-                    $ -> p.models().withExistingParent(modelName, Create.asResource("block/flywheel/block"))
+                    $ -> p.models().withExistingParent(modelName, Identifier.fromNamespaceAndPath("create", "block/flywheel/block"))
                         .texture("0", flywheelTex)
                         .texture("particle", flywheelTex)
                 );
@@ -392,7 +391,7 @@ public class BuilderTransformersImpl {
             .tag(tags)
             .model((c, p) -> {
                 Identifier flywheelTex = p.modLoc(join("/", "block", "palettes", color.getSerializedName(), "flywheel"));
-                p.withExistingParent(c.getName(), Create.asResource("block/flywheel/item"))
+                p.withExistingParent(c.getName(), Identifier.fromNamespaceAndPath("create", "block/flywheel/item"))
                     .texture("0", flywheelTex)
                     .texture("particle", flywheelTex);
             })
@@ -632,8 +631,10 @@ public class BuilderTransformersImpl {
         return b -> b.onRegister(CreateRegistrate.blockModel(() -> BufferModel::new));
     }
 
+    // PORT-NOTE(26.1): 1.20 wrapped the item's baked model to read material/colour from the stack. Item models are
+    // item definitions in 26.1 and that wrapper isn't ported yet, so the item renders its default texture.
     public static <I extends Item, P> NonNullUnaryOperator<ItemBuilder<I, P>> variantBufferItem() {
-        return i -> i.onRegister(CreateRegistrate.itemModel(() -> BufferModel::new));
+        return i -> i;
     }
 
     public static <B extends CopycatHeadstockBarsBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> copycatHeadstockBars() {
@@ -711,14 +712,13 @@ public class BuilderTransformersImpl {
                 )
             ).properties(p -> p.noOcclusion()
                 .mapColor(MapColor.NONE))
-            .color(() -> CopycatBlock::wrappedColor)
+            .color(() -> CopycatTints::wrapped)
             .onRegister(CreateRegistrate.blockModel(() -> CopycatHeadstockModel::new));
     }
 
+    // PORT-NOTE(26.1): item colour and the material-reading item model are not ported (see variantBufferItem).
     public static <I extends Item, P> NonNullUnaryOperator<ItemBuilder<I, P>> copycatHeadstockItem() {
-        return i -> i
-            .color(() -> CopycatHeadstockBlock::wrappedItemColor)
-            .onRegister(CreateRegistrate.itemModel(() -> CopycatHeadstockModel::new));
+        return i -> i;
     }
 
     public static <B extends GenericDyeableSingleBufferBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> bigBuffer() {

@@ -22,84 +22,34 @@ import com.railwayteam.railways.content.conductor.ClientHandler;
 import com.railwayteam.railways.content.conductor.vent.CopycatVentModel;
 import com.railwayteam.railways.content.conductor.vent.VentBlock;
 import com.railwayteam.railways.registry.CRBlocks;
-import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
-import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
-import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
-import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
-import net.minecraft.client.resources.model.BakedModel;
+import com.zurrtum.create.content.decoration.copycat.CopycatBlock;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.function.Supplier;
+import java.util.List;
 
 public class CopycatVentModelImpl extends CopycatVentModel {
-    public CopycatVentModelImpl(BakedModel originalModel) {
-        super(originalModel);
+    public CopycatVentModelImpl(BlockState state, UnbakedRoot unbaked) {
+        super(state, unbaked);
     }
-
-    /*@Override
-    protected void emitBlockQuadsInner(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context, BlockState material, CullFaceRemovalData cullFaceRemovalData, OcclusionData occlusionData) {
-        if (ClientHandler.isPlayerMountedOnCamera() || state.getValue(VentBlock.CONDUCTOR_VISIBLE)) {
-            material = CRBlocks.CONDUCTOR_VENT.getDefaultState().setValue(VentBlock.CONDUCTOR_VISIBLE, true);
-            if (getModelOf(material) instanceof CopycatVentModelImpl impl)
-                ((FabricBakedModel) impl.wrapped).emitBlockQuads(blockView, material, pos, randomSupplier, context);
-            return;
-        }
-        BakedModel model = getModelOf(material);
-
-        SpriteFinder spriteFinder = SpriteFinder.get(Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS));
-
-        // Use a mesh to defer quad emission since quads cannot be emitted inside a transform
-        MeshBuilder meshBuilder = RendererAccess.INSTANCE.getRenderer().meshBuilder();
-        QuadEmitter emitter = meshBuilder.getEmitter();
-        context.pushTransform(quad -> {
-            if (cullFaceRemovalData.shouldRemove(quad.cullFace())) {
-                quad.cullFace(null);
-            } else if (occlusionData.isOccluded(quad.cullFace())) {
-                // Add quad to mesh and do not render original quad to preserve quad render order
-                // copyTo does not copy the material
-                RenderMaterial quadMaterial = quad.material();
-                quad.copyTo(emitter);
-                emitter.material(quadMaterial);
-                emitter.emit();
-                return false;
-            }
-
-            // copyTo does not copy the material
-            RenderMaterial quadMaterial = quad.material();
-            quad.copyTo(emitter);
-            emitter.material(quadMaterial);
-            BakedModelHelper.cropAndMove(emitter, spriteFinder.find(emitter, 0), CUBE_AABB, Vec3.ZERO);
-            emitter.emit();
-
-
-            return false;
-        });
-        ((FabricBakedModel) model).emitBlockQuads(blockView, state, pos, randomSupplier, context);
-        context.popTransform();
-        context.meshConsumer().accept(meshBuilder.build());
-    }*/
 
     @Override
-    protected void emitBlockQuadsInner(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context, BlockState material, CullFaceRemovalData cullFaceRemovalData, OcclusionData occlusionData) {
+    protected void addPartsWithInfo(BlockAndTintGetter world, BlockPos pos, BlockState state, CopycatBlock block,
+                                    BlockState material, RandomSource random, List<BlockStateModelPart> parts) {
         if (ClientHandler.isPlayerMountedOnCamera() || state.getValue(VentBlock.CONDUCTOR_VISIBLE)) {
-            material = CRBlocks.CONDUCTOR_VENT.getDefaultState().setValue(VentBlock.CONDUCTOR_VISIBLE, true);
-            if (getModelOf(material) instanceof CopycatVentModelImpl impl)
-                ((FabricBakedModel) impl.wrapped).emitBlockQuads(blockView, material, pos, randomSupplier, context);
+            BlockState visible = CRBlocks.CONDUCTOR_VENT.getDefaultState().setValue(VentBlock.CONDUCTOR_VISIBLE, true);
+            if (getModelOf(visible) instanceof CopycatVentModelImpl impl)
+                impl.model.collectParts(random, parts);
             return;
         }
 
-        BakedModel model = getModelOf(material);
-
-        // Use a mesh to defer quad emission since quads cannot be emitted inside a transform
-        MeshBuilder meshBuilder = RendererAccess.INSTANCE.getRenderer().meshBuilder();
-        ((FabricBakedModel) model).emitBlockQuads(blockView, material, pos, randomSupplier, context);
-        context.meshConsumer().accept(meshBuilder.build());
+        addModelParts(world, pos, material, random, getModelOf(material), parts);
     }
 
-    public static CopycatVentModel create(BakedModel bakedModel) {
-        return new CopycatVentModelImpl(bakedModel);
+    public static CopycatVentModel create(BlockState state, UnbakedRoot unbaked) {
+        return new CopycatVentModelImpl(state, unbaked);
     }
 }

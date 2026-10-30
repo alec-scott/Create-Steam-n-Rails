@@ -1,6 +1,6 @@
 /*
  * Steam 'n' Rails
- * Copyright (c) 2022-2025 The Railways Team
+ * Copyright (c) 2022-2024 The Railways Team
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -19,15 +19,20 @@
 package com.railwayteam.railways.content.buffer;
 
 import com.railwayteam.railways.Railways;
-import net.createmod.catnip.platform.CatnipServices;
+import com.zurrtum.create.catnip.data.Iterate;
 import com.zurrtum.create.client.catnip.render.StitchedSprite;
+import com.zurrtum.create.client.foundation.model.BakedModelHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
@@ -35,8 +40,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 @Environment(EnvType.CLIENT)
@@ -58,7 +65,7 @@ public class BufferModelUtils {
     public static UnaryOperator<TextureAtlasSprite> getSwapper(@Nullable BlockState planksState) {
         if (planksState == null) return sprite -> null;
         Block planksBlock = planksState.getBlock();
-        Identifier id = CatnipServices.REGISTRIES.getKeyOrThrow(planksBlock);
+        Identifier id = BuiltInRegistries.BLOCK.getKey(planksBlock);
         String path = id.getPath();
 
         if (path.endsWith("_planks")) {
@@ -100,29 +107,62 @@ public class BufferModelUtils {
         };
     }
 
-    private static TextureAtlasSprite getSpriteOnSide(BlockState state, Direction side) {
-        BakedModel model = Minecraft.getInstance()
-            .getBlockRenderer()
-            .getBlockModel(state);
-        if (model == null)
-            return null;
-        RandomSource random = RandomSource.create();
-        random.setSeed(42L);
-        List<BakedQuad> quads = model.getQuads(state, side, random);
-        if (!quads.isEmpty()) {
-            return quads.get(0)
-                .getSprite();
-        }
-        random.setSeed(42L);
-        quads = model.getQuads(state, null, random);
-        if (!quads.isEmpty()) {
-            for (BakedQuad quad : quads) {
-                if (quad.getDirection() == side) {
-                    return quad.getSprite();
+    /**
+     * PORT-NOTE(26.1): replaces the 1.20 FRAPI sprite-replacing wrappers. Copies {@code model}'s parts into
+     * {@code output} with sprites swapped, quads failing {@code filter} dropped and {@code transform} applied (a
+     * transformed quad loses its cull face).
+     */
+    public static void addSwappedParts(BlockStateModel model, RandomSource random,
+                                       @Nullable UnaryOperator<TextureAtlasSprite> spriteSwapper,
+                                       @Nullable Predicate<BakedQuad> filter, @Nullable UnaryOperator<BakedQuad> transform,
+                                       List<BlockStateModelPart> output) {
+        List<BlockStateModelPart> parts = new ArrayList<>();
+        model.collectParts(random, parts);
+        for (BlockStateModelPart part : parts) {
+            QuadCollection.Builder builder = new QuadCollection.Builder();
+            for (Direction cullFace : Iterate.directions) {
+                for (BakedQuad quad : process(part.getQuads(cullFace), spriteSwapper, filter, transform)) {
+                    if (transform == null)
+                        builder.addCulledFace(cullFace, quad);
+                    else
+                        builder.addUnculledFace(quad);
                 }
             }
+            process(part.getQuads(null), spriteSwapper, filter, transform).forEach(builder::addUnculledFace);
+            output.add(new SimpleModelWrapper(builder.build(), part.useAmbientOcclusion(), part.particleMaterial()));
         }
-        return model.getParticleIcon();
+    }
+
+    private static List<BakedQuad> process(List<BakedQuad> quads, @Nullable UnaryOperator<TextureAtlasSprite> spriteSwapper,
+                                           @Nullable Predicate<BakedQuad> filter, @Nullable UnaryOperator<BakedQuad> transform) {
+        if (filter != null)
+            quads = quads.stream().filter(filter).toList();
+        if (spriteSwapper != null)
+            quads = BakedModelHelper.swapSprites(quads, spriteSwapper);
+        if (transform != null)
+            quads = quads.stream().map(transform).toList();
+        return quads;
+    }
+
+    private static TextureAtlasSprite getSpriteOnSide(BlockState state, Direction side) {
+        BlockStateModel model = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(state);
+        if (model == null)
+            return null;
+        RandomSource random = RandomSource.create(42L);
+        List<BlockStateModelPart> parts = new ArrayList<>();
+        model.collectParts(random, parts);
+        for (BlockStateModelPart part : parts) {
+            List<BakedQuad> quads = part.getQuads(side);
+            if (!quads.isEmpty())
+                return quads.getFirst().materialInfo().sprite();
+        }
+        for (BlockStateModelPart part : parts) {
+            for (BakedQuad quad : part.getQuads(null)) {
+                if (quad.direction() == side)
+                    return quad.materialInfo().sprite();
+            }
+        }
+        return model.particleMaterial().sprite();
     }
 
     // ensure that sprites get loaded

@@ -20,17 +20,17 @@ package com.railwayteam.railways.content.custom_tracks.casing;
 
 import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
 import com.railwayteam.railways.mixin.client.AccessorPartialModel;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.resources.Identifier;
 
 import java.time.Clock;
 
 public class RuntimeFakePartialModel {
-  private static Identifier runtime_ify(Identifier loc, BakedModel model) {
+  private static Identifier runtime_ify(Identifier loc, BlockStateModel model) {
     return Identifier.fromNamespaceAndPath(loc.getNamespace(), "runtime/" + Clock.systemUTC().millis() + "/" + model.hashCode() + "/" + loc.getPath());
   }
 
-    public static PartialModel make(Identifier loc, BakedModel bakedModel) {
+    public static PartialModel make(Identifier loc, BlockStateModel bakedModel) {
         boolean tooLate = AccessorPartialModel.railways$getPopulateOnInit();
         AccessorPartialModel.railways$setPopulateOnInit(false);
 

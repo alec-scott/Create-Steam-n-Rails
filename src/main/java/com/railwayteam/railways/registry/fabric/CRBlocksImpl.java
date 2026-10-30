@@ -53,10 +53,10 @@ public class CRBlocksImpl {
             .transform(pickaxeOnly())
             .blockstate(new FuelTankGenerator()::generate)
             .onRegister(CreateRegistrate.blockModel(() -> FuelTankModel::standard))
-            .transform(MountedFluidStorageType.mountedFluidStorage(CRMountedStorageTypesImpl.FUEL_TANK))
+            .transform(com.railwayteam.railways.port.create.CreateTransforms.mountedFluidStorage(CRMountedStorageTypesImpl.FUEL_TANK))
             .onRegister(com.railwayteam.railways.port.create.CreateTransforms.movementBehaviour(new FuelTankMovementBehavior()))
             .item(FuelTankItem::new)
-            .model(AssetLookup.customBlockItemModel("_", "block_single_window"))
+            .model((c, p) -> { }) // datagen only: upstream AssetLookup.customBlockItemModel("_", "block_single_window")
             .build()
             .register();
 

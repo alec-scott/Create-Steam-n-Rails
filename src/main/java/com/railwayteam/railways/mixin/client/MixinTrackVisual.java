@@ -30,7 +30,6 @@ import com.zurrtum.create.content.trains.track.TrackBlock;
 import com.zurrtum.create.content.trains.track.TrackBlockEntity;
 import com.railwayteam.railways.port.create.track.TrackType;
 import com.zurrtum.create.content.trains.track.TrackShape;
-import com.zurrtum.create.content.trains.track.TrackShape;
 import com.zurrtum.create.client.content.trains.track.TrackVisual;
 import com.zurrtum.create.client.flywheel.api.visual.BlockEntityVisual;
 import com.zurrtum.create.client.flywheel.api.visual.ShaderLightVisual;
@@ -194,7 +193,7 @@ public abstract class MixinTrackVisual extends AbstractVisual implements BlockEn
                             casingData.add(Pair.of(casingInstance, relativePos));
                         }
                     } else {
-                        BezierConnection.SegmentAngles segments = bc.getBakedSegments();
+                        com.zurrtum.create.client.content.trains.track.TrackRenderer.SegmentAngles segments = bc.getBakedSegments(com.railwayteam.railways.mixin.client.AccessorSegmentAngles::railways$create);
 
                         for (int i = 1; i < segments.length; i++) {
                             if (i % 2 == 0) continue;

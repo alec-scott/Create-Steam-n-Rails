@@ -19,17 +19,14 @@
 package com.railwayteam.railways.content.conductor.vent;
 
 import com.zurrtum.create.client.infrastructure.model.CopycatModel;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class CopycatVentModel extends CopycatModel {
-    protected static final AABB CUBE_AABB = new AABB(BlockPos.ZERO);
-    public CopycatVentModel(BakedModel originalModel) {
-        super(originalModel);
+    public CopycatVentModel(BlockState state, UnbakedRoot unbaked) {
+        super(state, unbaked);
     }
 
-    public static CopycatVentModel create(BakedModel bakedModel) {
-        return com.railwayteam.railways.content.conductor.vent.fabric.CopycatVentModelImpl.create(bakedModel);
+    public static CopycatVentModel create(BlockState state, UnbakedRoot unbaked) {
+        return com.railwayteam.railways.content.conductor.vent.fabric.CopycatVentModelImpl.create(state, unbaked);
     }
 }

@@ -19,7 +19,7 @@
 package com.railwayteam.railways.mixin.client;
 
 import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -43,6 +43,6 @@ public interface AccessorPartialModel {
 		throw new AssertionError();
 	}
 
-	@Accessor(value = "bakedModel", remap = false)
-	void railways$setBakedModel(BakedModel bakedModel);
+	@Accessor(value = "blockStateModel", remap = false)
+	void railways$setBakedModel(BlockStateModel bakedModel);
 }

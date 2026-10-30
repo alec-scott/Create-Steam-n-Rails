@@ -24,6 +24,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.PoseStack.Pose;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.railwayteam.railways.Railways;
+import com.railwayteam.railways.mixin.client.AccessorSegmentAngles;
 import com.railwayteam.railways.mixin_interfaces.IHasTrackCasing;
 import com.railwayteam.railways.registry.CRBlockPartials;
 import com.zurrtum.create.content.trains.track.BezierConnection;
@@ -45,8 +46,8 @@ import com.zurrtum.create.catnip.data.Pair;
 import com.zurrtum.create.client.catnip.render.CachedBuffers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -76,8 +77,8 @@ public abstract class CasingRenderUtils {
     public static PartialModel reTexture(PartialModel model, Block block) {
         Pair<PartialModel, Block> key = Pair.of(model, block);
         if (!reTexturedModels.containsKey(key)) {
-            BakedModel blockModel = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(block.defaultBlockState());
-            BakedModel texturedCasing = new SpriteCopyingBakedModel(model.get(), blockModel);
+            BlockStateModel blockModel = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(block.defaultBlockState());
+            BlockStateModel texturedCasing = new SpriteCopyingBakedModel(model.get(), blockModel);
             PartialModel texturedPartial = RuntimeFakePartialModel.make(Railways.asResource("runtime_casing"), texturedCasing);
             reTexturedModels.put(key, texturedPartial);
             return texturedPartial;
@@ -93,27 +94,27 @@ public abstract class CasingRenderUtils {
             for (Vec3 pos : casingPositions(bc)) {
                 ms.pushPose();
                 BlockPos tePosition = bc.bePositions.getFirst();
-                int light = LevelRenderer.getLightColor(level, BlockPos.containing(pos).offset(tePosition));
+                int light = LevelRenderer.getLightCoords(level, BlockPos.containing(pos).offset(tePosition));
 
                 CachedBuffers.partial(texturedPartial, state)
                         .translate(pos.x, pos.y, pos.z)
                         .translate(0, shiftDown, 0)
                         .scale(1.001f)
                         .light(light)
-                        .renderInto(ms, vb);
+                        .renderInto(ms.last(), vb);
                 ms.popPose();
             }
         } else {
             ms.pushPose();
             BlockPos tePosition = bc.bePositions.getFirst();
-            SegmentAngles segments = bc.getBakedSegments();
+            SegmentAngles segments = bc.getBakedSegments(AccessorSegmentAngles::railways$create);
 
             TransformStack.of(ms)
                     .nudge((int) tePosition.asLong());
 
             for (int i = 1; i < segments.length; i++) {
                 if (i % 2 == 0) continue;
-                int light = LevelRenderer.getLightColor(level, segments.lightPosition[i].offset(tePosition));
+                int light = LevelRenderer.getLightCoords(level, segments.lightPosition[i].offset(tePosition));
                 Matrix4f pose = copy(segments.tieTransform[i].pose());
                 pose.translate(new Vector3f(0, (i % 4) * 0.001f, 0));
                 CachedBuffers.partial(texturedPartial, state)
@@ -122,7 +123,7 @@ public abstract class CasingRenderUtils {
                         .translate(0, shiftDown, 0)
                         .scale(1.02f)
                         .light(light)
-                        .renderInto(ms, vb);
+                        .renderInto(ms.last(), vb);
 
                 TrackType trackType = TrackMaterialData.of(bc.getMaterial()).trackType;
                 if (trackType == WIDE_GAUGE) {
@@ -136,7 +137,7 @@ public abstract class CasingRenderUtils {
                                     .mulNormal(transform.normal())
                                     .translate((first ? -(61 / 64.) : -(1 / 32.)) + (inner ? 0 : (first ? 1 : -1)), shiftDown, 0)
                                     .light(light)
-                                    .renderInto(ms, vb);
+                                    .renderInto(ms.last(), vb);
                         }
                     }
                 } else {
@@ -149,7 +150,7 @@ public abstract class CasingRenderUtils {
                                 .mulNormal(transform.normal())
                                 .translate(-0.5 + (trackType == NARROW_GAUGE ? (first ? 0.5 : -0.5) : 0), shiftDown, 0)
                                 .light(light)
-                                .renderInto(ms, vb);
+                                .renderInto(ms.last(), vb);
                     }
                 }
             }
@@ -189,9 +190,9 @@ public abstract class CasingRenderUtils {
 
     public static TransformedInstance makeCasingInstance(PartialModel baseModel, Block casingBlock, InstancerProvider instancerProvider) {
         PartialModel texturedPartial = reTexture(baseModel, casingBlock);
-        SimpleModel model = BakedModelBuilder.create(texturedPartial.get())
-                .materialFunc((renderType, shaded) ->
-					SimpleMaterial.builderOf(ModelUtil.getMaterial(RenderType.cutoutMipped(), shaded))
+        SimpleModel model = new BakedModelBuilder(texturedPartial.get())
+                .materialFunc((ChunkSectionLayer layer, Boolean shaded) ->
+					SimpleMaterial.builderOf(ModelUtil.getMaterial(ChunkSectionLayer.CUTOUT, shaded, false))
 						.light(LightShaders.FLAT)
 						.cardinalLightingMode(shaded ? CardinalLightingMode.CHUNK : CardinalLightingMode.OFF)
 						.build()

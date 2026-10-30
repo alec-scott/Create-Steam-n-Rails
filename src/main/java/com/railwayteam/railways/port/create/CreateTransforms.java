@@ -8,6 +8,7 @@ import com.zurrtum.create.api.behaviour.display.DisplaySource;
 import com.zurrtum.create.api.behaviour.display.DisplayTarget;
 import com.zurrtum.create.api.behaviour.interaction.MovingInteractionBehaviour;
 import com.zurrtum.create.api.behaviour.movement.MovementBehaviour;
+import com.zurrtum.create.api.contraption.storage.fluid.MountedFluidStorageType;
 import com.zurrtum.create.api.registry.CreateRegistryKeys;
 import net.minecraft.world.level.block.Block;
 
@@ -37,5 +38,9 @@ public final class CreateTransforms {
 
 	public static <B extends Block, P> NonNullUnaryOperator<BlockBuilder<B, P>> displayTarget(RegistryEntry<DisplayTarget, ? extends DisplayTarget> target) {
 		return builder -> builder.onRegisterAfter(CreateRegistryKeys.DISPLAY_TARGET, block -> DisplayTarget.BY_BLOCK.register(block, target.get()));
+	}
+
+	public static <B extends Block, P> NonNullUnaryOperator<BlockBuilder<B, P>> mountedFluidStorage(RegistryEntry<MountedFluidStorageType<?>, ? extends MountedFluidStorageType<?>> type) {
+		return builder -> builder.onRegisterAfter(CreateRegistryKeys.MOUNTED_FLUID_STORAGE_TYPE, block -> MountedFluidStorageType.REGISTRY.register(block, type.get()));
 	}
 }

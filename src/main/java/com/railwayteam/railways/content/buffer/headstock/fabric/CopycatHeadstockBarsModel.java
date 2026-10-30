@@ -18,99 +18,76 @@
 
 package com.railwayteam.railways.content.buffer.headstock.fabric;
 
+import com.zurrtum.create.catnip.data.Iterate;
+import com.zurrtum.create.client.foundation.model.BakedModelHelper;
 import com.zurrtum.create.client.infrastructure.model.CopycatModel;
-import com.zurrtum.create.client.catnip.render.SpriteShiftEntry;
-import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
-import net.fabricmc.fabric.api.renderer.v1.model.SpriteFinder;
-import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
-import net.minecraft.client.Minecraft;
+import com.zurrtum.create.content.decoration.copycat.CopycatBlock;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.function.Supplier;
+import java.util.List;
 
+/**
+ * Model holder for {@link com.railwayteam.railways.content.buffer.headstock.CopycatHeadstockBarsBlock}: the copycat
+ * headstock delegates to {@link #addBarsParts} when its material is a bars block.
+ */
 public class CopycatHeadstockBarsModel extends CopycatModel {
-    public CopycatHeadstockBarsModel(BakedModel originalModel) {
-        super(originalModel);
+    public CopycatHeadstockBarsModel(BlockState state, UnbakedRoot unbaked) {
+        super(state, unbaked);
     }
 
     @Override
-    public boolean useAmbientOcclusion() {
-        return false;
+    protected void addPartsWithInfo(BlockAndTintGetter world, BlockPos pos, BlockState state, CopycatBlock block,
+                                    BlockState material, RandomSource random, List<BlockStateModelPart> parts) {
+        addBarsParts(world, pos, state, block, material, random, parts);
     }
 
-    public void emitBlockQuadsInner(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context, BlockState material, boolean[] cullFaceRemovalData, boolean[] occlusionData) {
-        CullFaceRemovalData actualCullFaceRemovalData = new CullFaceRemovalData();
-        OcclusionData actualOcclusionData = new OcclusionData();
-        for (int i = 0; i < 6; i++) {
-            if (cullFaceRemovalData[i]) {
-                actualCullFaceRemovalData.remove(Direction.from3DDataValue(i));
-            }
-            if (occlusionData[i]) {
-                actualOcclusionData.occlude(Direction.from3DDataValue(i));
-            }
-        }
-        emitBlockQuadsInner(blockView, state, pos, randomSupplier, context, material, actualCullFaceRemovalData, actualOcclusionData);
-    }
-
-    @Override
-    protected void emitBlockQuadsInner(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context, BlockState material, CullFaceRemovalData cullFaceRemovalData, OcclusionData occlusionData) {
-        BakedModel model = getModelOf(material);
-        TextureAtlasSprite mainTargetSprite = model.getParticleIcon();
-
-        SpriteFinder spriteFinder = SpriteFinder.get(Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS));
+    /** {@code state} and {@code block} are the copycat headstock's. */
+    public void addBarsParts(BlockAndTintGetter world, BlockPos pos, BlockState state, CopycatBlock block,
+                             BlockState material, RandomSource random, List<BlockStateModelPart> parts) {
+        BlockStateModel materialModel = getModelOf(material);
+        TextureAtlasSprite mainTargetSprite = materialModel.particleMaterial().sprite();
 
         // This is very cursed
-        SpriteAndBool altTargetSpriteHolder = new SpriteAndBool(mainTargetSprite, true);
-        context.pushTransform(quad -> {
-            if (altTargetSpriteHolder.bool && quad.cullFace() == null && quad.lightFace() == Direction.UP) {
-                altTargetSpriteHolder.sprite = spriteFinder.find(quad, 0);
-                altTargetSpriteHolder.bool = false;
+        TextureAtlasSprite altTargetSprite = mainTargetSprite;
+        find:
+        for (BlockStateModelPart part : getMaterialParts(world, pos, material, random, materialModel)) {
+            for (BakedQuad quad : part.getQuads(null)) {
+                if (quad.direction() == Direction.UP) {
+                    altTargetSprite = quad.materialInfo().sprite();
+                    break find;
+                }
             }
-            return false;
-        });
-        ((FabricBakedModel) model).emitBlockQuads(blockView, material, pos, randomSupplier, context);
-        context.popTransform();
-        TextureAtlasSprite altTargetSprite = altTargetSpriteHolder.sprite;
+        }
 
-        context.pushTransform(quad -> {
-            TextureAtlasSprite targetSprite;
-            Direction cullFace = quad.cullFace();
-            if (cullFace != null && cullFace.getAxis() == Direction.Axis.Y) {
-                targetSprite = altTargetSprite;
-            } else {
-                targetSprite = mainTargetSprite;
+        DirectionData directionData = gatherDirectionData(block, state);
+        List<BlockStateModelPart> ownParts = new ObjectArrayList<>();
+        model.collectParts(random, ownParts);
+        TextureAtlasSprite verticalSprite = altTargetSprite;
+        for (BlockStateModelPart part : ownParts) {
+            QuadCollection.Builder builder = new QuadCollection.Builder();
+            BakedModelHelper.swapSprites(part.getQuads(null), sprite -> mainTargetSprite)
+                .forEach(builder::addUnculledFace);
+            for (Direction cullFace : Iterate.directions) {
+                TextureAtlasSprite target = cullFace.getAxis() == Direction.Axis.Y ? verticalSprite : mainTargetSprite;
+                for (BakedQuad quad : BakedModelHelper.swapSprites(part.getQuads(cullFace), sprite -> target)) {
+                    if (directionData.isUncull(cullFace))
+                        builder.addUnculledFace(quad);
+                    else
+                        builder.addCulledFace(cullFace, quad);
+                }
             }
-
-            if (cullFaceRemovalData.shouldRemove(quad.cullFace())) {
-                quad.cullFace(null);
-            }
-
-            TextureAtlasSprite original = spriteFinder.find(quad, 0);
-            for (int vertex = 0; vertex < 4; vertex++) {
-                float u = targetSprite.getU(SpriteShiftEntry.getUnInterpolatedU(original, quad.spriteU(vertex, 0)));
-                float v = targetSprite.getV(SpriteShiftEntry.getUnInterpolatedV(original, quad.spriteV(vertex, 0)));
-                quad.sprite(vertex, 0, u, v);
-            }
-            return true;
-        });
-        ((FabricBakedModel) wrapped).emitBlockQuads(blockView, state, pos, randomSupplier, context);
-        context.popTransform();
-    }
-
-    private static class SpriteAndBool {
-        public TextureAtlasSprite sprite;
-        public boolean bool;
-
-        public SpriteAndBool(TextureAtlasSprite sprite, boolean bool) {
-            this.sprite = sprite;
-            this.bool = bool;
+            parts.add(new SimpleModelWrapper(builder.build(), false, part.particleMaterial()));
         }
     }
 }
