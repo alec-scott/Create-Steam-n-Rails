@@ -22,6 +22,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.RailwaysClient;
 import com.railwayteam.railways.content.conductor.fabric.ConductorCapItemRenderer;
+import com.railwayteam.railways.fabric.client.ObjModelLoader;
 import com.railwayteam.railways.fabric.events.ClientEventsFabric;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -44,6 +45,7 @@ public class RailwaysClientImpl implements ClientModInitializer {
 		RailwaysClient.init();
 		ClientEventsFabric.init();
 		ConductorCapItemRenderer.register();
+		ObjModelLoader.register();
 	}
 
 	@SuppressWarnings({"unchecked", "rawtypes"}) // jank!

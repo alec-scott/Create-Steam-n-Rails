@@ -32,7 +32,7 @@ public class BoilerGeneratorImpl extends BoilerGenerator {
         // but when I do it in blockstate there's horrible shading issues for the z rotation
         String colorName = color.getSerializedName();
         return prov.models().withExistingParent("block/palettes/" + TextUtils.prefixToFolder(ctx.getName(), colorName) + "_" + style.getSerializedName() + "_" + axis.getName() + (raised ? "_raised" : ""), prov.modLoc("block/palettes/boiler/boiler"))
-            // PORT-NOTE(fabric): upstream used Porting Lib's OBJ loader (models/block/palettes/boiler/*.obj); no 26.1 equivalent yet, see PORTING-26.1.md
+            // PORT-NOTE(fabric): upstream used Porting Lib's OBJ loader; the committed models now use ObjModelLoader ("fabric:type": "railways:obj")
             .texture("front", prov.modLoc("block/palettes/" + colorName + "/" + style.getTexture()))
             .texture("sides", prov.modLoc("block/palettes/" + colorName + "/" + (wrapping != null ? wrapping.prefix("wrapped_boiler_side") : "boiler_side")))
             .texture("particle", prov.modLoc("block/palettes/" + colorName + "/riveted_pillar_top"));

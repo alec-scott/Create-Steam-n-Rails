@@ -1,7 +1,6 @@
 {
 	"parent": "railways:block/wide_gauge_base/obj_track",
-	"loader": "forge:obj",
-	"porting_lib:loader": "porting_lib:obj",
+	"fabric:type": "railways:obj",
 	"flip_v": true,
 	"render_type": "minecraft:cutout_mipped",
 	"model": "railways:models/block/wide_gauge_base/tie.obj"

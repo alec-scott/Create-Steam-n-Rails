@@ -200,6 +200,11 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
   sliding doors use one combined two-block partial (`palettes/doors/block` template, `CRBlockPartials.SLIDING_DOORS`).
   Create Fly draws doors through `SlidingDoorVisual` when Flywheel is active, so `MixinSlidingDoorVisual` swaps the
   palettes partials in there as well as in `MixinSlidingDoorRenderer`.
+- **OBJ models** (boilers, every bogey frame/wheel set, buffer stops, monorail, narrow/wide gauge track bases; 1,622
+  model JSONs) used Porting Lib's OBJ loader, which has no 26.1 equivalent, so they baked to nothing (invisible
+  boilers, blank Palettes tab icon). `fabric/client/ObjModelLoader` is a Fabric `UnbakedModelDeserializer` for
+  `"fabric:type": "railways:obj"` that bakes the OBJ faces into vanilla quads (only the subset Railways' files use);
+  `porting-tools/convert_obj_models.pl` switched the JSONs over.
 
 ## TODO (not compile errors)
 - Model warnings at load: 103 "Missing texture references" and 15 models rejected for using item-atlas sprites in a

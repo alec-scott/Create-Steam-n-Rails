@@ -1,7 +1,6 @@
 {
 	"parent": "block/block",
-	"loader": "forge:obj",
-	"porting_lib:loader": "porting_lib:obj",
+	"fabric:type": "railways:obj",
 	"flip_v": true,
 	"model": "railways:models/block/bogey/narrow/default_scotch/pistons.obj",
 	"textures": {

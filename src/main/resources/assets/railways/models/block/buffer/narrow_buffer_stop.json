@@ -1,8 +1,7 @@
 {
 	"credit": "Made with Blockbench by StarFluxie",
 	"ambientocclusion": false,
-	"loader": "forge:obj",
-	"porting_lib:loader": "porting_lib:obj",
+	"fabric:type": "railways:obj",
 	"flip_v": true,
 	"model": "railways:models/block/buffer/narrow_buffer_stop.obj",
 	"texture_size": [32, 32],

@@ -1,6 +1,5 @@
 {
-	"loader": "forge:obj",
-	"porting_lib:loader": "porting_lib:obj",
+	"fabric:type": "railways:obj",
 	"ambientocclusion": false,
 	"flip_v": true,
 	"model": "railways:models/block/monorail/monorail/static_blocks/ascending.obj",
