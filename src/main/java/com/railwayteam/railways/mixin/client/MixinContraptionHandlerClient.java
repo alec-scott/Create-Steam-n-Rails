@@ -26,6 +26,7 @@ import com.zurrtum.create.content.contraptions.AbstractContraptionEntity;
 import com.zurrtum.create.client.content.contraptions.ContraptionHandlerClient;
 import com.zurrtum.create.content.trains.entity.CarriageContraptionEntity;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -60,7 +61,7 @@ public class MixinContraptionHandlerClient {
         }
 
         Minecraft mc = Minecraft.getInstance();
-        ((AccessorMinecraft) mc).railways$openChatScreen("/snr shadow_realm banish " + entity.trainId + " ");
+        mc.setScreen(new ChatScreen("/snr shadow_realm banish " + entity.trainId + " ", false)); // PORT-NOTE(26.1): openChatScreen takes a ChatMethod now
         return true;
     }
 }
