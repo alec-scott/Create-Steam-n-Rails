@@ -32,13 +32,16 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 // Higher priority (applies later) for compatibility with [Plutonium](https://github.com/IThundxr/Plutonium)
+import java.nio.file.Path;
+
 @Mixin(value = SavedDataStorage.class, priority = 1200)
 public class MixinDimensionDataStorage {
     @WrapOperation(method = "readTagFromDisk", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/datafix/DataFixTypes;update(Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/nbt/CompoundTag;II)Lnet/minecraft/nbt/CompoundTag;"))
     private CompoundTag updateTracksData(DataFixTypes instance, DataFixer fixer, CompoundTag tag, int version,
-                                         int newVersion, Operation<CompoundTag> original, String name) {
+                                         int newVersion, Operation<CompoundTag> original, Path path) {
         CompoundTag vanillaFixed = original.call(instance, fixer, tag, version, newVersion);
-        if (!"create_tracks".equals(name))
+        // PORT-NOTE(26.1): saved data is read by path; Create Fly's railway data is create:tracks (1.20: create_tracks)
+        if (!path.endsWith(Path.of("create", "tracks.dat")))
             return vanillaFixed;
 
         return (CompoundTag) DataFixesInternals.get().updateWithAllFixers(
