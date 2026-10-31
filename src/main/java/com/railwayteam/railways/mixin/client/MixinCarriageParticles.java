@@ -21,6 +21,8 @@ package com.railwayteam.railways.mixin.client;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.railwayteam.railways.registry.CRBogeyStyles;
+import com.zurrtum.create.api.behaviour.EntityBehaviour;
+import com.zurrtum.create.content.trains.entity.Carriage;
 import com.zurrtum.create.content.trains.entity.CarriageContraptionEntity;
 import com.zurrtum.create.client.foundation.entity.behaviour.CarriageParticleBehaviour;
 import net.minecraft.core.particles.ParticleOptions;
@@ -28,18 +30,13 @@ import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 // PORT-NOTE(26.1): Create Fly's CarriageParticles is the CarriageParticleBehaviour entity behaviour
 @Mixin(CarriageParticleBehaviour.class)
 public class MixinCarriageParticles {
-    @Unique private boolean railways$isHandcar;
-
-    @Inject(method = "<init>", at = @At("RETURN"), remap = false)
-    private void railways$checkIfHandcar(CarriageContraptionEntity entity, CallbackInfo ci) {
-        railways$isHandcar = entity.getCarriage().bogeys.both(b -> b == null || b.getStyle() == CRBogeyStyles.HANDCAR);
-    }
+    // PORT-NOTE(26.1): the behaviour is built in the entity constructor, before the carriage is bound, so the bogey
+    // style is read when particles are first spawned (null until then)
+    @Unique private Boolean railways$isHandcar;
 
     @WrapWithCondition(method = "tick", at = @At(
             value = "INVOKE",
@@ -47,6 +44,12 @@ public class MixinCarriageParticles {
     ))
     private boolean railways$skipParticlesForHandcar(Level instance, ParticleOptions particleData, double x, double y, double z,
                                                 double xSpeed, double ySpeed, double zSpeed, @Local(ordinal = 1) boolean spark) {
+        if (railways$isHandcar == null) {
+            Carriage carriage = ((CarriageContraptionEntity) ((EntityBehaviour<?>) (Object) this).entity).getCarriage();
+            if (carriage == null)
+                return true;
+            railways$isHandcar = carriage.bogeys.both(b -> b == null || b.getStyle() == CRBogeyStyles.HANDCAR);
+        }
         return spark || !railways$isHandcar;
     }
 }

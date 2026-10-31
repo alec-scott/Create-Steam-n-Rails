@@ -24,6 +24,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.railwayteam.railways.registry.CRBogeyStyles;
 import com.railwayteam.railways.registry.CRSounds;
 import com.zurrtum.create.AllSoundEvents;
+import com.zurrtum.create.api.behaviour.EntityBehaviour;
 import com.zurrtum.create.content.trains.entity.Carriage;
 import com.zurrtum.create.content.trains.entity.CarriageContraptionEntity;
 import com.zurrtum.create.client.foundation.entity.behaviour.CarriageAudioBehaviour;
@@ -53,14 +54,21 @@ public class MixinCarriageSounds {
     @Unique
     private boolean railways$isHandcar;
 
-    @Inject(method = "<init>", at = @At("RETURN"), remap = false)
-    private void skipIfInvisible(CarriageContraptionEntity entity, CallbackInfo ci) {
-        railways$skip = entity.getCarriage().bogeys.both((b) -> b == null || b.getStyle() == CRBogeyStyles.INVISIBLE || b.getStyle() == CRBogeyStyles.INVISIBLE_MONOBOGEY);
-        railways$isHandcar = entity.getCarriage().bogeys.both((b) -> b == null || b.getStyle() == CRBogeyStyles.HANDCAR);
-    }
+    @Unique
+    private boolean railways$checked;
 
+    // PORT-NOTE(26.1): Create Fly builds this behaviour in the entity constructor, before the carriage is bound
+    // (1.20 checked the bogeys at construction), so the bogey styles are read on the first tick with a carriage
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true, remap = false)
     private void actuallySkip(CallbackInfo ci) {
+        if (!railways$checked) {
+            Carriage carriage = ((CarriageContraptionEntity) ((EntityBehaviour<?>) (Object) this).entity).getCarriage();
+            if (carriage == null)
+                return;
+            railways$skip = carriage.bogeys.both((b) -> b == null || b.getStyle() == CRBogeyStyles.INVISIBLE || b.getStyle() == CRBogeyStyles.INVISIBLE_MONOBOGEY);
+            railways$isHandcar = carriage.bogeys.both((b) -> b == null || b.getStyle() == CRBogeyStyles.HANDCAR);
+            railways$checked = true;
+        }
         if (railways$skip)
             ci.cancel();
     }
