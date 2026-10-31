@@ -25,9 +25,8 @@ import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,9 +55,10 @@ public class ConductorFakePlayerFabric extends FakePlayer implements IConductorH
 		return Component.translatable(Railways.MOD_ID + "." + "conductor_name");
 	}
 
+	// PORT-NOTE(26.1): eye height is final and comes from the dimensions
 	@Override
-	public float getEyeHeight(@NotNull Pose pose) {
-		return 0;
+	public @NotNull EntityDimensions getDefaultDimensions(@NotNull Pose pose) {
+		return super.getDefaultDimensions(pose).withEyeHeight(0);
 	}
 
 	@Override
@@ -74,13 +74,6 @@ public class ConductorFakePlayerFabric extends FakePlayer implements IConductorH
 	@Override
 	public boolean canEat(boolean ignoreHunger) {
 		return false;
-	}
-
-	@Override
-	@NotNull
-	public ItemStack eat(@NotNull Level world, ItemStack stack) {
-		stack.shrink(1);
-		return stack;
 	}
 
 	@Override

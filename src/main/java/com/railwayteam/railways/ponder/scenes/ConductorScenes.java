@@ -18,7 +18,6 @@
 
 package com.railwayteam.railways.ponder.scenes;
 
-import com.mojang.authlib.GameProfile;
 import com.railwayteam.railways.content.conductor.ConductorEntity;
 import com.railwayteam.railways.registry.CREntities;
 import com.railwayteam.railways.registry.CRItems;
@@ -34,8 +33,6 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Rotations;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.WalkAnimationState;
@@ -44,33 +41,29 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.piston.PistonHeadBlock;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.component.DyedItemColor;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.phys.Vec3;
 
 public class ConductorScenes {
 
   public static ElementLink<EntityElement> makePlayerStand(SceneBuilder scene, String playerName, int leatherColor, Vec3 pos) {
     ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
-    GameProfile gameprofile = new GameProfile(null, playerName);
-    /*try {
-      Minecraft.getInstance().getSkinManager().registerSkins(gameprofile, null, false);
-    } catch (NullPointerException ignored) {}*/
-    SkullBlockEntity.updateGameprofile(gameprofile, (profile) -> {
-      CompoundTag itemTag = playerHead.getOrCreateTag();
-      itemTag.put("SkullOwner", NbtUtils.writeGameProfile(new CompoundTag(), profile));
-      playerHead.setTag(itemTag);
-    });
+    playerHead.set(DataComponents.PROFILE, ResolvableProfile.createUnresolved(playerName));
 
     ElementLink<EntityElement> player = scene.world().createEntity(w -> {
-      ArmorStand entity = EntityType.ARMOR_STAND.create(w);
+      ArmorStand entity = EntityType.ARMOR_STAND.create(w, EntitySpawnReason.LOAD);
       entity.setPos(pos.x, pos.y, pos.z);
       entity.xo = pos.x;
       entity.yo = pos.y;
       entity.zo = pos.z;
       WalkAnimationState animation = entity.walkAnimation;
-      animation.update(-animation.position(), 1);
+      animation.update(-animation.position(), 1, 1);
       animation.setSpeed(1);
       entity.yRotO = 210;
       entity.setYRot(210);
@@ -80,20 +73,17 @@ public class ConductorScenes {
       return entity;
     });
 
-    scene.world().modifyEntity(player, entity -> {
+    scene.world().modifyEntity(player, e -> {
+      if (!(e instanceof LivingEntity entity))
+        return;
       entity.setItemSlot(EquipmentSlot.HEAD, playerHead);
-      CompoundTag leatherTag = new CompoundTag();
-      {
-        CompoundTag displayTag = new CompoundTag();
-        displayTag.putInt("color", leatherColor);
-        leatherTag.put("display", displayTag);
-      }
+      DyedItemColor leatherColorComponent = new DyedItemColor(leatherColor);
       ItemStack chestplate = new ItemStack(Items.LEATHER_CHESTPLATE);
       ItemStack leggings = new ItemStack(Items.LEATHER_LEGGINGS);
       ItemStack boots = new ItemStack(Items.LEATHER_BOOTS);
-      chestplate.setTag(leatherTag);
-      leggings.setTag(leatherTag);
-      boots.setTag(leatherTag);
+      chestplate.set(DataComponents.DYED_COLOR, leatherColorComponent);
+      leggings.set(DataComponents.DYED_COLOR, leatherColorComponent);
+      boots.set(DataComponents.DYED_COLOR, leatherColorComponent);
       entity.setItemSlot(EquipmentSlot.CHEST, chestplate);
       entity.setItemSlot(EquipmentSlot.LEGS, leggings);
       entity.setItemSlot(EquipmentSlot.FEET, boots);
@@ -111,7 +101,7 @@ public class ConductorScenes {
       entity.yo = pos.y;
       entity.zo = pos.z;
       WalkAnimationState animation = entity.walkAnimation;
-      animation.update(-animation.position(), 1);
+      animation.update(-animation.position(), 1, 1);
       animation.setSpeed(1);
       entity.yRotO = 210;
       entity.setYRot(210);
@@ -299,7 +289,8 @@ public class ConductorScenes {
     scene.idle(10);
 
     scene.world().modifyEntity(player, entity -> {
-      entity.setItemSlot(EquipmentSlot.HEAD, CRItems.ITEM_CONDUCTOR_CAP.get(DyeColor.RED).asStack());
+      if (entity instanceof LivingEntity living)
+        living.setItemSlot(EquipmentSlot.HEAD, CRItems.ITEM_CONDUCTOR_CAP.get(DyeColor.RED).asStack());
     });
 
     scene.overlay().showText(30)
@@ -388,7 +379,7 @@ public class ConductorScenes {
 
     scene.idle(45);
 
-    ItemStack toolboxStack = AllBlocks.TOOLBOXES.get(DyeColor.LIME).asStack();
+    ItemStack toolboxStack = new ItemStack(AllBlocks.LIME_TOOLBOX);
 
     scene.overlay().showControls(util.vector().topOf(conductorPos), Pointing.DOWN, 40)
             .rightClick()

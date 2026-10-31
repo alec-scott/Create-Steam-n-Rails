@@ -55,19 +55,19 @@ public class CameraMovePacket implements C2SPacket, S2CPacket {
     
     public CameraMovePacket(FriendlyByteBuf buf) {
         this.id = buf.readVarInt();
-        this.packet = ServerboundMovePlayerPacket.PosRot.read(buf);
+        this.packet = ServerboundMovePlayerPacket.PosRot.STREAM_CODEC.decode(buf);
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
         buffer.writeVarInt(id);
-        packet.write(buffer);
+        ServerboundMovePlayerPacket.PosRot.STREAM_CODEC.encode(buffer, packet);
     }
 
     @Override
     public void handle(Minecraft mc) {
-        if (mc.level != null && mc.level.getEntity(id) instanceof ConductorEntity conductor && mc.cameraEntity == conductor) {
-//            conductor.absMoveTo(packet.getX(mc.cameraEntity.getX()), packet.getY(mc.cameraEntity.getY()), packet.getZ(mc.cameraEntity.getZ()), packet.getYRot(mc.cameraEntity.getYRot()), packet.getXRot(mc.cameraEntity.getXRot()));
+        if (mc.level != null && mc.level.getEntity(id) instanceof ConductorEntity conductor && mc.getCameraEntity() == conductor) {
+//            conductor.absSnapTo(packet.getX(mc.cameraEntity.getX()), packet.getY(mc.cameraEntity.getY()), packet.getZ(mc.cameraEntity.getZ()), packet.getYRot(mc.cameraEntity.getYRot()), packet.getXRot(mc.cameraEntity.getXRot()));
             double d0 = packet.getX(conductor.getX());
             double d1 = packet.getY(conductor.getY());
             double d2 = packet.getZ(conductor.getZ());
@@ -76,7 +76,7 @@ public class CameraMovePacket implements C2SPacket, S2CPacket {
                 conductor.setPos(d0, d1, d2);
                 float f = (float)(packet.getYRot(conductor.getYRot()) * 360) / 256.0F;
                 float f1 = (float)(packet.getXRot(conductor.getXRot()) * 360) / 256.0F;
-                conductor.lerpTo(d0, d1, d2, f, f1, 3, true);
+                conductor.moveOrInterpolateTo(new Vec3(d0, d1, d2), f, f1);
                 conductor.setOnGround(packet.isOnGround());
             }
         }
@@ -114,8 +114,8 @@ public class CameraMovePacket implements C2SPacket, S2CPacket {
         double f = relativeSet.contains(Relative.Z) ? conductor.getZ() : 0.0;
         float g = relativeSet.contains(Relative.Y_ROT) ? conductor.getYRot() : 0.0f;
         float h = relativeSet.contains(Relative.X_ROT) ? conductor.getXRot() : 0.0f;
-        conductor.absMoveTo(x, y, z, yaw, pitch);
-        CRPackets.PACKETS.sendTo(player, new CameraMovePacket(conductor, new ServerboundMovePlayerPacket.PosRot(x, y, z, yaw, pitch, conductor.onGround())));
+        conductor.absSnapTo(x, y, z, yaw, pitch);
+        CRPackets.PACKETS.sendTo(player, new CameraMovePacket(conductor, new ServerboundMovePlayerPacket.PosRot(x, y, z, yaw, pitch, conductor.onGround(), conductor.horizontalCollision)));
 //        conductor.connection.send(new ClientboundPlayerPositionPacket(x - d, y - e, z - f, yaw - g, pitch - h, relativeSet, this.awaitingTeleport, dismountVehicle));
     }
 
@@ -134,7 +134,7 @@ public class CameraMovePacket implements C2SPacket, S2CPacket {
             float g = Mth.wrapDegrees(packet.getYRot(conductor.getYRot()));
             float h = Mth.wrapDegrees(packet.getXRot(conductor.getXRot()));
             if (conductor.isPassenger()) {
-                conductor.absMoveTo(conductor.getX(), conductor.getY(), conductor.getZ(), g, h);
+                conductor.absSnapTo(conductor.getX(), conductor.getY(), conductor.getZ(), g, h);
                 return;
             }
             double i = conductor.getX();
@@ -186,7 +186,7 @@ public class CameraMovePacket implements C2SPacket, S2CPacket {
 //                Railways.LOGGER.warn("{} moved wrongly!", (Object)sender1.getName().getString());
                 return;
             }
-            conductor.absMoveTo(d, e, f, g, h);
+            conductor.absSnapTo(d, e, f, g, h);
             if (!conductor.noPhysics && (bl3 && serverLevel.noCollision(conductor, aABB) || isPlayerCollidingWithAnythingNew(conductor, serverLevel, aABB))) {
                 teleport(sender1, conductor, i, j, k, g, h);
                 return;
