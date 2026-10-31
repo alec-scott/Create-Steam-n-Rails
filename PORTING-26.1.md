@@ -204,7 +204,15 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
   model JSONs) used Porting Lib's OBJ loader, which has no 26.1 equivalent, so they baked to nothing (invisible
   boilers, blank Palettes tab icon). `fabric/client/ObjModelLoader` is a Fabric `UnbakedModelDeserializer` for
   `"fabric:type": "railways:obj"` that bakes the OBJ faces into vanilla quads (only the subset Railways' files use);
-  `porting-tools/convert_obj_models.pl` switched the JSONs over.
+  `porting-tools/convert_obj_models.pl` switched the JSONs over. Faces on an MTL material without `map_Kd`
+  (Blockbench's `none`) are skipped.
+- **Connected textures**: Create Fly reads each CT tile as its own sprite (`<name>_connected/<index>.png`, index 0 =
+  the base texture) instead of offsets into one `_connected.png` sheet, so every connected Railways face (chained
+  boilers, locometal, windows, smokeboxes, fuel tanks) drew the missing texture. `porting-tools/SplitConnectedTextures.java`
+  split all 764 sheets (main assets and the `legacy_palettes` pack). Tile -> sheet cell tables were derived by
+  pixel-matching Create Fly's split tiles against the sheets they replaced (its commit `48e17b9e`): 2x2 sheets are
+  identity, rectangle and omnidirectional are remapped. Note Create Fly moved its own fluid tank top/inner to
+  `RECTANGLE_WITHOUT_SINGLE`; Railways' fuel tank keeps `RECTANGLE` (its sheets are 1.20 rectangle sheets).
 
 ## TODO (not compile errors)
 - Model warnings at load: 103 "Missing texture references" and 15 models rejected for using item-atlas sprites in a

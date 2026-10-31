@@ -108,6 +108,9 @@ public final class ObjModelLoader {
             QuadCollection.Builder builder = new QuadCollection.Builder();
             for (Face face : faces) {
                 String slot = materialSlots.getOrDefault(face.material(), face.material());
+                // Blockbench exports untextured faces with a material that has no map_Kd ("none"); they are not drawn
+                if (slot == null)
+                    continue;
                 Material.Baked material = baker.materials().resolveSlot(textureSlots, slot, debugName);
                 TextureAtlasSprite sprite = material.sprite();
 
@@ -185,9 +188,10 @@ public final class ObjModelLoader {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String[] parts = line.trim().split("\\s+");
-                    if (parts[0].equals("newmtl"))
+                    if (parts[0].equals("newmtl")) {
                         material = parts[1];
-                    else if (parts[0].equals("map_Kd") && material != null && parts[1].startsWith("#"))
+                        materialSlots.put(material, null);
+                    } else if (parts[0].equals("map_Kd") && material != null && parts[1].startsWith("#"))
                         materialSlots.put(material, parts[1].substring(1));
                 }
             }
