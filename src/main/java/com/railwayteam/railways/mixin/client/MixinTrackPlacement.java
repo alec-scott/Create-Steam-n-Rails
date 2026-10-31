@@ -22,11 +22,11 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.railwayteam.railways.content.custom_tracks.generic_crossing.GenericCrossingBlock;
 import com.zurrtum.create.content.trains.track.TrackBlock;
-import com.zurrtum.create.content.trains.track.TrackPlacement;
+import com.zurrtum.create.client.content.trains.track.TrackPlacementClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 
-@Mixin(TrackPlacement.class)
+@Mixin(TrackPlacementClient.class) // PORT-NOTE(26.1): Create Fly's client-side track placement
 public class MixinTrackPlacement {
     @WrapOperation(method = "clientTick", constant = @Constant(classValue = TrackBlock.class), remap = false)
     private static boolean checkTrackBlock(Object object, Operation<Boolean> original) {

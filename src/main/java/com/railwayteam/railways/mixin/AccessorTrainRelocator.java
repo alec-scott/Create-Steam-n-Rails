@@ -18,14 +18,15 @@
 
 package com.railwayteam.railways.mixin;
 
-import com.zurrtum.create.content.trains.entity.TrainRelocator;
+import com.zurrtum.create.client.content.trains.entity.TrainRelocatorClient;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.UUID;
 
-@Mixin(TrainRelocator.class)
+// PORT-NOTE(26.1): Create Fly keeps the client relocation state in TrainRelocatorClient (client mixin)
+@Mixin(TrainRelocatorClient.class)
 public interface AccessorTrainRelocator {
     @Accessor("relocatingTrain")
     static void railways$setRelocatingTrain(UUID trainId) {;

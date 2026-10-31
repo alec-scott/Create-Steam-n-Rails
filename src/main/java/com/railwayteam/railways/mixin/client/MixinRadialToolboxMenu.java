@@ -47,7 +47,8 @@ public abstract class MixinRadialToolboxMenu extends AbstractSimiScreen {
 	private State state;
 
 	@Inject(method = "lambda$removed$0", at = @At("HEAD"), cancellable = true)
-	private static void railways$sendConductorToolboxDisposeAllPacketsToAll(ToolboxBlockEntity te, CallbackInfo ci) {
+	// PORT-NOTE(26.1): the lambda is an instance method in Create Fly
+	private void railways$sendConductorToolboxDisposeAllPacketsToAll(ToolboxBlockEntity te, CallbackInfo ci) {
 		if (te instanceof MountedToolbox mounted) {
 			CRPackets.PACKETS.send(new MountedToolboxDisposeAllPacket(mounted.getParent()));
 			ci.cancel(); // lambda only sends packet, skip it
@@ -59,7 +60,7 @@ public abstract class MixinRadialToolboxMenu extends AbstractSimiScreen {
 			remap = true,
 			at = @At(
 					value = "INVOKE",
-					target = "Lcom/simibubi/create/content/equipment/toolbox/ToolboxDisposeAllPacket;<init>(Lnet/minecraft/core/BlockPos;)V",
+					target = "Lcom/zurrtum/create/infrastructure/packet/c2s/ToolboxDisposeAllPacket;<init>(Lnet/minecraft/core/BlockPos;)V",
 					remap = true
 			),
 			cancellable = true
@@ -78,13 +79,13 @@ public abstract class MixinRadialToolboxMenu extends AbstractSimiScreen {
 					// skip first one, unequip works fine
 					@At(
 							value = "INVOKE",
-							target = "Lcom/simibubi/create/content/equipment/toolbox/ToolboxEquipPacket;<init>(Lnet/minecraft/core/BlockPos;II)V",
+							target = "Lcom/zurrtum/create/infrastructure/packet/c2s/ToolboxEquipPacket;<init>(Lnet/minecraft/core/BlockPos;II)V",
 							ordinal = 1,
 							remap = true
 					),
 					@At(
 							value = "INVOKE",
-							target = "Lcom/simibubi/create/content/equipment/toolbox/ToolboxEquipPacket;<init>(Lnet/minecraft/core/BlockPos;II)V",
+							target = "Lcom/zurrtum/create/infrastructure/packet/c2s/ToolboxEquipPacket;<init>(Lnet/minecraft/core/BlockPos;II)V",
 							ordinal = 2,
 							remap = true
 					),
@@ -108,7 +109,7 @@ public abstract class MixinRadialToolboxMenu extends AbstractSimiScreen {
 			remap = true,
 			at = @At(
 					value = "INVOKE",
-					target = "Lcom/simibubi/create/content/equipment/toolbox/ToolboxEquipPacket;<init>(Lnet/minecraft/core/BlockPos;II)V",
+					target = "Lcom/zurrtum/create/infrastructure/packet/c2s/ToolboxEquipPacket;<init>(Lnet/minecraft/core/BlockPos;II)V",
 					remap = true
 			),
 			cancellable = true

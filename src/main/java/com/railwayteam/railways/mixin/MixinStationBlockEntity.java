@@ -52,14 +52,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
@@ -83,14 +81,12 @@ public abstract class MixinStationBlockEntity extends SmartBlockEntity {
         BogeyMenuHandlerServer.setCurrentPlayer(null);
     }
 
-    @SuppressWarnings("InvalidInjectorMethodSignature")
+    // PORT-NOTE(26.1): positional local capture replaced with a named @Local (Create Fly's method has more locals)
     @Inject(method = "trackClicked",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;playSound(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/core/BlockPos;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FF)V", remap = true),
-            locals = LocalCapture.CAPTURE_FAILSOFT, remap = true, require = 0
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;playSound(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/BlockPos;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FF)V")
     )
     private void railways$setBogeyData(Player player, InteractionHand hand, ITrackBlock track, BlockState state, BlockPos pos,
-                              CallbackInfoReturnable<Boolean> cir, BoundingBox bb, BlockPos up, BlockPos down,
-                              int bogeyOffset, ItemStack handItem, boolean upsideDown, BlockPos targetPos) {
+                              CallbackInfoReturnable<Boolean> cir, @Local(name = "targetPos") BlockPos targetPos) {
         if (TrackMaterialData.of(track.getMaterial()).trackType == CRTrackMaterials.CRTrackType.MONORAIL)
             return;
         Pair<BogeyStyle, BogeySize> styleData = BogeyMenuHandlerServer.getStyle(player.getUUID());

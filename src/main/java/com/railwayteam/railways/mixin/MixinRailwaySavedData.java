@@ -18,30 +18,30 @@
 
 package com.railwayteam.railways.mixin;
 
-import com.google.common.collect.Iterables;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import com.railwayteam.railways.mixin_interfaces.IShadowTrain;
 import com.railwayteam.railways.mixin_interfaces.RailwaySavedDataDuck;
 import com.zurrtum.create.content.trains.RailwaySavedData;
 import com.zurrtum.create.content.trains.entity.Train;
-import com.zurrtum.create.content.trains.graph.DimensionPalette;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 
 @Mixin(RailwaySavedData.class)
 public class MixinRailwaySavedData implements RailwaySavedDataDuck {
@@ -63,17 +63,18 @@ public class MixinRailwaySavedData implements RailwaySavedDataDuck {
         return railways$shadowKeys;
     }
 
-    @Inject(method = "lambda$load$5", at = @At(value = "INVOKE", target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"),
-        cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT, remap = false)
-    private static void railways$deleteEmptyTrains(RailwaySavedData sd, DimensionPalette dimensions, CompoundTag c,
-                                              CallbackInfo ci, Train train) { // delete trains with 0 carriages
-        if (train.carriages.isEmpty()) // just don't add it to the list of trains
-            ci.cancel();
+    // PORT-NOTE(26.1): Create Fly's RailwaySavedData is a codec (static save/load on DynamicOps); trains are decoded in
+    // lambda$load$2 and saved from the third Map.values() call in save.
+    @WrapOperation(method = "lambda$load$2", at = @At(value = "INVOKE", target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"))
+    private static Object railways$deleteEmptyTrains(Map<Object, Object> instance, Object key, Object value, Operation<Object> original) {
+        if (value instanceof Train train && train.carriages.isEmpty()) // delete trains with 0 carriages
+            return null;
+        return original.call(instance, key, value);
     }
 
-    @Inject(method = "load(Lnet/minecraft/nbt/CompoundTag;)Lcom/zurrtum/create/content/trains/RailwaySavedData;", at = @At("RETURN"))
-    private static void loadShadowTrains(CompoundTag nbt, CallbackInfoReturnable<RailwaySavedData> cir) {
-        RailwaySavedData sd = cir.getReturnValue();
+    @Inject(method = "load(Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;", at = @At("RETURN"))
+    private static void loadShadowTrains(DynamicOps<Object> ops, Object input, CallbackInfoReturnable<DataResult<Pair<RailwaySavedData, Object>>> cir) {
+        RailwaySavedData sd = cir.getReturnValue().result().map(Pair::getFirst).orElse(null);
         if (sd == null) return;
 
         MixinRailwaySavedData self = (MixinRailwaySavedData) (Object) sd;
@@ -93,14 +94,17 @@ public class MixinRailwaySavedData implements RailwaySavedDataDuck {
     }
 
     @WrapOperation(
-        method = "save(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;",
+        method = "save",
         at = @At(
             value = "INVOKE",
-            target = "Lcom/zurrtum/create/catnip/nbt/NBTHelper;writeCompoundList(Ljava/lang/Iterable;Ljava/util/function/Function;)Lnet/minecraft/nbt/ListTag;",
+            target = "Ljava/util/Map;values()Ljava/util/Collection;",
             ordinal = 2 // trains
         )
     )
-    private <T> ListTag saveShadowTrains(Iterable<T> list, Function<T, CompoundTag> serializer, Operation<ListTag> original) {
-        return original.call(Iterables.concat(list, railways$shadowTrains.values()), serializer);
+    private static Collection<Object> saveShadowTrains(Map<Object, Object> instance, Operation<Collection<Object>> original,
+                                                       @Local(argsOnly = true) RailwaySavedData input) {
+        List<Object> all = new ArrayList<>(original.call(instance));
+        all.addAll(((RailwaySavedDataDuck) input).railway$getShadowTrains().values());
+        return all;
     }
 }

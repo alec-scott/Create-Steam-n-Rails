@@ -30,6 +30,7 @@ import com.railwayteam.railways.port.create.track.TrackType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -65,8 +66,8 @@ public abstract class MixinAbstractBogeyBlock {
         railways$trackType.remove();
     }
 
-    @Inject(method = "use", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/content/trains/bogey/AbstractBogeyBlock;getNextStyle(Lcom/zurrtum/create/content/trains/bogey/BogeyStyle;)Lcom/zurrtum/create/content/trains/bogey/BogeyStyle;"), remap = true)
-    private void storeSupportTypeUse(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+    @Inject(method = "useItemOn", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/content/trains/bogey/AbstractBogeyBlock;getNextStyle(Lcom/zurrtum/create/content/trains/bogey/BogeyStyle;)Lcom/zurrtum/create/content/trains/bogey/BogeyStyle;"), remap = true)
+    private void storeSupportTypeUse(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
                                      BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
         AbstractBogeyBlock<?> $this = (AbstractBogeyBlock<?>) (Object) this;
         BlockPos trackPos = $this.isUpsideDown(state) ? pos.above() : pos.below();
@@ -77,8 +78,8 @@ public abstract class MixinAbstractBogeyBlock {
         }
     }
 
-    @Inject(method = "use", at = @At("RETURN"), remap = true)
-    private void clearSupportTypeUse(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+    @Inject(method = "useItemOn", at = @At("RETURN"), remap = true)
+    private void clearSupportTypeUse(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
                                      BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
         railways$trackType.remove();
     }

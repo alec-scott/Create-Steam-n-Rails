@@ -19,9 +19,9 @@
 package com.railwayteam.railways.fabric.mixin;
 
 import com.railwayteam.railways.mixin_interfaces.ItemStackDuck;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -30,10 +30,10 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(ItemStack.class)
 public class ItemStackMixin implements ItemStackDuck {
     @Mutable
-    @Shadow @Final private @Nullable Item item;
+    @Shadow @Final private Holder<Item> item;
 
     @Override
     public void railways$setItem(Item item) {
-        this.item = item;
+        this.item = item.builtInRegistryHolder(); // PORT-NOTE(26.1): the field is a Holder
     }
 }

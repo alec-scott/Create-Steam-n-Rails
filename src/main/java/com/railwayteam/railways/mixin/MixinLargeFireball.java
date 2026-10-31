@@ -36,14 +36,14 @@ public abstract class MixinLargeFireball extends Fireball {
         super(entityType, level);
     }
 
-    @Inject(method = "onHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;explode(Lnet/minecraft/world/entity/Entity;DDDFZLnet/minecraft/world/level/Level$ExplosionInteraction;)Lnet/minecraft/world/level/Explosion;"))
+    @Inject(method = "onHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;explode(Lnet/minecraft/world/entity/Entity;DDDFZLnet/minecraft/world/level/Level$ExplosionInteraction;)V"))
     private void markExplode(HitResult result, CallbackInfo ci) {
         if (getOwner() instanceof Ghast) {
             MixinVariables.largeGhastFireballExplosion = true;
         }
     }
 
-    @Inject(method = "onHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/LargeFireball;discard()V"))
+    @Inject(method = "onHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/hurtingprojectile/LargeFireball;discard()V"))
     private void markExplodeEnd(HitResult result, CallbackInfo ci) {
         MixinVariables.largeGhastFireballExplosion = false;
     }

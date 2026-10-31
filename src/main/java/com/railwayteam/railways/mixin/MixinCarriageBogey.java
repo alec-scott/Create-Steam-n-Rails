@@ -18,14 +18,11 @@
 
 package com.railwayteam.railways.mixin;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.railwayteam.railways.content.custom_bogeys.special.invisible.InvisibleBogeyBlock;
 import com.railwayteam.railways.content.custom_bogeys.special.monobogey.InvisibleMonoBogeyBlock;
 import com.zurrtum.create.content.trains.bogey.AbstractBogeyBlock;
 import com.zurrtum.create.content.trains.entity.CarriageBogey;
 import com.zurrtum.create.catnip.data.Couple;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -39,21 +36,12 @@ public class MixinCarriageBogey {
 
     @Shadow public Couple<Vec3> couplingAnchors;
 
-    // ensure that railways:mono_bogey_upside_down is updated to railways:mono_bogey and upside_down is set to true
-    @WrapOperation(method = "read", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/CompoundTag;getString(Ljava/lang/String;)Ljava/lang/String;", remap = true))
-    private static String railways$updateMonoBogey(CompoundTag instance, String key, Operation<String> original) {
-        String value = original.call(instance, key);
-        if (value.equals("railways:mono_bogey_upside_down")) {
-            value = "railways:mono_bogey";
-            instance.putString(key, value);
-            instance.putBoolean("UpsideDown", true);
-        }
-        return value;
-    }
+    // PORT-NOTE(26.1): the 1.20 rename of railways:mono_bogey_upside_down on load is dropped; Create Fly decodes
+    // bogeys through a block codec, and pre-26.1 worlds need a data upgrade anyway.
 
-    @Inject(method = "updateCouplingAnchor", at = @At(value = "INVOKE", target = "Lnet/createmod/catnip/data/Couple;set(ZLjava/lang/Object;)V"), cancellable = true)
+    @Inject(method = "updateCouplingAnchor", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/catnip/data/Couple;set(ZLjava/lang/Object;)V"), cancellable = true)
     private void railways$hideInvisibleCoupler(Vec3 entityPos, float entityXRot, float entityYRot, int bogeySpacing,
-                                          float partialTicks, boolean leading, CallbackInfo ci) {
+                                          float yaw, float pitch, boolean leading, CallbackInfo ci) {
         if (type instanceof InvisibleBogeyBlock || type instanceof InvisibleMonoBogeyBlock) {
             couplingAnchors.set(leading, null);
             ci.cancel();

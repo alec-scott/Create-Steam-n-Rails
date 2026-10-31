@@ -30,7 +30,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(WalkNodeEvaluator.class)
 public class MixinWalkNodeEvaluator {
-    @Inject(method = "getBlockPathTypeRaw", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "getPathTypeFromState", at = @At("RETURN"), cancellable = true)
     private static void doNotOpenSpecialDoors(BlockGetter level, BlockPos pos, CallbackInfoReturnable<PathType> cir) {
         if (cir.getReturnValue() == PathType.DOOR_WOOD_CLOSED) {
             if (level.getBlockEntity(pos) instanceof SlidingDoorMode.IHasDoorMode doorMode && doorMode.railways$getSlidingDoorMode() == SlidingDoorMode.SPECIAL) {

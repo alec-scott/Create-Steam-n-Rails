@@ -35,17 +35,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Slice;
 
+// PORT-NOTE(26.1): snow and ice placement moved from tickChunk to tickPrecipitation
 @Mixin(ServerLevel.class)
 public class MixinServerLevel {
     @WrapOperation(
-        method = "tickChunk(Lnet/minecraft/world/level/chunk/LevelChunk;I)V",
+        method = "tickPrecipitation",
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/server/level/ServerLevel;getHeightmapPos(Lnet/minecraft/world/level/levelgen/Heightmap$Types;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/core/BlockPos;"
-        ),
-        slice = @Slice(
-            from = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=iceandsnow"),
-            to = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=tickBlocks")
         )
     )
     private BlockPos lowerHeightForTracks(ServerLevel instance, Heightmap.Types types, BlockPos pos, Operation<BlockPos> original) {
@@ -61,14 +58,14 @@ public class MixinServerLevel {
     }
 
     @WrapOperation(
-        method = "tickChunk(Lnet/minecraft/world/level/chunk/LevelChunk;I)V",
+        method = "tickPrecipitation",
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/server/level/ServerLevel;setBlockAndUpdate(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z"
         ),
         slice = @Slice(
             from = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/biome/Biome;shouldSnow(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;)Z"),
-            to = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/biome/Biome;getPrecipitationAt(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/biome/Biome$Precipitation;")
+            to = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/biome/Biome;getPrecipitationAt(Lnet/minecraft/core/BlockPos;I)Lnet/minecraft/world/level/biome/Biome$Precipitation;")
         )
     )
     private boolean snowInTracks(ServerLevel instance, BlockPos pos, BlockState state, Operation<Boolean> original) {

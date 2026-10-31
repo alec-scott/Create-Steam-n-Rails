@@ -11,8 +11,6 @@
   "mixins": [
     "ContainerLevelAccessMixin",
     "DetectorRailBlockMixin",
-    "EnderManMixin",
-    "FluidHelperMixin",
     "FluidNetworkMixin",
     "ItemStackMixin",
     "TrainMixin",

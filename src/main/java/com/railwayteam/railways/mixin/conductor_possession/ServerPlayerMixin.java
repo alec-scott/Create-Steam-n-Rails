@@ -35,7 +35,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(value = ServerPlayer.class, priority = 1200)
 public class ServerPlayerMixin {
-	@Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;absMoveTo(DDDFF)V"))
+	@Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;absSnapTo(DDDFF)V"))
 	private void railways$securitycraft$tick(ServerPlayer player, double x, double y, double z, float yaw, float pitch) { // done add some quiet compat with SC to also cancel if player is on a camera
 		if (player.getCamera().getClass().getName().equals("net.geforcemods.securitycraft.entity.camera.SecurityCamera")) return;
 		if (!ConductorPossessionController.isPossessingConductor(player))

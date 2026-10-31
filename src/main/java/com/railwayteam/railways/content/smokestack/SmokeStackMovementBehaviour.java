@@ -27,7 +27,6 @@ import com.railwayteam.railways.content.smokestack.block.SmokeStackBlock;
 import com.railwayteam.railways.content.smokestack.block.be.SmokeStackBlockEntity;
 import com.railwayteam.railways.content.smokestack.particles.chimneypush.ChimneyPushParticle;
 import com.railwayteam.railways.content.smokestack.particles.chimneypush.ChimneyPushParticleData;
-import com.railwayteam.railways.mixin.client.AccessorLevelRenderer;
 import com.zurrtum.create.api.behaviour.movement.MovementBehaviour;
 import com.zurrtum.create.content.contraptions.TranslatingContraption;
 import com.zurrtum.create.content.contraptions.behaviour.MovementContext;
@@ -106,7 +105,8 @@ public class SmokeStackMovementBehaviour extends MovementBehaviour {
         @SuppressWarnings("SameParameterValue")
         void addAndTrackParticle(ChimneyPushParticleData<?> particleType, boolean force, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
             if (pushParticles == null) pushParticles = new ArrayList<>();
-            Particle added = ((AccessorLevelRenderer) Minecraft.getInstance().levelRenderer).callAddParticleInternal(particleType, force, true, x, y, z, xSpeed, ySpeed, zSpeed);
+            // PORT-NOTE(26.1): LevelRenderer no longer returns the particle it adds; the particle engine does
+            Particle added = Minecraft.getInstance().particleEngine.createParticle(particleType, x, y, z, xSpeed, ySpeed, zSpeed);
             if (added instanceof ChimneyPushParticle chimneyPushParticle)
                 pushParticles.add(chimneyPushParticle);
         }

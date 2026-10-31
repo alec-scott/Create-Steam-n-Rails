@@ -26,18 +26,22 @@ import com.zurrtum.create.infrastructure.component.BezierTrackPointLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.List;
+
 @Mixin(TrainRelocator.class)
 public class MixinTrainRelocator {
     @Inject(method = "relocate", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/content/trains/entity/Train;collectInitiallyOccupiedSignalBlocks()V", shift = At.Shift.AFTER, remap = false))
     private static void tryToApproachStation(Train train, Level level, BlockPos pos, BezierTrackPointLocation bezier,
-                                             boolean bezierDirection, Vec3 lookAngle, boolean simulate,
+                                             boolean bezierDirection, Vec3 lookAngle, @Nullable List<Vec3> toVisualise,
                                              CallbackInfoReturnable<Boolean> cir) {
-        if (!simulate && !level.isClientSide() && !((IHandcarTrain) train).railways$isHandcar())
+        // PORT-NOTE(26.1): simulation (toVisualise != null) returns before this point in Create Fly
+        if (!level.isClientSide() && !((IHandcarTrain) train).railways$isHandcar())
             TrainUtils.tryToParkNearby(train, 1.25);
     }
 }

@@ -51,7 +51,7 @@ import java.util.UUID;
 public abstract class MixinToolboxHandler {
 
   @Shadow
-  public static void syncData(Player player) {
+  public static void syncData(Player player, CompoundTag data) {
     throw new AssertionError();
   }
 
@@ -83,7 +83,7 @@ public abstract class MixinToolboxHandler {
         toolbox.connectPlayer(slot, player, i);
     } else {
       compound.remove(key);
-      syncData(player);
+      syncData(player, compound);
     }
   }
 

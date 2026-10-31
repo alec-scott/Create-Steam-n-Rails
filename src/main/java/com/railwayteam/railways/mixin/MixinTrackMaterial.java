@@ -18,7 +18,8 @@
 
 package com.railwayteam.railways.mixin;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import com.railwayteam.railways.Railways;
 import com.railwayteam.railways.registry.CRTrackMaterials;
 import com.zurrtum.create.content.trains.track.TrackMaterial;
@@ -33,7 +34,13 @@ public class MixinTrackMaterial {
      * If it finds a modded cherry track material it'll replace it {@link CRTrackMaterials#CHERRY}
      * Which is from 1.20 Vanilla.
      */
-    @ModifyExpressionValue(method = "deserialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/Identifier;tryParse(Ljava/lang/String;)Lnet/minecraft/resources/Identifier;"))
+    // PORT-NOTE(26.1): Create Fly decodes materials through fromId (its codecs xmap it), so both remaps run there.
+    @ModifyVariable(method = "fromId", at = @At("HEAD"), argsOnly = true)
+    private static Identifier railways$remapLegacyIds(Identifier id) {
+        return railways$deserializeLegacyTracks(railways$updateCherryCompatTracks(id));
+    }
+
+    @Unique
     private static Identifier railways$updateCherryCompatTracks(Identifier original) {
         return switch (original.toString()) {
             case "biomesoplenty:cherry", "byg:cherry", "blue_skies:cherry"
@@ -47,7 +54,7 @@ public class MixinTrackMaterial {
     }
     
     // Properly deserialize pre-resourcelocation tracks
-    @ModifyExpressionValue(method = "deserialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/Identifier;tryParse(Ljava/lang/String;)Lnet/minecraft/resources/Identifier;", remap = true))
+    @Unique
     private static Identifier railways$deserializeLegacyTracks(Identifier original) {
         if (original.getNamespace().equals("minecraft")) {
             Identifier alternate = Railways.asResource(original.getPath());

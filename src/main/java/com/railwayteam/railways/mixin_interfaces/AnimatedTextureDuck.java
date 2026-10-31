@@ -18,6 +18,8 @@
 
 package com.railwayteam.railways.mixin_interfaces;
 
+import net.minecraft.client.renderer.texture.SpriteContents;
+
 public interface AnimatedTextureDuck {
-    void railways$uploadWithVisibility();
+    SpriteContents railways$getContents();
 }

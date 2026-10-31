@@ -20,6 +20,7 @@ package com.railwayteam.railways.fabric.mixin;
 
 import com.railwayteam.railways.content.minecarts.MinecartJukebox;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.level.Level;
@@ -41,7 +42,7 @@ public abstract class DetectorRailBlockMixin {
     @Inject(method = "getAnalogOutputSignal",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/DetectorRailBlock;getInteractingMinecartOfType(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Ljava/lang/Class;Ljava/util/function/Predicate;)Ljava/util/List;", ordinal = 1),
         cancellable = true)
-    private void getOverrideAnalogOutputSignal(BlockState state, Level level, BlockPos pos, CallbackInfoReturnable<Integer> cir) {
+    private void getOverrideAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction, CallbackInfoReturnable<Integer> cir) {
         List<MinecartJukebox> jukeboxCarts = getInteractingMinecartOfType(level, pos, MinecartJukebox.class, cart -> true);
         if (!jukeboxCarts.isEmpty()) {
             cir.setReturnValue(jukeboxCarts.get(0).getComparatorOutput());

@@ -25,6 +25,12 @@ import com.railwayteam.railways.port.create.track.TrackMaterialData;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.RecordBuilder;
+import com.railwayteam.railways.mixin_interfaces.IExtraTrainData;
+import com.railwayteam.railways.port.minecraft.DynamicNbtCompat;
 import com.railwayteam.railways.content.conductor.ConductorEntity;
 import com.railwayteam.railways.mixin_interfaces.CarriageBogeyUtils;
 import com.railwayteam.railways.mixin_interfaces.ICarriageBufferDistanceTracker;
@@ -60,7 +66,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Mixin(value = Carriage.class, remap = false)
-public abstract class MixinCarriage implements ICarriageConductors, ICarriageBufferDistanceTracker {
+public abstract class MixinCarriage implements ICarriageConductors, ICarriageBufferDistanceTracker, IExtraTrainData {
 
     @Shadow public Train train;
 
@@ -124,9 +130,26 @@ public abstract class MixinCarriage implements ICarriageConductors, ICarriageBuf
         return original.call(instance);
     }
 
-    @Inject(method = "write", at = @At("RETURN"))
-    private void writeControllingConductors(DimensionPalette dimensions, CallbackInfoReturnable<CompoundTag> cir) {
-        CompoundTag tag = cir.getReturnValue();
+    // PORT-NOTE(26.1): Create Fly saves carriages with encode/decode on DynamicOps (write/read are unused), so the
+    // extra fields are added to the encoded map and read back from it.
+    @WrapOperation(method = "encode", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/RecordBuilder;build(Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;"))
+    private static DataResult<Object> railways$encodeExtraData(RecordBuilder<Object> map, Object empty, Operation<DataResult<Object>> original,
+                                                               @Local(argsOnly = true) Carriage input, @Local(argsOnly = true) DynamicOps<Object> ops) {
+        CompoundTag tag = new CompoundTag();
+        ((IExtraTrainData) input).railways$writeExtraData(tag);
+        DynamicNbtCompat.addAll(map, ops, tag);
+        return original.call(map, empty);
+    }
+
+    @Inject(method = "decode", at = @At("RETURN"))
+    private static void railways$decodeExtraData(DynamicOps<Object> ops, Object input, TrackGraph graph, DimensionPalette dimensions,
+                                                 CallbackInfoReturnable<Carriage> cir) {
+        ((IExtraTrainData) cir.getReturnValue()).railways$readExtraData(
+            DynamicNbtCompat.read(ops, input, "ControllingConductors", "LeadingBufferDistance", "TrailingBufferDistance"));
+    }
+
+    @Override
+    public void railways$writeExtraData(CompoundTag tag) {
         ListTag listTag = new ListTag();
         for (UUID uuid : railways$controllingConductors) {
             CompoundTag uuidTag = new CompoundTag();
@@ -141,9 +164,9 @@ public abstract class MixinCarriage implements ICarriageConductors, ICarriageBuf
             tag.putInt("TrailingBufferDistance", railways$trailingBufferDistance);
     }
 
-    @Inject(method = "read", at = @At("RETURN"))
-    private static void readControllingConductors(CompoundTag tag, TrackGraph graph, DimensionPalette dimensions, CallbackInfoReturnable<Carriage> cir) {
-        Carriage carriage = cir.getReturnValue();
+    @Override
+    public void railways$readExtraData(CompoundTag tag) {
+        Carriage carriage = (Carriage) (Object) this;
         List<UUID> controllingConductors = ((ICarriageConductors) carriage).railways$getControllingConductors();
         controllingConductors.clear();
         if (tag.contains("ControllingConductors")) {

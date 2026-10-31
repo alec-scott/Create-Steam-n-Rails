@@ -33,9 +33,12 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 
 import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
+
+import java.util.Optional;
 
 @Mixin(value = ToolboxHandlerClient.class, remap = false)
 public class MixinToolboxHandlerClient {
@@ -123,19 +126,17 @@ public class MixinToolboxHandlerClient {
     return slot;
   }
 
-  @ModifyVariable(
+  // PORT-NOTE(26.1): Create Fly reads the position with CompoundTag.read("Pos", BlockPos.CODEC)
+  @ModifyExpressionValue(
           method = "renderOverlay",
-          remap = false,
           at = @At(
-                  value = "INVOKE_ASSIGN",
-                  target = "Lnet/minecraft/nbt/NbtUtils;readBlockPos(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/core/BlockPos;",
-                  remap = true
+                  value = "INVOKE",
+                  target = "Lnet/minecraft/nbt/CompoundTag;read(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Ljava/util/Optional;"
           )
   )
-  @SuppressWarnings("InvalidInjectorMethodSignature")
-  private static BlockPos railways$useConductorToolboxForBackground(BlockPos pos) {
+  private static Optional<BlockPos> railways$useConductorToolboxForBackground(Optional<BlockPos> pos) {
     ConductorEntity conductor = railways$getConductorForSlot(railways$currentRenderedSlot);
-    return conductor == null ? pos : conductor.blockPosition();
+    return conductor == null ? pos : Optional.of(conductor.blockPosition());
   }
 
   // endregion

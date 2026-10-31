@@ -18,54 +18,51 @@
 
 package com.railwayteam.railways.mixin.client;
 
-import com.railwayteam.railways.port.create.track.TrackMaterialData;
-
-import com.railwayteam.railways.port.create.track.TrackType;
-
-import com.zurrtum.create.client.flywheel.lib.transform.TransformStack;
-import com.llamalad7.mixinextras.sugar.Local;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.railwayteam.railways.mixin_interfaces.IHasTrackCasing;
+import com.railwayteam.railways.port.create.track.TrackMaterialData;
+import com.railwayteam.railways.port.create.track.TrackType;
 import com.railwayteam.railways.registry.CRBlockPartials;
-import com.zurrtum.create.content.trains.station.StationBlockEntity;
 import com.zurrtum.create.client.content.trains.station.StationRenderer;
+import com.zurrtum.create.client.content.trains.track.TrackBlockRenderState;
+import com.zurrtum.create.client.content.trains.track.TrackBlockRenderer;
+import com.zurrtum.create.content.trains.station.StationBlockEntity;
 import com.zurrtum.create.content.trains.track.TrackBlock;
-import com.zurrtum.create.content.trains.track.TrackMaterial;
 import com.zurrtum.create.content.trains.track.TrackShape;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.core.BlockPos.MutableBlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * Raises the train assembly overlay onto encased tracks.
+ *
+ * <p>PORT-NOTE(26.1): Create Fly builds the overlay in {@code TrackBlockRenderer.getAssemblyRenderState} and shares the
+ * piece render states between track positions, so the shift for the station's target track is applied to the whole
+ * overlay (1.20 shifted each piece by its own track's casing).</p>
+ */
 @Mixin(StationRenderer.class)
 public class MixinStationRenderer {
-    @Inject(method = "renderSafe(Lcom/zurrtum/create/content/trains/station/StationBlockEntity;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/client/catnip/render/CachedBuffers;partial(Lcom/zurrtum/create/client/flywheel/lib/model/baked/PartialModel;Lnet/minecraft/world/level/block/state/BlockState;)Lcom/zurrtum/create/client/catnip/render/SuperByteBuffer;"))
-    private void shiftAssemblyOverlayOnEncasedTracks(
-        StationBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay,
-        CallbackInfo ci, @Local(name = "currentPos") MutableBlockPos currentPos, @Local(name = "trackState") BlockState trackState) {
-        ms.pushPose();
-
+    @WrapOperation(method = "extractRenderState(Lcom/zurrtum/create/content/trains/station/StationBlockEntity;Lcom/zurrtum/create/client/content/trains/station/StationRenderer$StationRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V",
+        at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/client/content/trains/track/TrackBlockRenderer;getAssemblyRenderState(Lcom/zurrtum/create/content/trains/station/StationBlockEntity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Lcom/zurrtum/create/client/content/trains/track/TrackBlockRenderState;"))
+    private TrackBlockRenderState shiftAssemblyOverlayOnEncasedTracks(TrackBlockRenderer renderer, StationBlockEntity be, Vec3 offset,
+                                                                      Level level, BlockPos pos, BlockState trackState,
+                                                                      Operation<TrackBlockRenderState> original) {
         if (trackState.getBlock() instanceof TrackBlock trackBlock
-            && be.getLevel().getBlockEntity(currentPos) instanceof IHasTrackCasing casing && casing.railways$getTrackCasing() != null) {
+            && level.getBlockEntity(pos) instanceof IHasTrackCasing casing && casing.railways$getTrackCasing() != null) {
             TrackShape shape = trackState.getValue(TrackBlock.SHAPE);
             CRBlockPartials.TrackCasingSpec spec = CRBlockPartials.TRACK_CASINGS.get(shape);
             TrackType trackType = TrackMaterialData.of(trackBlock.getMaterial()).trackType;
             if (spec != null)
-                TransformStack.of(ms)
-                    .translate(
-                        spec.getXShift(trackType),
-                        (spec.getTopSurfacePixelHeight(trackType, casing.railways$isAlternate()) - 2) / 16f,
-                        spec.getZShift(trackType)
-                    );
+                offset = offset.add(
+                    spec.getXShift(trackType),
+                    (spec.getTopSurfacePixelHeight(trackType, casing.railways$isAlternate()) - 2) / 16f,
+                    spec.getZShift(trackType)
+                );
         }
-
-    }
-
-    @Inject(method = "renderSafe(Lcom/zurrtum/create/content/trains/station/StationBlockEntity;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/client/catnip/render/SuperByteBuffer;renderInto(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;)V", shift = At.Shift.AFTER))
-    private void cleanup(StationBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay, CallbackInfo ci) {
-        ms.popPose();
+        return original.call(renderer, be, offset, level, pos, trackState);
     }
 }

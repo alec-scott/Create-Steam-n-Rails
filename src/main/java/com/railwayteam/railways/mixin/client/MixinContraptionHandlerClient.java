@@ -38,7 +38,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(ContraptionHandlerClient.class)
 public class MixinContraptionHandlerClient {
-    @WrapOperation(method = "handleSpecialInteractions", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/content/trains/entity/TrainRelocator;carriageWrenched(Lnet/minecraft/world/phys/Vec3;Lcom/zurrtum/create/content/trains/entity/CarriageContraptionEntity;)Z"))
+    @WrapOperation(method = "handleSpecialInteractions", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/client/content/trains/entity/TrainRelocatorClient;carriageWrenched(Lnet/minecraft/world/phys/Vec3;Lcom/zurrtum/create/content/trains/entity/CarriageContraptionEntity;)Z"))
     private static boolean shadowRealmShortcut(
         Vec3 vec3,
         CarriageContraptionEntity entity,

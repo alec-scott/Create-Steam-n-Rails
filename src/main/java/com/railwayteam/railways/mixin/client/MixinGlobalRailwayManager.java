@@ -23,36 +23,31 @@ import com.railwayteam.railways.content.switches.TrackSwitchDebugVisualizer;
 import com.railwayteam.railways.content.train_debug.TravellingPointVisualizer;
 import com.railwayteam.railways.registry.CREdgePointTypes;
 import com.railwayteam.railways.util.Utils;
+import com.zurrtum.create.Create;
 import com.zurrtum.create.client.content.kinetics.KineticDebugger;
-import com.zurrtum.create.content.trains.GlobalRailwayManager;
+import com.zurrtum.create.client.content.trains.GlobalRailwayManagerClient;
 import com.zurrtum.create.content.trains.entity.Train;
 import com.zurrtum.create.content.trains.graph.TrackGraph;
+import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Map;
-import java.util.UUID;
-
-@Mixin(value = GlobalRailwayManager.class, remap = false)
+/** PORT-NOTE(26.1): Create Fly ticks the client railway manager through the static {@code GlobalRailwayManagerClient.tick}. */
+@Mixin(GlobalRailwayManagerClient.class)
 public abstract class MixinGlobalRailwayManager {
-    @Shadow public Map<UUID, Train> trains;
-
-    @Inject(method = "clientTick", at = @At("HEAD"))
-    private void showTrainDebug(CallbackInfo ci) {
+    @Inject(method = "tick", at = @At("HEAD"))
+    private static void showTrainDebug(Minecraft mc, CallbackInfo ci) {
         if (KineticDebugger.isActive() && Utils.isDevEnv())
-            for (Train train : trains.values())
+            for (Train train : Create.RAILWAYS.trains.values())
                 TravellingPointVisualizer.debugTrain(train);
     }
 
-    @Shadow public Map<UUID, TrackGraph> trackNetworks;
-
-    @Inject(method = "clientTick", at = @At("HEAD"))
-    private void showSwitchDebug(CallbackInfo ci) {
+    @Inject(method = "tick", at = @At("HEAD"))
+    private static void showSwitchDebug(Minecraft mc, CallbackInfo ci) {
         if (KineticDebugger.isF3DebugModeActive()) {
-            for (TrackGraph graph : trackNetworks.values()) {
+            for (TrackGraph graph : Create.RAILWAYS.trackNetworks.values()) {
                 for (TrackSwitch sw: graph.getPoints(CREdgePointTypes.SWITCH)) {
                     TrackSwitchDebugVisualizer.visualizeSwitchExits(sw);
                 }

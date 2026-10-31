@@ -18,69 +18,44 @@
 
 package com.railwayteam.railways.mixin.client;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.railwayteam.railways.Railways;
-import com.railwayteam.railways.annotation.mixin.DevEnvMixin;
 import com.railwayteam.railways.util.DevCapeUtils;
+import com.railwayteam.railways.util.Utils;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.resources.Identifier;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.core.ClientAsset;
+import net.minecraft.world.entity.player.PlayerModelType;
+import net.minecraft.world.entity.player.PlayerSkin;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Map;
-import java.util.Objects;
-
+/**
+ * Dev capes for Railways developers, and the conductor skin inside the dev env.
+ *
+ * <p>PORT-NOTE(26.1): {@code PlayerInfo} resolves a whole {@link PlayerSkin} record (no texture map or skin model
+ * string), so both are applied to the skin it returns. The dev-env skin used a method-level {@code @DevEnvMixin}, which
+ * only the unported release-build stripping honoured, so it is checked at runtime instead.</p>
+ */
 @Mixin(PlayerInfo.class)
 public class MixinPlayerInfo {
     @Shadow @Final private GameProfile profile;
-    @Shadow @Final private Map<MinecraftProfileTexture.Type, Identifier> textureLocations;
-    @Shadow private @Nullable String skinModel;
 
-    @Unique private boolean railways$texturesLoaded;
-    @Unique private static final Identifier DEV_CAPE = Railways.asResource("textures/misc/dev_cape.png");
+    @Unique private static final ClientAsset.ResourceTexture DEV_CAPE = new ClientAsset.ResourceTexture(
+        Railways.asResource("misc/dev_cape"), Railways.asResource("textures/misc/dev_cape.png"));
+    @Unique private static final ClientAsset.ResourceTexture DEV_SKIN = new ClientAsset.ResourceTexture(
+        Railways.asResource("misc/devenv_skin"), Railways.asResource("textures/misc/devenv_skin.png"));
 
-    // Replaces skin inside the dev env with the conductor skin
-    @DevEnvMixin
-    @Inject(method = "getSkinLocation", at = @At("HEAD"))
-    private void registerSkinTextures(CallbackInfoReturnable<Identifier> cir) {
-        this.textureLocations.put(
-                MinecraftProfileTexture.Type.SKIN,
-                Railways.asResource("textures/misc/devenv_skin.png")
-        );
-    }
-
-    @Inject(method = "getCapeLocation", at = @At("HEAD"))
-    private void registerCapeTextures(CallbackInfoReturnable<Identifier> cir) {
-        if (!railways$texturesLoaded && DevCapeUtils.INSTANCE.useDevCape(profile.id())) {
-            railways$texturesLoaded = true;
-            this.textureLocations.put(MinecraftProfileTexture.Type.CAPE, DEV_CAPE);
-        }
-    }
-
-    @Inject(method = "getCapeLocation", at = @At("RETURN"), cancellable = true)
-    private void skipCapeIfNeeded(CallbackInfoReturnable<Identifier> cir) {
-        if (Objects.equals(DEV_CAPE, cir.getReturnValue()) && !DevCapeUtils.INSTANCE.useDevCape(profile.id())) {
-            cir.setReturnValue(null);
-        }
-    }
-
-    // Replaces skin model inside the dev env with the default "steve" skin model
-    @DevEnvMixin
-    @Inject(method = "registerTextures",
-            at = @At(
-                value = "INVOKE",
-                target = "Lnet/minecraft/client/resources/SkinManager;registerSkins(Lcom/mojang/authlib/GameProfile;Lnet/minecraft/client/resources/SkinManager$SkinTextureCallback;Z)V"
-            )
-    )
-    private void railways$setModelToLarge(CallbackInfo ci) {
-        skinModel = "default";
+    @ModifyReturnValue(method = "getSkin", at = @At("RETURN"))
+    private PlayerSkin railways$devSkinAndCape(PlayerSkin skin) {
+        // Replaces the skin inside the dev env with the conductor skin, on the default "steve" model
+        if (Utils.isDevEnv())
+            skin = new PlayerSkin(DEV_SKIN, skin.cape(), skin.elytra(), PlayerModelType.WIDE, skin.secure());
+        if (DevCapeUtils.INSTANCE.useDevCape(profile.id()))
+            skin = new PlayerSkin(skin.body(), DEV_CAPE, skin.elytra(), skin.model(), skin.secure());
+        return skin;
     }
 }

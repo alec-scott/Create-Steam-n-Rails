@@ -406,7 +406,7 @@ public abstract class MixinNavigation implements IWaypointableNavigation, IGener
         }
     }
 
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/content/trains/entity/Train;burnFuel()V"))
+    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lcom/zurrtum/create/content/trains/entity/Train;burnFuel(Lnet/minecraft/world/level/Level;)V"))
     private void applyBufferSlowdown(Level level, CallbackInfo ci,
                                      @Local(name = "targetDistance") LocalDoubleRef targetDistance) {
         if (railways$bufferDistance.get() < targetDistance.get())

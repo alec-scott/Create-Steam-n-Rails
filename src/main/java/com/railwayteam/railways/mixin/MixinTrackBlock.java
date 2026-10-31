@@ -39,6 +39,7 @@ import com.zurrtum.create.catnip.data.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
@@ -60,8 +61,8 @@ import java.util.Optional;
 
 @Mixin(value = TrackBlock.class, remap = false)
 public class MixinTrackBlock {
-  @Inject(method = "use", at = @At("HEAD"), cancellable = true, remap = true)
-  private void extendedUse(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
+  @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true, remap = true)
+  private void extendedUse(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
     //noinspection ConstantValue
     if (!(((Object) this) instanceof MonorailTrackBlock)) {
       InteractionResult result = CustomTrackBlock.casingUse(state, world, pos, player, hand, hit);
@@ -118,10 +119,6 @@ public class MixinTrackBlock {
     }
   }
 
-  @Inject(method = "onRemove", at = @At("HEAD"), remap = true)
-  private void removeCasingCollisions(BlockState pState, Level pLevel, BlockPos pPos, BlockState pNewState, boolean pIsMoving, CallbackInfo ci) {
-    if (pLevel.getBlockEntity(pPos) instanceof TrackBlockEntity tbe) {
-      CasingCollisionUtils.manageTracks(tbe, true);
-    }
-  }
+  // PORT-NOTE(26.1): casing collision cleanup on removal moved to MixinTrackBlockEntity.preRemoveSideEffects (the block
+  // entity is already gone by affectNeighborsAfterRemoval)
 }

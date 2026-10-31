@@ -21,17 +21,17 @@ package com.railwayteam.railways.mixin.conductor_possession;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.railwayteam.railways.content.conductor.ClientHandler;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Gui.class)
 public class MixinGui {
-    @Inject(method = "renderExperienceBar", at = @At("HEAD"), cancellable = true)
-    private void railways$cancelExperienceBar(GuiGraphicsExtractor guiGraphics, int x, CallbackInfo ci) {
+    // PORT-NOTE(26.1): the experience bar is one of Gui's contextual bars; hide whichever would show while possessing
+    @Inject(method = "nextContextualInfoState", at = @At("HEAD"), cancellable = true)
+    private void railways$cancelExperienceBar(CallbackInfoReturnable<Gui.ContextualInfo> cir) {
         if (ClientHandler.isPlayerMountedOnCamera())
-            ci.cancel();
+            cir.setReturnValue(Gui.ContextualInfo.EMPTY);
     }
 }

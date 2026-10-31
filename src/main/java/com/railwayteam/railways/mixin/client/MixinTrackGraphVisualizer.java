@@ -33,6 +33,7 @@ import com.zurrtum.create.client.catnip.outliner.Outline;
 import com.zurrtum.create.client.catnip.outliner.Outliner;
 import com.zurrtum.create.catnip.theme.Color;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.objectweb.asm.Opcodes;
@@ -55,7 +56,7 @@ public class MixinTrackGraphVisualizer {
 
     @Inject(method = "debugViewGraph",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;<init>(DDD)V", ordinal = 1, remap = true))
-    private static void saveEdge(TrackGraph graph, boolean extended, CallbackInfo ci, @Local TrackEdge edge) {
+    private static void saveEdge(Minecraft mc, TrackGraph graph, boolean extended, CallbackInfo ci, @Local TrackEdge edge) {
         railways$isEnabled = ((ISwitchDisabledEdge) edge.getEdgeData()).isEnabled();
     }
 

@@ -25,12 +25,11 @@ import com.railwayteam.railways.config.CRConfigs;
 import com.railwayteam.railways.content.shadow_realm.ShadowRealm;
 import com.zurrtum.create.content.trains.entity.Train;
 import com.zurrtum.create.infrastructure.packet.c2s.TrainRelocationPacket;
-import com.zurrtum.create.content.trains.entity.TrainRelocator;
+import com.zurrtum.create.client.content.trains.entity.TrainRelocatorClient;
 import com.zurrtum.create.infrastructure.component.BezierTrackPointLocation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Position;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -41,29 +40,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
 
-@Mixin(TrainRelocator.class)
+// PORT-NOTE(26.1): retargeted to Create Fly's client-only TrainRelocatorClient
+@Mixin(TrainRelocatorClient.class)
 public class MixinTrainRelocator {
     @Shadow
     static UUID relocatingTrain;
 
     @Inject(method = "getRelocating", at = @At("HEAD"), cancellable = true)
-    private static void getShadowRelocating(LevelAccessor level, CallbackInfoReturnable<Train> cir) {
+    private static void getShadowRelocating(CallbackInfoReturnable<Train> cir) {
         if (ShadowRealm.MARKER.equals(relocatingTrain))
             cir.setReturnValue(ShadowRealm.clientShadowRestoringTrain);
     }
 
-    @Inject(method = "clientTick", at = @At("HEAD"), remap = false)
+    @Inject(method = "clientTick", at = @At("HEAD"))
     private static void clearShadowRestoringTrain(CallbackInfo ci) {
         if (!ShadowRealm.MARKER.equals(relocatingTrain))
             ShadowRealm.clientShadowRestoringTrain = null;
     }
 
-    @WrapOperation(method = "relocateClient", at = @At(value = "NEW", target = "(Ljava/util/UUID;Lnet/minecraft/core/BlockPos;Lcom/zurrtum/create/infrastructure/component/BezierTrackPointLocation;ZLnet/minecraft/world/phys/Vec3;I)Lcom/zurrtum/create/infrastructure/packet/c2s/TrainRelocationPacket;"))
-    private static TrainRelocationPacket relocateShadowTrain(UUID trainId, BlockPos pos, BezierTrackPointLocation hoveredBezier, boolean direction, Vec3 lookAngle, int entityId, Operation<TrainRelocationPacket> original) {
+    @WrapOperation(method = "relocateClient", at = @At(value = "NEW", target = "(Ljava/util/UUID;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/Vec3;IZLcom/zurrtum/create/infrastructure/component/BezierTrackPointLocation;)Lcom/zurrtum/create/infrastructure/packet/c2s/TrainRelocationPacket;"))
+    private static TrainRelocationPacket relocateShadowTrain(UUID trainId, BlockPos pos, Vec3 lookAngle, int entityId, boolean direction, BezierTrackPointLocation hoveredBezier, Operation<TrainRelocationPacket> original) {
         if (ShadowRealm.MARKER.equals(trainId) && ShadowRealm.clientShadowRestoringTrain != null) {
             trainId = ShadowRealm.clientShadowRestoringTrain.id;
         }
-        return original.call(trainId, pos, hoveredBezier, direction, lookAngle, entityId);
+        return original.call(trainId, pos, lookAngle, entityId, direction, hoveredBezier);
     }
 
     @WrapOperation(method = {"clientTick", "onClicked"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;closerThan(Lnet/minecraft/core/Position;D)Z"))

@@ -24,6 +24,11 @@ import com.railwayteam.railways.port.minecraft.NbtCompat;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.RecordBuilder;
+import com.railwayteam.railways.mixin_interfaces.IExtraTrainData;
+import com.railwayteam.railways.port.minecraft.DynamicNbtCompat;
 import com.railwayteam.railways.config.CRConfigs;
 import com.railwayteam.railways.content.buffer.TrackBuffer;
 import com.railwayteam.railways.content.coupling.TrainUtils;
@@ -86,7 +91,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Mixin(value = Train.class, remap = false)
-public abstract class MixinTrain implements IOccupiedCouplers, IIndexedSchedule, IHandcarTrain, IStrictSignalTrain, IBufferBlockedTrain, ICrashAdvancement, ITrueMaxSpeedTrain, IShadowTrain {
+public abstract class MixinTrain implements IOccupiedCouplers, IIndexedSchedule, IHandcarTrain, IStrictSignalTrain, IBufferBlockedTrain, ICrashAdvancement, ITrueMaxSpeedTrain, IShadowTrain, IExtraTrainData {
     @Shadow public TrackGraph graph;
     @Shadow public Navigation navigation;
     @Shadow public abstract void arriveAt(GlobalStation station);
@@ -217,10 +222,7 @@ public abstract class MixinTrain implements IOccupiedCouplers, IIndexedSchedule,
     }
 
     @Inject(
-            method = {
-                    "lambda$backSignalListener$12", // fabric
-                    "lambda$backSignalListener$10" // forge
-            },
+            method = "lambda$backSignalListener$0", // PORT-NOTE(26.1): Create Fly lambda numbering
             at = @At("HEAD"),
             cancellable = true
     )
@@ -237,10 +239,7 @@ public abstract class MixinTrain implements IOccupiedCouplers, IIndexedSchedule,
     }
 
     @Inject(
-            method = {
-                    "lambda$collectInitiallyOccupiedSignalBlocks$20", // fabric
-                    "lambda$collectInitiallyOccupiedSignalBlocks$18" // forge
-            },
+            method = "lambda$collectInitiallyOccupiedSignalBlocks$1", // PORT-NOTE(26.1): Create Fly lambda numbering
             at = @At("HEAD"),
             cancellable = true
     )
@@ -251,9 +250,26 @@ public abstract class MixinTrain implements IOccupiedCouplers, IIndexedSchedule,
         }
     }
 
-    @Inject(method = "write", at = @At("RETURN"))
-    private void writeOccupiedCouplers(DimensionPalette dimensions, CallbackInfoReturnable<CompoundTag> cir) {
-        CompoundTag tag = cir.getReturnValue();
+    // PORT-NOTE(26.1): Create Fly saves trains with encode/decode on DynamicOps (write/read are unused), so the extra
+    // fields are added to the encoded map and read back from it.
+    @WrapOperation(method = "encode", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/RecordBuilder;build(Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;"))
+    private static DataResult<Object> railways$encodeExtraData(RecordBuilder<Object> map, Object empty, Operation<DataResult<Object>> original,
+                                                               @Local(argsOnly = true) Train input, @Local(argsOnly = true) DynamicOps<Object> ops) {
+        CompoundTag tag = new CompoundTag();
+        ((IExtraTrainData) input).railways$writeExtraData(tag);
+        DynamicNbtCompat.addAll(map, ops, tag);
+        return original.call(map, empty);
+    }
+
+    @Inject(method = "decode", at = @At("RETURN"))
+    private static void railways$decodeExtraData(DynamicOps<Object> ops, Object input, Map<UUID, TrackGraph> trackNetworks,
+                                                 DimensionPalette dimensions, CallbackInfoReturnable<Train> cir) {
+        ((IExtraTrainData) cir.getReturnValue()).railways$readExtraData(
+            DynamicNbtCompat.read(ops, input, "OccupiedCouplers", "ScheduleHolderIndex", "IsHandcar", "ShadowKey"));
+    }
+
+    @Override
+    public void railways$writeExtraData(CompoundTag tag) {
         tag.put("OccupiedCouplers", NBTHelper.writeCompoundList(railways$occupiedCouplers, uid -> {
             CompoundTag compoundTag = new CompoundTag();
             NbtCompat.putUUID(compoundTag, "Id", uid);
@@ -266,10 +282,9 @@ public abstract class MixinTrain implements IOccupiedCouplers, IIndexedSchedule,
         }
     }
 
-    @Inject(method = "read", at = @At("RETURN"))
-    private static void readOccupiedCouplers(CompoundTag tag, Map<UUID, TrackGraph> trackNetworks,
-                                             DimensionPalette dimensions, CallbackInfoReturnable<Train> cir,
-                                             @Local Train train) {
+    @Override
+    public void railways$readExtraData(CompoundTag tag) {
+        Train train = (Train) (Object) this;
         NBTHelper.iterateCompoundList(tag.getListOrEmpty("OccupiedCouplers"),
             c -> ((IOccupiedCouplers) train).railways$getOccupiedCouplers().add(NbtCompat.getUUID(c, "Id")));
         ((IIndexedSchedule) train).railways$setIndex(tag.getIntOr("ScheduleHolderIndex", 0));

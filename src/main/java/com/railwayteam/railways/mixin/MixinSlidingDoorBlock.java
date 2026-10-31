@@ -22,7 +22,6 @@ import com.railwayteam.railways.content.extended_sliding_doors.SlidingDoorMode;
 import com.zurrtum.create.content.decoration.slidingDoor.SlidingDoorBlock;
 import com.zurrtum.create.content.decoration.slidingDoor.SlidingDoorBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -33,6 +32,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.level.redstone.Orientation;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -48,7 +48,7 @@ public abstract class MixinSlidingDoorBlock {
         at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;setValue(Lnet/minecraft/world/level/block/state/properties/Property;Ljava/lang/Comparable;)Ljava/lang/Object;", ordinal = 0, remap = true),
         remap = true, locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
     private void railways$preventManualDoorRedstoneReaction(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock,
-                                                       BlockPos pFromPos, boolean pIsMoving, CallbackInfo ci,
+                                                       @Nullable Orientation wireOrientation, boolean pIsMoving, CallbackInfo ci,
                                                        boolean lower, boolean isPowered, SlidingDoorBlockEntity be) {
         if (be == null)
             return;
@@ -67,9 +67,9 @@ public abstract class MixinSlidingDoorBlock {
         }
     }
 
-    @Inject(method = "use", at = @At("HEAD"), remap = true, cancellable = true)
+    @Inject(method = "useWithoutItem", at = @At("HEAD"), remap = true, cancellable = true)
     private void railways$preventSpecialDoorManualOpen(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer,
-                                                  InteractionHand pHand, BlockHitResult pHit,
+                                                  BlockHitResult pHit,
                                                   CallbackInfoReturnable<InteractionResult> cir) {
         boolean lower = pState.getValue(SlidingDoorBlock.HALF) == DoubleBlockHalf.LOWER;
         BlockEntity be = pLevel.getBlockEntity(lower ? pPos : pPos.below());

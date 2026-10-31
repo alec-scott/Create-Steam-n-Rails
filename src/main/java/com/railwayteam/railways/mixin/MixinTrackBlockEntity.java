@@ -32,7 +32,8 @@ import com.zurrtum.create.foundation.blockEntity.SmartBlockEntity;
 import com.zurrtum.create.catnip.levelWrappers.SchematicLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -46,6 +47,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Mixin(value = TrackBlockEntity.class, remap = false)
 public abstract class MixinTrackBlockEntity extends SmartBlockEntity implements IHasTrackCasing {
@@ -143,7 +145,7 @@ public abstract class MixinTrackBlockEntity extends SmartBlockEntity implements 
     }
 
     @Inject(method = "write", at = @At("RETURN"))
-    private void writeCasing(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
+    private void writeCasing(ValueOutput tag, boolean clientPacket, CallbackInfo ci) {
         Block casing = railways$getTrackCasing();
         if (casing != null) {
             tag.putString("TrackCasing", BuiltInRegistries.BLOCK.getKey(casing).toString());
@@ -152,21 +154,23 @@ public abstract class MixinTrackBlockEntity extends SmartBlockEntity implements 
     }
 
     @Inject(method = "read", at = @At("RETURN"))
-    private void readCasing(CompoundTag tag, boolean clientPacket, CallbackInfo ci) {
-        if (tag.contains("AlternateModel")) {
-            this.railways$setAlternate(tag.getBooleanOr("AlternateModel", false));
-        } else {
-            this.railways$setAlternate(false);
-        }
+    private void readCasing(ValueInput tag, boolean clientPacket, CallbackInfo ci) {
+        this.railways$setAlternate(tag.getBooleanOr("AlternateModel", false));
 
-        if (tag.contains("TrackCasing")) {
-            Identifier casingName = Identifier.parse(tag.getStringOr("TrackCasing", ""));
+        Optional<String> casingString = tag.getString("TrackCasing");
+        if (casingString.isPresent()) {
+            Identifier casingName = Identifier.parse(casingString.get());
             if (BuiltInRegistries.BLOCK.containsKey(casingName)) {
                 this.railways$setTrackCasing(BuiltInRegistries.BLOCK.getValue(casingName));
                 return;
             }
         }
         this.railways$setTrackCasing(null);
+    }
+
+    @Inject(method = "preRemoveSideEffects", at = @At("HEAD"))
+    private void removeCasingCollisions(BlockPos pos, BlockState state, CallbackInfo ci) {
+        CasingCollisionUtils.manageTracks((TrackBlockEntity) (Object) this, true);
     }
 
     @Inject(method = "lazyTick", at = @At("HEAD"))
