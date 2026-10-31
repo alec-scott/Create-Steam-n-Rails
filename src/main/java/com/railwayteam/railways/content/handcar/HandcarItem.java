@@ -167,14 +167,15 @@ public class HandcarItem extends BlockItem implements IDeployAnywayBlockItem {
 
         if (!(level instanceof ServerLevel serverLevel))
             return false;
-        makeTrain(
+        // PORT-NOTE(26.1): report failure so the item is not consumed when no handcar was made
+        if (makeTrain(
             player.getUUID(),
             graph,
             tp1,
             tp2,
             serverLevel
-        );
-
+        ) == null)
+            return false;
 
         AllSoundEvents.CONTROLLER_CLICK.play(level, null, soundPos, 1, 1);
         return true;
@@ -207,7 +208,10 @@ public class HandcarItem extends BlockItem implements IDeployAnywayBlockItem {
         /* Fake world for assembly */
         SchematicLevel assemblyWorld = new SchematicLevel(level);
         StructureTemplate template = level.getStructureManager().get(Railways.asResource("handcar/assembly")).orElse(null);
-        if (template == null) return null;
+        if (template == null) {
+            Railways.LOGGER.error("Handcar assembly structure railways:handcar/assembly is missing");
+            return null;
+        }
         StructurePlaceSettings settings = new StructurePlaceSettings();
         template.placeInWorld(assemblyWorld, BlockPos.ZERO, BlockPos.ZERO, settings, level.getRandom(), Block.UPDATE_CLIENTS);
         assemblyWorld.getEntityList().forEach(e -> e.level = assemblyWorld);
@@ -217,6 +221,7 @@ public class HandcarItem extends BlockItem implements IDeployAnywayBlockItem {
              */
             contraption.assemble(assemblyWorld, new BlockPos(1, 1, 1));
         } catch (AssemblyException e) {
+            Railways.LOGGER.error("Failed to assemble handcar", e);
             return null;
         }
         /* Done assembling */
