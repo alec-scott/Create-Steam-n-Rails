@@ -26,7 +26,8 @@ import com.zurrtum.create.content.trains.track.BezierConnection;
 import com.zurrtum.create.catnip.data.Couple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.Identifier;
@@ -44,7 +45,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = BezierConnection.class, remap = false)
 public abstract class MixinBezierConnection implements IHasTrackCasing {
@@ -80,17 +80,11 @@ public abstract class MixinBezierConnection implements IHasTrackCasing {
     }
 
 
-    @Inject(
-        method = "write(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/nbt/CompoundTag;",
-        at = @At("RETURN"),
-        cancellable = true,
-        remap = true
-    )
-    private void write(BlockPos localTo, CallbackInfoReturnable<CompoundTag> cir,
+    // PORT-NOTE(26.1): block entity connections are saved through ValueOutput/ValueInput (graph edges use the codec)
+    @Inject(method = "write(Lnet/minecraft/world/level/storage/ValueOutput;Lnet/minecraft/core/BlockPos;)V", at = @At("RETURN"))
+    private void write(ValueOutput compound, BlockPos localTo, CallbackInfo ci,
                        @Local(name = "tePositions") Couple<BlockPos> tePositions,
-                       @Local(name = "starts") Couple<Vec3> starts,
-                       @Local(name = "compound") CompoundTag compound
-    ) {
+                       @Local(name = "starts") Couple<Vec3> starts) {
         Block casing = railways$getTrackCasing();
         if (casing != null) {
             if (BuiltInRegistries.BLOCK.getKey(casing).toString().equals("minecraft:block")) {
@@ -100,7 +94,6 @@ public abstract class MixinBezierConnection implements IHasTrackCasing {
             }
         }
         compound.putBoolean("ShiftDown", railways$isAlternate());
-        cir.setReturnValue(compound);
     }
 
     @Inject(method = "write(Lnet/minecraft/network/FriendlyByteBuf;)V", at = @At("RETURN"), remap = true)
@@ -113,20 +106,16 @@ public abstract class MixinBezierConnection implements IHasTrackCasing {
         }
     }
 
-  @Inject(method = "<init>(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/BlockPos;)V", at = @At("RETURN"), remap = true)
-  private void nbtConstructor(CompoundTag compound, BlockPos localTo, CallbackInfo ci) {
-    if (compound.contains("Casing")) {
-      if (compound.getString("Casing").equals("minecraft:block")) {
+  @Inject(method = "<init>(Lnet/minecraft/world/level/storage/ValueInput;Lnet/minecraft/core/BlockPos;)V", at = @At("RETURN"))
+  private void nbtConstructor(ValueInput compound, BlockPos localTo, CallbackInfo ci) {
+    if (compound.getString("Casing").isPresent()) {
+      if (compound.getStringOr("Casing", "").equals("minecraft:block")) {
 		  Railways.LOGGER.error("NBTCtor trackCasing was minecraft:block!!! for BezierConnection: primary={}, secondary={}", bePositions.getFirst(), bePositions.getSecond());
             }
             //Railways.LOGGER.warn("NBTCtor: Casing="+compound.getString("Casing"));
             railways$setTrackCasing(BuiltInRegistries.BLOCK.getValue(Identifier.parse(compound.getStringOr("Casing", ""))));
         }
-        if (compound.contains("ShiftDown")) {
-            railways$setAlternate(compound.getBooleanOr("ShiftDown", false));
-        } else {
-            railways$setAlternate(false);
-        }
+        railways$setAlternate(compound.getBooleanOr("ShiftDown", false));
     }
 
     @Inject(method = "<init>(Lnet/minecraft/network/FriendlyByteBuf;)V", at = @At("RETURN"), remap = true)

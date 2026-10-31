@@ -28,7 +28,9 @@ import com.zurrtum.create.content.trains.graph.EdgePointType;
 import com.zurrtum.create.content.trains.signal.TrackEdgePoint;
 import com.zurrtum.create.content.trains.track.TrackTargetingBehaviour;
 import com.zurrtum.create.api.behaviour.BlockEntityBehaviour;
+import com.zurrtum.create.content.trains.observer.TrackObserver;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.LevelAccessor;
 import org.spongepowered.asm.mixin.Mixin;
@@ -62,5 +64,22 @@ public abstract class MixinTrackEdgePoint {
         if (getType() == CREdgePointTypes.COUPLER || otherType == CREdgePointTypes.COUPLER
                 || getType() == CREdgePointTypes.SWITCH || otherType == CREdgePointTypes.SWITCH)
             cir.setReturnValue(true);
+    }
+
+    // PORT-NOTE(26.1): TrackObserver no longer overrides the network read/write, so its block entity position is synced
+    // from here (was MixinTrackObserver)
+    @Inject(method = "write(Lnet/minecraft/network/FriendlyByteBuf;Lcom/zurrtum/create/content/trains/graph/DimensionPalette;)V", at = @At("RETURN"))
+    private void writeObserverPositions(FriendlyByteBuf buffer, DimensionPalette dimensions, CallbackInfo ci) {
+        if (!((Object) this instanceof TrackObserver observer))
+            return;
+        buffer.writeBoolean(observer.blockEntityPos != null);
+        if (observer.blockEntityPos != null)
+            buffer.writeBlockPos(observer.blockEntityPos);
+    }
+
+    @Inject(method = "read(Lnet/minecraft/network/FriendlyByteBuf;Lcom/zurrtum/create/content/trains/graph/DimensionPalette;)V", at = @At("RETURN"))
+    private void readObserverPositions(FriendlyByteBuf buffer, DimensionPalette dimensions, CallbackInfo ci) {
+        if ((Object) this instanceof TrackObserver observer && buffer.readBoolean())
+            observer.blockEntityPos = buffer.readBlockPos();
     }
 }

@@ -26,6 +26,7 @@ import com.zurrtum.create.content.trains.signal.SignalBoundary;
 import com.zurrtum.create.content.trains.signal.SignalPropagator;
 import com.zurrtum.create.catnip.data.Couple;
 import com.zurrtum.create.catnip.data.Pair;
+import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -36,13 +37,13 @@ import java.util.function.Predicate;
 
 @Mixin(SignalPropagator.class)
 public class MixinSignalPropagator {
-    @Inject(method = "walkSignals(Lcom/zurrtum/create/content/trains/graph/TrackGraph;Ljava/util/List;Ljava/util/function/Predicate;Ljava/util/function/Predicate;Z)V", at = @At("HEAD"), remap = false)
-    private static void recordWalkSignals(TrackGraph graph, List<Couple<TrackNode>> frontier, Predicate<Pair<TrackNode, SignalBoundary>> boundaryCallback, Predicate<EdgeData> nonBoundaryCallback, boolean forCollection, CallbackInfo ci) {
+    @Inject(method = "walkSignals(Lnet/minecraft/server/MinecraftServer;Lcom/zurrtum/create/content/trains/graph/TrackGraph;Ljava/util/List;Ljava/util/function/Predicate;Ljava/util/function/Predicate;Z)V", at = @At("HEAD"), remap = false)
+    private static void recordWalkSignals(MinecraftServer server, TrackGraph graph, List<Couple<TrackNode>> frontier, Predicate<Pair<TrackNode, SignalBoundary>> boundaryCallback, Predicate<EdgeData> nonBoundaryCallback, boolean forCollection, CallbackInfo ci) {
         MixinVariables.signalPropagatorCallDepth += 1;
     }
 
-    @Inject(method = "walkSignals(Lcom/zurrtum/create/content/trains/graph/TrackGraph;Ljava/util/List;Ljava/util/function/Predicate;Ljava/util/function/Predicate;Z)V", at = @At("RETURN"), remap = false)
-    private static void recordWalkSignalsReturn(TrackGraph graph, List<Couple<TrackNode>> frontier, Predicate<Pair<TrackNode, SignalBoundary>> boundaryCallback, Predicate<EdgeData> nonBoundaryCallback, boolean forCollection, CallbackInfo ci) {
+    @Inject(method = "walkSignals(Lnet/minecraft/server/MinecraftServer;Lcom/zurrtum/create/content/trains/graph/TrackGraph;Ljava/util/List;Ljava/util/function/Predicate;Ljava/util/function/Predicate;Z)V", at = @At("RETURN"), remap = false)
+    private static void recordWalkSignalsReturn(MinecraftServer server, TrackGraph graph, List<Couple<TrackNode>> frontier, Predicate<Pair<TrackNode, SignalBoundary>> boundaryCallback, Predicate<EdgeData> nonBoundaryCallback, boolean forCollection, CallbackInfo ci) {
         if (MixinVariables.signalPropagatorCallDepth > 0)
             MixinVariables.signalPropagatorCallDepth -= 1;
     }

@@ -151,7 +151,7 @@ public abstract class ClientChunkCacheMixin {
 	/**
 	 * If chunks in range of a camera storage need to be acquired, ask the camera storage about these chunks
 	 */
-	@Inject(method = "getChunk(IILnet/minecraft/world/level/chunk/ChunkStatus;Z)Lnet/minecraft/world/level/chunk/LevelChunk;",
+	@Inject(method = "getChunk(IILnet/minecraft/world/level/chunk/status/ChunkStatus;Z)Lnet/minecraft/world/level/chunk/LevelChunk;",
 			slice = @Slice(from = @At(value = "RETURN", ordinal = 1)),
 			at = @At("RETURN"), cancellable = true)
 	private void railways$securitycraft$onGetChunk(int x, int z, ChunkStatus requiredStatus, boolean load, CallbackInfoReturnable<LevelChunk> callback) {

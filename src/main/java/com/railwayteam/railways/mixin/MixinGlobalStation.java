@@ -18,11 +18,19 @@
 
 package com.railwayteam.railways.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.RecordBuilder;
 import com.railwayteam.railways.mixin_interfaces.ILimitedGlobalStation;
+import com.railwayteam.railways.port.minecraft.DynamicNbtCompat;
 import com.zurrtum.create.content.trains.entity.Train;
 import com.zurrtum.create.content.trains.graph.DimensionPalette;
 import com.zurrtum.create.content.trains.station.GlobalStation;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.network.FriendlyByteBuf;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -69,9 +77,22 @@ public abstract class MixinGlobalStation implements ILimitedGlobalStation {
         return limitEnabled;
     }
 
-    @Inject(method = "read(Lnet/minecraft/nbt/CompoundTag;ZLcom/zurrtum/create/content/trains/graph/DimensionPalette;)V", at = @At("TAIL"), remap = true)
-    private void readLimit(CompoundTag nbt, boolean migration, DimensionPalette dimensions, CallbackInfo ci) {
+    // PORT-NOTE(26.1): saved data goes through encode/decode on DynamicOps; read/write use ValueInput/ValueOutput
+    @Inject(method = "read(Lnet/minecraft/world/level/storage/ValueInput;ZLcom/zurrtum/create/content/trains/graph/DimensionPalette;)V", at = @At("TAIL"))
+    private void readLimit(ValueInput nbt, boolean migration, DimensionPalette dimensions, CallbackInfo ci) {
         limitEnabled = nbt.getBooleanOr("LimitEnabled", false);
+    }
+
+    @Inject(method = "decode", at = @At("TAIL"))
+    private void decodeLimit(DynamicOps<Object> ops, Object input, boolean migration, DimensionPalette dimensions, CallbackInfo ci) {
+        limitEnabled = DynamicNbtCompat.read(ops, input, "LimitEnabled").getBooleanOr("LimitEnabled", false);
+    }
+
+    @WrapOperation(method = "encode", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/RecordBuilder;build(Lcom/mojang/serialization/DataResult;)Lcom/mojang/serialization/DataResult;"))
+    private DataResult<Object> encodeLimit(RecordBuilder<Object> map, DataResult<Object> prefix, Operation<DataResult<Object>> original,
+                                           @Local(argsOnly = true) DynamicOps<Object> ops) {
+        map.add("LimitEnabled", ops.createBoolean(limitEnabled));
+        return original.call(map, prefix);
     }
 
     @Inject(method = "read(Lnet/minecraft/network/FriendlyByteBuf;Lcom/zurrtum/create/content/trains/graph/DimensionPalette;)V", at = @At("TAIL"), remap = true)
@@ -79,8 +100,8 @@ public abstract class MixinGlobalStation implements ILimitedGlobalStation {
         limitEnabled = buffer.readBoolean();
     }
 
-    @Inject(method = "write(Lnet/minecraft/nbt/CompoundTag;Lcom/zurrtum/create/content/trains/graph/DimensionPalette;)V", at = @At("TAIL"), remap = true)
-    private void writeLimit(CompoundTag nbt, DimensionPalette dimensions, CallbackInfo ci) {
+    @Inject(method = "write(Lnet/minecraft/world/level/storage/ValueOutput;Lcom/zurrtum/create/content/trains/graph/DimensionPalette;)V", at = @At("TAIL"))
+    private void writeLimit(ValueOutput nbt, DimensionPalette dimensions, CallbackInfo ci) {
         nbt.putBoolean("LimitEnabled", limitEnabled);
     }
 
