@@ -90,7 +90,7 @@ public class RemoteLensItem extends Item {
     public @NotNull InteractionResult useOn(UseOnContext context) {
         if (context.getPlayer() == null)
             return InteractionResult.FAIL;
-        return use(context.getLevel(), context.getPlayer(), context.getHand()).getResult();
+        return use(context.getLevel(), context.getPlayer(), context.getHand());
     }
 
     @Override

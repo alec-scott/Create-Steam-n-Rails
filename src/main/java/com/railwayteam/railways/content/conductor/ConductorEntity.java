@@ -57,7 +57,6 @@ import com.zurrtum.create.catnip.data.Pair;
 import com.zurrtum.create.catnip.data.WorldAttached;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -568,6 +567,8 @@ public class ConductorEntity extends AbstractGolem {
 
   // specific movement-related stuff
 
+  public float walkDistO;
+  public float walkDist;
   public float oBob;
   public float bob;
 
@@ -579,8 +580,6 @@ public class ConductorEntity extends AbstractGolem {
     return super.getViewXRot(partialTicks);
   }
 
-  @Environment(EnvType.CLIENT)
-  public PlayerModel visualBaseModel;
   @Environment(EnvType.CLIENT)
   public Player visualBaseEntity;
 
@@ -752,6 +751,7 @@ public class ConductorEntity extends AbstractGolem {
   public void aiStep() {
     if (isPossessedAndClient()) {
       this.oBob = this.bob;
+      this.walkDistO = this.walkDist;
       this.yHeadRot = this.getYRot();
       if (!this.noPhysics) {
         this.moveTowardsClosestSpace(this.getX() - (double)this.getBbWidth() * 0.35, this.getZ() + (double)this.getBbWidth() * 0.35);
@@ -764,6 +764,10 @@ public class ConductorEntity extends AbstractGolem {
     if (isPossessedAndClient()) {
       float f = !this.onGround() || this.isDeadOrDying() || this.isSwimming() ? 0.0f : Math.min(0.1f, (float)this.getDeltaMovement().horizontalDistance());
       this.bob += (f - this.bob) * 0.4f;
+      // PORT-NOTE(26.1): entities no longer track walk distance, but the possessed camera bobs with it
+      double dx = this.getX() - this.xo;
+      double dz = this.getZ() - this.zo;
+      this.walkDist += (float) Math.sqrt(dx * dx + dz * dz) * 0.6f;
     }
   }
 

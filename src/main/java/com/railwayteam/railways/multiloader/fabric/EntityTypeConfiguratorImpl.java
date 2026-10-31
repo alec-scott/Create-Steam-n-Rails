@@ -42,6 +42,12 @@ public class EntityTypeConfiguratorImpl extends EntityTypeConfigurator {
 	}
 
 	@Override
+	public EntityTypeConfigurator size(float width, float height, float eyeHeight) {
+		builder.dimensions(EntityDimensions.scalable(width, height).withEyeHeight(eyeHeight));
+		return this;
+	}
+
+	@Override
 	public EntityTypeConfigurator fireImmune() {
 		builder.fireImmune();
 		return this;

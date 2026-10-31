@@ -20,14 +20,12 @@ package com.railwayteam.railways.mixin.conductor_possession;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import com.railwayteam.railways.config.CRConfigs;
 import com.railwayteam.railways.content.conductor.ClientHandler;
 import com.railwayteam.railways.content.conductor.ConductorEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.resources.Identifier;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.spongepowered.asm.mixin.Final;
@@ -43,14 +41,12 @@ public abstract class MixinGameRenderer {
     @Shadow @Final
 	Minecraft minecraft;
 
-    @Shadow
-	abstract void loadEffect(Identifier resourceLocation);
-
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
-    private void railways$bobView(PoseStack matrixStack, float partialTicks, CallbackInfo ci) {
+    private void railways$bobView(CameraRenderState cameraState, PoseStack matrixStack, CallbackInfo ci) {
         if (!(minecraft.getCameraEntity() instanceof ConductorEntity conductor)) {
             return;
         }
+        float partialTicks = minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         float f = conductor.walkDist - conductor.walkDistO;
         float g = -(conductor.walkDist + f * partialTicks);
         float h = Mth.lerp(partialTicks, conductor.oBob, conductor.bob);
@@ -61,12 +57,7 @@ public abstract class MixinGameRenderer {
         ci.cancel();
     }
 
-    @Inject(method = "checkEntityPostEffect", at = @At("RETURN"))
-    private void railways$checkEntityPostEffect(Entity entity, CallbackInfo ci) {
-        if (entity instanceof ConductorEntity && CRConfigs.client().useConductorSpyShader.get()) {
-            loadEffect(Identifier.parse("shaders/post/scan_pincushion.json"));
-        }
-    }
+    // PORT-NOTE(26.1): the spy camera post effect (vanilla scan_pincushion) is gone from vanilla, so it is not applied
 
     @Inject(method = "shouldRenderBlockOutline", at = @At("HEAD"), cancellable = true)
     private void railways$shouldRenderBlockOutline(CallbackInfoReturnable<Boolean> cir) {

@@ -36,6 +36,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -66,7 +67,7 @@ public class ConductorPossessionController {
     @SuppressWarnings("AssignmentUsedAsCondition") // we are doing this intentionally
     @Environment(EnvType.CLIENT)
     public static void onClientTick(Minecraft mc, boolean start) {
-        Entity cameraEntity = mc.cameraEntity;
+        Entity cameraEntity = mc.getCameraEntity();
 
         if (cameraEntity instanceof ConductorEntity cam) {
             wasMounted = true;
@@ -163,8 +164,8 @@ public class ConductorPossessionController {
 
                 if (yRotChange != 0.0D || xRotChange != 0.0D || ++ticksSincePacket > 10) {
                     ticksSincePacket = 0;
-                    player.connection.send(new ServerboundMovePlayerPacket.Rot(player.getYRot(), player.getXRot(), player.onGround()));
-                    player.connection.send(new ServerboundPlayerInputPacket(0, 0, false, false));
+                    player.connection.send(new ServerboundMovePlayerPacket.Rot(player.getYRot(), player.getXRot(), player.onGround(), player.horizontalCollision));
+                    player.connection.send(new ServerboundPlayerInputPacket(Input.EMPTY));
                 }
 
                 // update the server with the camera's position
@@ -182,7 +183,7 @@ public class ConductorPossessionController {
                 if (bl3 || bl5)
                     CRPackets.PACKETS.send(new CameraMovePacket(cam,
                             new ServerboundMovePlayerPacket.PosRot(cam.getX(), cam.getY(), cam.getZ(),
-                                    cam.getYRot(), cam.getXRot(), cam.onGround())));
+                                    cam.getYRot(), cam.getXRot(), cam.onGround(), cam.horizontalCollision)));
             }
         } else if (wasMounted /* PORT-NOTE(fabric): Tweakeroo freecam check dropped with the Tweakeroo compat */) { // catch in case we didn't want to dismount
             wasMounted = false;
@@ -201,7 +202,7 @@ public class ConductorPossessionController {
     @SuppressWarnings("AssignmentUsedAsCondition")
     @Environment(EnvType.CLIENT)
     public static void onHandleKeybinds(Minecraft mc, boolean start) {
-        Entity cameraEntity = mc.cameraEntity;
+        Entity cameraEntity = mc.getCameraEntity();
 
         if (cameraEntity instanceof ConductorEntity cam) {
             wasMounted = true;

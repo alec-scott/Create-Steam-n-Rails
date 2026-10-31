@@ -101,6 +101,7 @@ public class RailwaysClient {
 
   public static void invalidateRenderers() {
     CasingRenderUtils.clearModelCache();
+    ConductorCapModel.clearModelCache();
 
     synchronized (RELOAD_CALLBACKS) {
       var iterator = RELOAD_CALLBACKS.iterator();

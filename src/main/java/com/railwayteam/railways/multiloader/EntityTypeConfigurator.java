@@ -25,5 +25,7 @@ public abstract class EntityTypeConfigurator {
 	}
 
 	public abstract EntityTypeConfigurator size(float width, float height);
+
+	public abstract EntityTypeConfigurator size(float width, float height, float eyeHeight);
 	public abstract EntityTypeConfigurator fireImmune();
 }

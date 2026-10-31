@@ -39,7 +39,7 @@ public class ServerPlayerMixin {
 	private void railways$securitycraft$tick(ServerPlayer player, double x, double y, double z, float yaw, float pitch) { // done add some quiet compat with SC to also cancel if player is on a camera
 		if (player.getCamera().getClass().getName().equals("net.geforcemods.securitycraft.entity.camera.SecurityCamera")) return;
 		if (!ConductorPossessionController.isPossessingConductor(player))
-			player.absMoveTo(x, y, z, yaw, pitch);
+			player.absSnapTo(x, y, z, yaw, pitch);
 	}
 
 	@Inject(method = "setCamera", at = @At("HEAD"), cancellable = true)

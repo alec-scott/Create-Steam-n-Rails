@@ -135,6 +135,8 @@
     "client.MixinGlobalRailwayManager",
     "client.MixinKeyBindsListKeyEntry",
     "client.MixinPlayerInfo",
+    "client.MixinAvatarRenderState",
+    "client.MixinLivingEntityRenderer",
     "client.MixinPlayerRenderer",
     "client.MixinPortableStorageInterfaceRenderer",
     "client.MixinPotatoProjectileRenderer",

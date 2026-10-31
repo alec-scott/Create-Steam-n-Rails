@@ -23,7 +23,7 @@ import com.railwayteam.railways.content.conductor.ConductorPossessionController;
 import com.railwayteam.railways.util.Utils;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
 import net.minecraft.world.level.ChunkPos;
@@ -38,6 +38,7 @@ import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -104,7 +105,9 @@ public abstract class ClientChunkCacheMixin {
 	 * Handles chunks that are dropped in range of the camera storage
 	 */
 	@Inject(method = "drop", at = @At(value = "HEAD"))
-	public void railways$securitycraft$onDrop(int x, int z, CallbackInfo ci) {
+	public void railways$securitycraft$onDrop(ChunkPos pos, CallbackInfo ci) {
+		int x = pos.x();
+		int z = pos.z();
 		ClientChunkCache.Storage cameraStorage = ConductorPossessionController.getCameraStorage();
 
 		if (cameraStorage.inRange(x, z)) {
@@ -113,7 +116,7 @@ public abstract class ClientChunkCacheMixin {
 
 			if (chunk != null && chunk.getPos().x() == x && chunk.getPos().z() == z) {
 				Utils.postChunkEventClient(chunk, false);
-				cameraStorage.replace(i, chunk, null);
+				cameraStorage.drop(i, chunk);
 			}
 		}
 	}
@@ -123,7 +126,7 @@ public abstract class ClientChunkCacheMixin {
 	 * them to be acquired afterwards
 	 */
 	@Inject(method = "replaceWithPacketData", at = @At(value = "HEAD"), cancellable = true)
-	private void railways$securitycraft$onReplace(int x, int z, FriendlyByteBuf buffer, CompoundTag chunkTag, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> tagOutputConsumer, CallbackInfoReturnable<LevelChunk> callback) {
+	private void railways$securitycraft$onReplace(int x, int z, FriendlyByteBuf buffer, Map<Heightmap.Types, long[]> heightmaps, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> tagOutputConsumer, CallbackInfoReturnable<LevelChunk> callback) {
 		ClientChunkCache.Storage cameraStorage = ConductorPossessionController.getCameraStorage();
 
 		if (ClientHandler.isPlayerMountedOnCamera() && cameraStorage.inRange(x, z)) {
@@ -133,11 +136,11 @@ public abstract class ClientChunkCacheMixin {
 
 			if (!isValidChunk(chunk, x, z)) {
 				chunk = new LevelChunk(level, chunkPos);
-				chunk.replaceWithPacketData(buffer, chunkTag, tagOutputConsumer);
+				chunk.replaceWithPacketData(buffer, heightmaps, tagOutputConsumer);
 				cameraStorage.replace(index, chunk);
 			}
 			else
-				chunk.replaceWithPacketData(buffer, chunkTag, tagOutputConsumer);
+				chunk.replaceWithPacketData(buffer, heightmaps, tagOutputConsumer);
 
 			level.onChunkLoaded(chunkPos);
 			Utils.postChunkEventClient(chunk, true);

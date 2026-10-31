@@ -1,6 +1,6 @@
 /*
  * Steam 'n' Rails
- * Copyright (c) 2022-2025 The Railways Team
+ * Copyright (c) 2022-2026 The Railways Team
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -23,36 +23,27 @@ import com.railwayteam.railways.registry.CRBlockPartials;
 import com.zurrtum.create.client.catnip.render.CachedBuffers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.NotNull;
 
 @Environment(EnvType.CLIENT)
-public class ConductorFlagLayer<T extends ConductorEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
-
-	public ConductorFlagLayer(RenderLayerParent<T, M> pRenderer) {
+public class ConductorFlagLayer extends RenderLayer<ConductorRenderState, ConductorEntityModel> {
+	public ConductorFlagLayer(RenderLayerParent<ConductorRenderState, ConductorEntityModel> pRenderer) {
 		super(pRenderer);
 	}
 
 	@Override
-	public void render(@NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, @NotNull T conductorEntity, float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
-		if (conductorEntity.isHoldingSchedulesClient()) {
-
+	public void submit(@NotNull PoseStack poseStack, @NotNull SubmitNodeCollector queue, int packedLight,
+					   @NotNull ConductorRenderState state, float yRot, float xRot) {
+		if (state.holdingSchedules) {
 			poseStack.pushPose();
-
-			//poseStack.mulPose(Axis.XP.rotationDegrees(180.0f));
-			//poseStack.translate(-0.5d, -1.2d, -0.94d);
-
-
-			CachedBuffers.partial(CRBlockPartials.CONDUCTOR_WHISTLE_FLAGS.get(conductorEntity.getColor()), Blocks.AIR.defaultBlockState())
+			CachedBuffers.partial(CRBlockPartials.CONDUCTOR_WHISTLE_FLAGS.get(state.color), Blocks.AIR.defaultBlockState())
 					.translate(-0.78125, 0.15, -0.688)
 					.light(packedLight)
-					.renderInto(poseStack, buffer.getBuffer(RenderType.cutoutMipped()));
-
+					.submit(poseStack, queue);
 			poseStack.popPose();
 		}
 	}

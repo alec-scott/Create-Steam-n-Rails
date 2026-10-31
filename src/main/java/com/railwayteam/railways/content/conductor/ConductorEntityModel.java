@@ -19,10 +19,7 @@
 package com.railwayteam.railways.content.conductor;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.railwayteam.railways.Railways;
-import net.minecraft.client.model.ArmedModel;
-import net.minecraft.client.model.HeadedModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -32,31 +29,41 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ConductorEntityModel<T extends ConductorEntity> extends HumanoidModel<T> implements ArmedModel, HeadedModel {
+/**
+ * PORT-NOTE(26.1): models are posed from a render state and render their whole root, and {@link HumanoidModel} needs a
+ * {@code hat} under the head. The tilted pose the cap copies, which 1.20 kept in the unrendered root-level {@code hat},
+ * is now the empty {@code cap_anchor} part. Armor uses this class on the armor stand meshes, which have neither part.
+ */
+public class ConductorEntityModel extends HumanoidModel<ConductorRenderState> {
   // This layer location should be baked with EntityRendererProvider.Context in the entity renderer and passed into this model's constructor
   public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(Railways.asResource("conductor"), "main");
 
   public final @Nullable ModelPart realHat;
+  public final @Nullable ModelPart capAnchor;
 
   public ConductorEntityModel (ModelPart root) {
     super(root);
     this.realHat = root.hasChild("real_hat") ? root.getChild("real_hat") : null;
+    this.capAnchor = root.hasChild("cap_anchor") ? root.getChild("cap_anchor") : null;
   }
 
   public static LayerDefinition createBodyLayer() {
     MeshDefinition meshdefinition = new MeshDefinition();
     PartDefinition partdefinition = meshdefinition.getRoot();
 
-    PartDefinition hat = partdefinition.addOrReplaceChild("hat", CubeListBuilder.create().texOffs(0, 48).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.5F)), PartPose.offsetAndRotation(0.0F, 10.0F, 0.0F, 0.1745F, 0.0F, 0.0F));
+    partdefinition.addOrReplaceChild("cap_anchor", CubeListBuilder.create(), PartPose.offsetAndRotation(0.0F, 10.0F, 0.0F, 0.1745F, 0.0F, 0.0F));
 
-    PartDefinition realHat = partdefinition.addOrReplaceChild("real_hat", CubeListBuilder.create().texOffs(32, 25).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.2F)), PartPose.offset(0.0F, 10.0F, 0.0F));
+    partdefinition.addOrReplaceChild("real_hat", CubeListBuilder.create().texOffs(32, 25).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.2F)), PartPose.offset(0.0F, 10.0F, 0.0F));
 
     PartDefinition head = partdefinition.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 10.0F, 0.0F));
+
+    head.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
 
     PartDefinition left_arm = partdefinition.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(50, 0).addBox(0.0F, -2.0F, -2.0F, 3.0F, 9.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(4.0F, 12.0F, 0.0F));
 
@@ -78,24 +85,28 @@ public class ConductorEntityModel<T extends ConductorEntity> extends HumanoidMod
   }
 
   @Override
-  public void setupAnim(@NotNull T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+  public void setupAnim(@NotNull ConductorRenderState state) {
+    resetPose();
+    float limbSwing = state.walkAnimationPos;
+    float limbSwingAmount = state.walkAnimationSpeed;
+    float netHeadYaw = state.yRot;
+    float headPitch = state.xRot;
     // mostly based on HumanoidModel::setupAnim
     // NOT REALLY WORTH THE EFFORT, THIS WORKS can't call super directly due to rotation anchor offsets, find a way to fix them?
-    boolean fallFlying = entity.visualBaseEntity != null && entity.visualBaseEntity.getFallFlyingTicks() > 4;
-    boolean visuallySwimming = entity.visualBaseEntity != null && entity.visualBaseEntity.isVisuallySwimming();
-    float swimAmount = entity.visualBaseModel != null ? entity.visualBaseModel.swimAmount : this.swimAmount;
+    boolean fallFlying = state.isFallFlying;
+    boolean visuallySwimming = state.isVisuallySwimming;
+    float swimAmount = state.swimAmount;
     this.head.xRot = fallFlying ? -0.7853982f : (swimAmount > 0.0f ? (visuallySwimming ? Mth.rotLerpRad(swimAmount, this.head.xRot, -0.7853982f) : Mth.rotLerpRad(swimAmount, this.head.xRot, headPitch * ((float)Math.PI / 180))) : headPitch * ((float)Math.PI / 180));
     this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
 
-    this.hat.xRot = (float) (this.head.xRot + (-10 * (Math.PI / 180)));
-    this.hat.yRot = this.head.yRot;
-    float amt = -0.1f*16;
-    this.hat.x = (float) (Math.cos(this.head.xRot) * amt * Math.sin(this.head.yRot));
-    this.hat.z = (float) (Math.cos(this.head.xRot) * amt * Math.cos(this.head.yRot));
-    this.hat.y = ((entity.visualBaseModel != null && entity.visualBaseModel.crouching) ? 14.2f : 10.0f) - (float) (Math.sin(this.head.xRot) * amt);
-
-    if (this.realHat != null)
-      this.realHat.copyFrom(this.head);
+    if (this.capAnchor != null) {
+      this.capAnchor.xRot = (float) (this.head.xRot + (-10 * (Math.PI / 180)));
+      this.capAnchor.yRot = this.head.yRot;
+      float amt = -0.1f*16;
+      this.capAnchor.x = (float) (Math.cos(this.head.xRot) * amt * Math.sin(this.head.yRot));
+      this.capAnchor.z = (float) (Math.cos(this.head.xRot) * amt * Math.cos(this.head.yRot));
+      this.capAnchor.y = (state.isCrouching ? 14.2f : 10.0f) - (float) (Math.sin(this.head.xRot) * amt);
+    }
 
     this.rightArm.xRot = Mth.cos(limbSwing * 0.6662F * 2 + (float)Math.PI) * 2.0F * limbSwingAmount * 0.5F;
     this.leftArm.xRot = Mth.cos(limbSwing * 0.6662F * 2) * 2.0F * limbSwingAmount * 0.5F;
@@ -108,7 +119,7 @@ public class ConductorEntityModel<T extends ConductorEntity> extends HumanoidMod
     this.leftLeg.yRot = 0.0F;
     this.rightLeg.zRot = 0.0F;
     this.leftLeg.zRot = 0.0F;
-    if (this.riding) {
+    if (state.isPassenger) {
       this.rightArm.xRot += (-(float)Math.PI / 2f);
       this.leftArm.xRot += (-(float)Math.PI / 2f);
       this.rightLeg.xRot = -1.4137167F;
@@ -121,7 +132,7 @@ public class ConductorEntityModel<T extends ConductorEntity> extends HumanoidMod
     this.rightArm.yRot = 0.0f;
     this.leftArm.yRot = 0.0f;
 
-    if (entity.visualBaseModel != null && entity.visualBaseModel.crouching) {
+    if (state.isCrouching) {
       this.body.xRot = 0.5f;
       this.rightArm.xRot += 0.4f;
       this.leftArm.xRot += 0.4f;
@@ -181,10 +192,13 @@ public class ConductorEntityModel<T extends ConductorEntity> extends HumanoidMod
       this.leftLeg.xRot = Mth.lerp(swimAmount, this.leftLeg.xRot, 0.3f * Mth.cos(limbSwing * 0.33333334f + (float)Math.PI));
       this.rightLeg.xRot = Mth.lerp(swimAmount, this.rightLeg.xRot, 0.3f * Mth.cos(limbSwing * 0.33333334f));
     }
+
+    if (this.realHat != null)
+      this.realHat.loadPose(this.head.storePose());
   }
 
   @Override
-  public void translateToHand(@NotNull HumanoidArm arm, @NotNull PoseStack stack) {
+  public void translateToHand(@NotNull HumanoidRenderState state, @NotNull HumanoidArm arm, @NotNull PoseStack stack) {
     (arm == HumanoidArm.LEFT ? this.leftArm : this.rightArm).translateAndRotate(stack);
   }
 
@@ -193,16 +207,4 @@ public class ConductorEntityModel<T extends ConductorEntity> extends HumanoidMod
     return this.head;
   }
 
-  @Override
-  public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-    head.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-    body.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-    rightArm.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-    leftArm.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-    rightLeg.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-    leftLeg.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-    //hat.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-    if (realHat != null)
-      realHat.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-  }
 }
