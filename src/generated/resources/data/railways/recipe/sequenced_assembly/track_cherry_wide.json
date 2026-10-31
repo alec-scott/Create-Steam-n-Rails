@@ -1,0 +1,36 @@
+{
+  "ingredient": "railways:track_cherry",
+  "loops": 1,
+  "result": {
+    "id": "railways:track_cherry_wide"
+  },
+  "sequence": [
+    {
+      "ingredient": "$ingredient",
+      "processing_time": 50,
+      "results": [
+        "$result"
+      ],
+      "type": "create:cutting"
+    },
+    {
+      "ingredient": "minecraft:cherry_slab",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "$ingredient",
+      "results": [
+        "$result"
+      ],
+      "type": "create:pressing"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:track_incomplete_cherry_wide"
+  },
+  "type": "create:sequenced_assembly"
+}

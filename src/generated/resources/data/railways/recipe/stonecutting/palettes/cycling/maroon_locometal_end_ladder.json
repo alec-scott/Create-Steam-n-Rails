@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/maroon/ladders",
+  "result": {
+    "id": "railways:maroon_locometal_end_ladder"
+  },
+  "type": "minecraft:stonecutting"
+}

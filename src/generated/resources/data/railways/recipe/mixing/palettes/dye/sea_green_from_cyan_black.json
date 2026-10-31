@@ -1,0 +1,30 @@
+{
+  "fluid_ingredients": [
+    {
+      "amount": 10125,
+      "components": {
+        "railways:paint_color": "cyan"
+      },
+      "fluid": "railways:paint",
+      "type": "fluid_stack"
+    },
+    {
+      "amount": 10125,
+      "components": {
+        "railways:paint_color": "black"
+      },
+      "fluid": "railways:paint",
+      "type": "fluid_stack"
+    }
+  ],
+  "fluid_results": [
+    {
+      "amount": 20250,
+      "components": {
+        "railways:paint_color": "sea_green"
+      },
+      "id": "railways:paint"
+    }
+  ],
+  "type": "create:mixing"
+}

@@ -1,0 +1,10 @@
+{
+  "ingredient": "railways:chartreuse_riveted_locometal",
+  "results": [
+    {
+      "id": "railways:chartreuse_locometal_flywheel"
+    }
+  ],
+  "target": "create:flywheel",
+  "type": "create:item_application"
+}

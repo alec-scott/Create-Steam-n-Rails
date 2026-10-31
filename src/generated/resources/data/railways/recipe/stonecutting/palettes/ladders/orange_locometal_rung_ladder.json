@@ -1,0 +1,8 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/orange/base",
+  "result": {
+    "count": 2,
+    "id": "railways:orange_locometal_rung_ladder"
+  },
+  "type": "minecraft:stonecutting"
+}

@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/pink/hazard_stripes_white",
+  "result": {
+    "id": "railways:pink_hazard_stripes_chevron_on_white"
+  },
+  "type": "minecraft:stonecutting"
+}

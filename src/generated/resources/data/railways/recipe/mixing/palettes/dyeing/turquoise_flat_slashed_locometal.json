@@ -1,0 +1,21 @@
+{
+  "fluid_ingredients": [
+    {
+      "amount": 10125,
+      "components": {
+        "railways:paint_color": "turquoise"
+      },
+      "fluid": "railways:paint",
+      "type": "fluid_stack"
+    }
+  ],
+  "ingredients": [
+    "#railways:palettes/dye_groups/flat_slashed"
+  ],
+  "results": [
+    {
+      "id": "railways:turquoise_flat_slashed_locometal"
+    }
+  ],
+  "type": "create:mixing"
+}

@@ -1,0 +1,21 @@
+{
+  "fluid_ingredients": [
+    {
+      "amount": 10125,
+      "components": {
+        "railways:paint_color": "white"
+      },
+      "fluid": "railways:paint",
+      "type": "fluid_stack"
+    }
+  ],
+  "ingredients": [
+    "#railways:palettes/dye_groups/sliding_door"
+  ],
+  "results": [
+    {
+      "id": "railways:white_sliding_locometal_door"
+    }
+  ],
+  "type": "create:mixing"
+}

@@ -1,0 +1,36 @@
+{
+  "ingredient": "minecraft:jungle_slab",
+  "loops": 1,
+  "result": {
+    "id": "railways:track_jungle"
+  },
+  "sequence": [
+    {
+      "ingredient": "#railways:internal/nuggets/iron_nuggets",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "#railways:internal/nuggets/iron_nuggets",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "$ingredient",
+      "results": [
+        "$result"
+      ],
+      "type": "create:pressing"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:track_incomplete_jungle"
+  },
+  "type": "create:sequenced_assembly"
+}

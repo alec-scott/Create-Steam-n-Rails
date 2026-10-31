@@ -2,11 +2,7 @@
   "replace": false,
   "values": [
     {
-      "id": "#c:copper_ingots",
-      "required": false
-    },
-    {
-      "id": "#forge:ingots/copper",
+      "id": "#c:ingots/copper",
       "required": false
     }
   ]

@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/granite/base",
+  "result": {
+    "id": "railways:granite_locometal_vent"
+  },
+  "type": "minecraft:stonecutting"
+}

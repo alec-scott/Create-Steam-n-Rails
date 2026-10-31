@@ -1,0 +1,18 @@
+{
+  "category": "misc",
+  "key": {
+    "#": "create:industrial_iron_block",
+    "=": "create:metal_girder",
+    ">": "#railways:wooden_headstocks"
+  },
+  "pattern": [
+    ">>>",
+    "===",
+    "# #"
+  ],
+  "result": {
+    "id": "railways:buffer"
+  },
+  "show_notification": true,
+  "type": "minecraft:crafting_shaped"
+}

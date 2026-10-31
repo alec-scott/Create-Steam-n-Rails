@@ -1,0 +1,24 @@
+{
+  "fluid_ingredients": [
+    {
+      "amount": 81000,
+      "fluid_tag": "#minecraft:water",
+      "type": "fluid_tag"
+    }
+  ],
+  "fluid_results": [
+    {
+      "amount": 81000,
+      "components": {
+        "railways:paint_color": "dripstone"
+      },
+      "id": "railways:paint"
+    }
+  ],
+  "heat_requirement": "heated",
+  "ingredients": [
+    "minecraft:dripstone_block",
+    "#railways:binding_agents"
+  ],
+  "type": "create:mixing"
+}

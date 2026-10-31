@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/light_blue/base",
+  "result": {
+    "id": "railways:light_blue_locometal_vent"
+  },
+  "type": "minecraft:stonecutting"
+}

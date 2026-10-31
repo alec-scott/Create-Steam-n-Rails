@@ -1,0 +1,42 @@
+{
+  "fabric:load_conditions": {
+    "condition": "fabric:all_mods_loaded",
+    "values": [
+      "quark"
+    ]
+  },
+  "ingredient": "railways:track_quark_ancient",
+  "loops": 1,
+  "result": {
+    "id": "railways:track_quark_ancient_wide"
+  },
+  "sequence": [
+    {
+      "ingredient": "$ingredient",
+      "processing_time": 50,
+      "results": [
+        "$result"
+      ],
+      "type": "create:cutting"
+    },
+    {
+      "ingredient": "quark:ancient_planks_slab",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "$ingredient",
+      "results": [
+        "$result"
+      ],
+      "type": "create:pressing"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:track_incomplete_quark_ancient_wide"
+  },
+  "type": "create:sequenced_assembly"
+}

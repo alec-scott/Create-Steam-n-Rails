@@ -2,11 +2,7 @@
   "replace": false,
   "values": [
     {
-      "id": "#c:string",
-      "required": false
-    },
-    {
-      "id": "#forge:string",
+      "id": "#c:strings",
       "required": false
     }
   ]

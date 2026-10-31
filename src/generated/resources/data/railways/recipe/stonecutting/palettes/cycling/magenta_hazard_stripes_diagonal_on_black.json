@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/magenta/hazard_stripes_black",
+  "result": {
+    "id": "railways:magenta_hazard_stripes_diagonal_on_black"
+  },
+  "type": "minecraft:stonecutting"
+}

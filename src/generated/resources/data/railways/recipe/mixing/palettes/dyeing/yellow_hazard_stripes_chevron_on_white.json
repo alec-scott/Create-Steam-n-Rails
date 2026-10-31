@@ -1,0 +1,21 @@
+{
+  "fluid_ingredients": [
+    {
+      "amount": 10125,
+      "components": {
+        "railways:paint_color": "yellow"
+      },
+      "fluid": "railways:paint",
+      "type": "fluid_stack"
+    }
+  ],
+  "ingredients": [
+    "#railways:palettes/dye_groups/hazard_stripes_chevron_white"
+  ],
+  "results": [
+    {
+      "id": "railways:yellow_hazard_stripes_chevron_on_white"
+    }
+  ],
+  "type": "create:mixing"
+}

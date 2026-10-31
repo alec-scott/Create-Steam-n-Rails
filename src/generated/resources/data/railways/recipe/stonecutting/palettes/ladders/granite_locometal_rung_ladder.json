@@ -1,0 +1,8 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/granite/base",
+  "result": {
+    "count": 2,
+    "id": "railways:granite_locometal_rung_ladder"
+  },
+  "type": "minecraft:stonecutting"
+}

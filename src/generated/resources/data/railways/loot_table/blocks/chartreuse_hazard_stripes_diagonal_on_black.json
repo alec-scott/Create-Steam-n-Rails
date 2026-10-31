@@ -1,0 +1,21 @@
+{
+  "pools": [
+    {
+      "bonus_rolls": 0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "name": "railways:chartreuse_hazard_stripes_diagonal_on_black",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "railways:blocks/chartreuse_hazard_stripes_diagonal_on_black",
+  "type": "minecraft:block"
+}

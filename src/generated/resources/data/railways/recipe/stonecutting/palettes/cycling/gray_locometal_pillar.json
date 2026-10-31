@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/gray/base",
+  "result": {
+    "id": "railways:gray_locometal_pillar"
+  },
+  "type": "minecraft:stonecutting"
+}

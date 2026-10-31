@@ -1,0 +1,37 @@
+{
+  "ingredient": "minecraft:yellow_wool",
+  "loops": 1,
+  "result": {
+    "id": "railways:yellow_conductor_cap"
+  },
+  "sequence": [
+    {
+      "ingredient": "$ingredient",
+      "processing_time": 50,
+      "results": [
+        "$result"
+      ],
+      "type": "create:cutting"
+    },
+    {
+      "ingredient": "create:precision_mechanism",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "#railways:internal/string",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:yellow_incomplete_conductor_cap"
+  },
+  "type": "create:sequenced_assembly"
+}

@@ -1,0 +1,10 @@
+{
+  "ingredient": "railways:scorchia_riveted_locometal",
+  "results": [
+    {
+      "id": "railways:scorchia_locometal_flywheel"
+    }
+  ],
+  "target": "create:flywheel",
+  "type": "create:item_application"
+}

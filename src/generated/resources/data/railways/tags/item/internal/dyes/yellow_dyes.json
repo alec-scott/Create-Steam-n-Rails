@@ -2,11 +2,7 @@
   "replace": false,
   "values": [
     {
-      "id": "#c:yellow_dyes",
-      "required": false
-    },
-    {
-      "id": "#forge:dyes/yellow",
+      "id": "#c:dyes/yellow",
       "required": false
     }
   ]

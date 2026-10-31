@@ -1,0 +1,11 @@
+{
+  "category": "equipment",
+  "ingredients": [
+    "#railways:conductor_caps",
+    "#railways:internal/dyes/orange_dyes"
+  ],
+  "result": {
+    "id": "railways:orange_conductor_cap"
+  },
+  "type": "minecraft:crafting_shapeless"
+}

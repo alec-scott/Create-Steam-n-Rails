@@ -1,0 +1,18 @@
+{
+  "category": "misc",
+  "key": {
+    "#": "railways:purple_slashed_locometal",
+    "d": "#railways:internal/ingots/iron_ingots"
+  },
+  "pattern": [
+    "###",
+    "#d#",
+    "###"
+  ],
+  "result": {
+    "count": 8,
+    "id": "railways:purple_iron_wrapped_locometal"
+  },
+  "show_notification": true,
+  "type": "minecraft:crafting_shaped"
+}

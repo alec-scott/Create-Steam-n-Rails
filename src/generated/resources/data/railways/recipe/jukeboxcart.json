@@ -1,0 +1,11 @@
+{
+  "category": "misc",
+  "ingredients": [
+    "minecraft:minecart",
+    "minecraft:jukebox"
+  ],
+  "result": {
+    "id": "railways:jukeboxcart"
+  },
+  "type": "minecraft:crafting_shapeless"
+}

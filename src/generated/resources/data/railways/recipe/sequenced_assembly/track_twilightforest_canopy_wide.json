@@ -1,0 +1,42 @@
+{
+  "fabric:load_conditions": {
+    "condition": "fabric:all_mods_loaded",
+    "values": [
+      "twilightforest"
+    ]
+  },
+  "ingredient": "railways:track_twilightforest_canopy",
+  "loops": 1,
+  "result": {
+    "id": "railways:track_twilightforest_canopy_wide"
+  },
+  "sequence": [
+    {
+      "ingredient": "$ingredient",
+      "processing_time": 50,
+      "results": [
+        "$result"
+      ],
+      "type": "create:cutting"
+    },
+    {
+      "ingredient": "twilightforest:canopy_slab",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "$ingredient",
+      "results": [
+        "$result"
+      ],
+      "type": "create:pressing"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:track_incomplete_twilightforest_canopy_wide"
+  },
+  "type": "create:sequenced_assembly"
+}

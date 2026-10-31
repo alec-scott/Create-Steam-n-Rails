@@ -1,0 +1,8 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/tuff/base",
+  "result": {
+    "count": 2,
+    "id": "railways:tuff_locometal_end_ladder"
+  },
+  "type": "minecraft:stonecutting"
+}

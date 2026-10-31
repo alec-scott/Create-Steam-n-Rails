@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/pink/ladders",
+  "result": {
+    "id": "railways:pink_locometal_end_ladder"
+  },
+  "type": "minecraft:stonecutting"
+}

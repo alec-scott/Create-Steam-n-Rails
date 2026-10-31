@@ -1,0 +1,11 @@
+{
+  "category": "misc",
+  "ingredients": [
+    "#minecraft:wooden_trapdoors",
+    "railways:blue_riveted_locometal"
+  ],
+  "result": {
+    "id": "railways:blue_locometal_trapdoor"
+  },
+  "type": "minecraft:crafting_shapeless"
+}

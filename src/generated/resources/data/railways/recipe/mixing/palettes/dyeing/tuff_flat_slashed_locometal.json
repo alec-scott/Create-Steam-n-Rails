@@ -1,0 +1,21 @@
+{
+  "fluid_ingredients": [
+    {
+      "amount": 10125,
+      "components": {
+        "railways:paint_color": "tuff"
+      },
+      "fluid": "railways:paint",
+      "type": "fluid_stack"
+    }
+  ],
+  "ingredients": [
+    "#railways:palettes/dye_groups/flat_slashed"
+  ],
+  "results": [
+    {
+      "id": "railways:tuff_flat_slashed_locometal"
+    }
+  ],
+  "type": "create:mixing"
+}

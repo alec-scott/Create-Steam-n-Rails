@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/maroon/windows",
+  "result": {
+    "id": "railways:maroon_round_pane_locometal_window"
+  },
+  "type": "minecraft:stonecutting"
+}

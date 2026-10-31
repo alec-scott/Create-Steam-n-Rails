@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/diorite/hazard_stripes_white",
+  "result": {
+    "id": "railways:diorite_hazard_stripes_diagonal_on_white"
+  },
+  "type": "minecraft:stonecutting"
+}

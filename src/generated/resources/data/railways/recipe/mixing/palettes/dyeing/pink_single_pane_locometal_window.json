@@ -1,0 +1,21 @@
+{
+  "fluid_ingredients": [
+    {
+      "amount": 10125,
+      "components": {
+        "railways:paint_color": "pink"
+      },
+      "fluid": "railways:paint",
+      "type": "fluid_stack"
+    }
+  ],
+  "ingredients": [
+    "#railways:palettes/dye_groups/single_pane_window"
+  ],
+  "results": [
+    {
+      "id": "railways:pink_single_pane_locometal_window"
+    }
+  ],
+  "type": "create:mixing"
+}

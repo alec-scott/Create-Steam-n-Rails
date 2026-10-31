@@ -1,0 +1,21 @@
+{
+  "fluid_ingredients": [
+    {
+      "amount": 10125,
+      "components": {
+        "railways:paint_color": "granite"
+      },
+      "fluid": "railways:paint",
+      "type": "fluid_stack"
+    }
+  ],
+  "ingredients": [
+    "#railways:palettes/dye_groups/hazard_stripes_chevron_black"
+  ],
+  "results": [
+    {
+      "id": "railways:granite_hazard_stripes_chevron_on_black"
+    }
+  ],
+  "type": "create:mixing"
+}

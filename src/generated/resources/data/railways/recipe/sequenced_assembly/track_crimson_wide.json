@@ -1,0 +1,36 @@
+{
+  "ingredient": "railways:track_crimson",
+  "loops": 1,
+  "result": {
+    "id": "railways:track_crimson_wide"
+  },
+  "sequence": [
+    {
+      "ingredient": "$ingredient",
+      "processing_time": 50,
+      "results": [
+        "$result"
+      ],
+      "type": "create:cutting"
+    },
+    {
+      "ingredient": "minecraft:crimson_slab",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "$ingredient",
+      "results": [
+        "$result"
+      ],
+      "type": "create:pressing"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:track_incomplete_crimson_wide"
+  },
+  "type": "create:sequenced_assembly"
+}

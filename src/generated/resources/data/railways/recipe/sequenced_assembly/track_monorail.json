@@ -1,0 +1,37 @@
+{
+  "ingredient": "create:metal_girder",
+  "loops": 1,
+  "result": {
+    "count": 6,
+    "id": "railways:track_monorail"
+  },
+  "sequence": [
+    {
+      "ingredient": "create:metal_bracket",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "#railways:internal/plates/iron_plates",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "$ingredient",
+      "results": [
+        "$result"
+      ],
+      "type": "create:pressing"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:track_incomplete_monorail"
+  },
+  "type": "create:sequenced_assembly"
+}

@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/green/base",
+  "result": {
+    "id": "railways:green_plated_locometal"
+  },
+  "type": "minecraft:stonecutting"
+}

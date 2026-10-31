@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/orange/base",
+  "result": {
+    "id": "railways:orange_flat_riveted_locometal"
+  },
+  "type": "minecraft:stonecutting"
+}

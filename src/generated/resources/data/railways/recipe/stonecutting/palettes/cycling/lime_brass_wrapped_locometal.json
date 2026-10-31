@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/lime/wrapped_brass",
+  "result": {
+    "id": "railways:lime_brass_wrapped_locometal"
+  },
+  "type": "minecraft:stonecutting"
+}

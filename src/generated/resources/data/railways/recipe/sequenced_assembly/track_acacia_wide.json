@@ -1,0 +1,36 @@
+{
+  "ingredient": "railways:track_acacia",
+  "loops": 1,
+  "result": {
+    "id": "railways:track_acacia_wide"
+  },
+  "sequence": [
+    {
+      "ingredient": "$ingredient",
+      "processing_time": 50,
+      "results": [
+        "$result"
+      ],
+      "type": "create:cutting"
+    },
+    {
+      "ingredient": "minecraft:acacia_slab",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "$ingredient",
+      "results": [
+        "$result"
+      ],
+      "type": "create:pressing"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:track_incomplete_acacia_wide"
+  },
+  "type": "create:sequenced_assembly"
+}

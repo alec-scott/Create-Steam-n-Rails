@@ -2,11 +2,7 @@
   "replace": false,
   "values": [
     {
-      "id": "#c:iron_plates",
-      "required": false
-    },
-    {
-      "id": "#forge:plates/iron",
+      "id": "#c:plates/iron",
       "required": false
     }
   ]

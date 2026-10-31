@@ -1,0 +1,8 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/scorchia/base",
+  "result": {
+    "count": 2,
+    "id": "railways:scorchia_locometal_end_ladder"
+  },
+  "type": "minecraft:stonecutting"
+}

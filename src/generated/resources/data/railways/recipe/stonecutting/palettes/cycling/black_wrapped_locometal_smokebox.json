@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/black/wrapped_brass",
+  "result": {
+    "id": "railways:black_wrapped_locometal_smokebox"
+  },
+  "type": "minecraft:stonecutting"
+}

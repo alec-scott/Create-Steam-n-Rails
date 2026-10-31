@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/ochrum/doors",
+  "result": {
+    "id": "railways:ochrum_sliding_locometal_door"
+  },
+  "type": "minecraft:stonecutting"
+}

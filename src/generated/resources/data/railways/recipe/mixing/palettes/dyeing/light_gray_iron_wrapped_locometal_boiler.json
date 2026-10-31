@@ -1,0 +1,21 @@
+{
+  "fluid_ingredients": [
+    {
+      "amount": 10125,
+      "components": {
+        "railways:paint_color": "light_gray"
+      },
+      "fluid": "railways:paint",
+      "type": "fluid_stack"
+    }
+  ],
+  "ingredients": [
+    "#railways:palettes/dye_groups/iron_wrapped_boiler"
+  ],
+  "results": [
+    {
+      "id": "railways:light_gray_iron_wrapped_locometal_boiler"
+    }
+  ],
+  "type": "create:mixing"
+}

@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/black/base",
+  "result": {
+    "id": "railways:black_plated_locometal"
+  },
+  "type": "minecraft:stonecutting"
+}

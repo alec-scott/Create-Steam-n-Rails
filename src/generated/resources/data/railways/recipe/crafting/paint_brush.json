@@ -1,0 +1,18 @@
+{
+  "category": "misc",
+  "key": {
+    "F": "minecraft:feather",
+    "_": "#railways:internal/ingots/iron_ingots",
+    "|": "minecraft:stick"
+  },
+  "pattern": [
+    "F",
+    "_",
+    "|"
+  ],
+  "result": {
+    "id": "railways:paint_brush"
+  },
+  "show_notification": true,
+  "type": "minecraft:crafting_shaped"
+}

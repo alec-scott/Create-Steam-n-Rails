@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/dripstone/base",
+  "result": {
+    "id": "railways:dripstone_locometal_vent"
+  },
+  "type": "minecraft:stonecutting"
+}

@@ -1,0 +1,11 @@
+{
+  "category": "misc",
+  "ingredients": [
+    "create:railway_casing",
+    "create:chute"
+  ],
+  "result": {
+    "id": "railways:portable_fuel_interface"
+  },
+  "type": "minecraft:crafting_shapeless"
+}

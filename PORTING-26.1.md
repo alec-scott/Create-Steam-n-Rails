@@ -213,8 +213,21 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
   pixel-matching Create Fly's split tiles against the sheets they replaced (its commit `48e17b9e`): 2x2 sheets are
   identity, rectangle and omnidirectional are remapped. Note Create Fly moved its own fluid tank top/inner to
   `RECTANGLE_WITHOUT_SINGLE`; Railways' fuel tank keeps `RECTANGLE` (its sheets are 1.20 rectangle sheets).
+- **Survival data converted** (`porting-tools/convert_data_26.pl`, after renaming `recipes`/`loot_tables`/
+  `advancements` to `recipe`/`loot_table`/`advancement`): 2,865 recipes, 1,445 loot tables, 1,294 advancements and
+  the internal item tags. Recipes go to 26.1 ingredients/results and Create Fly's codecs (mixing
+  `fluid_ingredients`/`fluid_results` in droplets, paint NBT `{Color}` -> `railways:paint_color` component,
+  `item_application` target/ingredient, sequenced assembly `$ingredient`/`$result` steps with cutting
+  `processing_time` 50, `accept_mirrored`); `fabric:load_conditions` to the single-condition form. Loot tables:
+  silk-touch `match_tool` to `predicates`/`minecraft:enchantments`, air drops removed (extensions, headstock bars),
+  compat-mod track tables gated on their mod. Advancements: `inventory_changed` item predicates, icons. Internal tags
+  point at 26.1 conventional tags (`c:dyes/*`, `c:ingots/*`, `c:strings`, ...) instead of 1.20 `c:`/`forge:` names.
+  Recipes loaded went from 4,614 to 7,389 in the test pack, with no Railways data errors.
 
 ## TODO (not compile errors)
+- Survival checks still to do in play: craft a hinged locometal door and stonecut it into sliding/folding, paint
+  mixing (dye + binding agent + water -> paint, paint + block -> coloured block), conductor cap sequenced assembly,
+  block drops (incl. silk-touch-only windows).
 - Model warnings at load: 103 "Missing texture references" and 15 models rejected for using item-atlas sprites in a
   block model. Not yet triaged.
 - In-game checks still to do: place tracks/bogeys, assemble and drive a train, conductors (incl. possession and the
@@ -226,10 +239,6 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
 - **Conductor spy shader**: vanilla's `scan_pincushion` post chain no longer exists, so `useConductorSpyShader` does
   nothing. Ship a Railways `post_effect` (and set it through `GameRenderer.setPostEffect`) to restore it.
 - Disguised players keep the player's shadow size (1.20 shrank it to 0.2); shadows are extracted before the disguise.
-- **Generated data is still in 1.20 form**: `src/generated/resources/data/railways` uses `recipes`/`loot_tables`/
-  `advancements` (26.1: `recipe`/`loot_table`/`advancement`), and the 1,063 recipe files use 1.20 JSON (`fluidTag`,
-  NBT strings, Railways' "mangled" `railways:amount` fluid units that `MixinProcessingRecipeSerializer` converted;
-  that mixin is gone). Needs a conversion script to Create Fly's 26.1 recipe formats.
 - **Bogey menu preview** shows the bogey block statically (`GuiGameElement`). The animated preview needs a
   picture-in-picture renderer that can draw a `BogeyRenderState` (which only submits to a `SubmitNodeCollector`).
 - `fabric.mixin.client.LevelRendererMixin` (conductor camera entity override) targets `Camera.entity()` ordinal 3 in

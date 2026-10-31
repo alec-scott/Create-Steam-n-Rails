@@ -1,0 +1,37 @@
+{
+  "ingredient": "minecraft:white_wool",
+  "loops": 1,
+  "result": {
+    "id": "railways:white_conductor_cap"
+  },
+  "sequence": [
+    {
+      "ingredient": "$ingredient",
+      "processing_time": 50,
+      "results": [
+        "$result"
+      ],
+      "type": "create:cutting"
+    },
+    {
+      "ingredient": "create:precision_mechanism",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "#railways:internal/string",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:white_incomplete_conductor_cap"
+  },
+  "type": "create:sequenced_assembly"
+}

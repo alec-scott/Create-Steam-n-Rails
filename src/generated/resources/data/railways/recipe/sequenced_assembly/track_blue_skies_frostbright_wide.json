@@ -1,0 +1,42 @@
+{
+  "fabric:load_conditions": {
+    "condition": "fabric:all_mods_loaded",
+    "values": [
+      "blue_skies"
+    ]
+  },
+  "ingredient": "railways:track_blue_skies_frostbright",
+  "loops": 1,
+  "result": {
+    "id": "railways:track_blue_skies_frostbright_wide"
+  },
+  "sequence": [
+    {
+      "ingredient": "$ingredient",
+      "processing_time": 50,
+      "results": [
+        "$result"
+      ],
+      "type": "create:cutting"
+    },
+    {
+      "ingredient": "blue_skies:frostbright_slab",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "$ingredient",
+      "results": [
+        "$result"
+      ],
+      "type": "create:pressing"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:track_incomplete_blue_skies_frostbright_wide"
+  },
+  "type": "create:sequenced_assembly"
+}

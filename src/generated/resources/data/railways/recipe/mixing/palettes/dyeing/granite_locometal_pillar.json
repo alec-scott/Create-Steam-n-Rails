@@ -1,0 +1,21 @@
+{
+  "fluid_ingredients": [
+    {
+      "amount": 10125,
+      "components": {
+        "railways:paint_color": "granite"
+      },
+      "fluid": "railways:paint",
+      "type": "fluid_stack"
+    }
+  ],
+  "ingredients": [
+    "#railways:palettes/dye_groups/pillar"
+  ],
+  "results": [
+    {
+      "id": "railways:granite_locometal_pillar"
+    }
+  ],
+  "type": "create:mixing"
+}

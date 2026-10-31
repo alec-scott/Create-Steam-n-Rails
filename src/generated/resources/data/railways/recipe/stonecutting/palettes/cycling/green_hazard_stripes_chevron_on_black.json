@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/green/hazard_stripes_black",
+  "result": {
+    "id": "railways:green_hazard_stripes_chevron_on_black"
+  },
+  "type": "minecraft:stonecutting"
+}

@@ -2,11 +2,7 @@
   "replace": false,
   "values": [
     {
-      "id": "#c:zinc_nuggets",
-      "required": false
-    },
-    {
-      "id": "#forge:nuggets/zinc",
+      "id": "#c:nuggets/zinc",
       "required": false
     }
   ]

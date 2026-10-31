@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/scorchia/doors",
+  "result": {
+    "id": "railways:scorchia_hinged_locometal_door"
+  },
+  "type": "minecraft:stonecutting"
+}

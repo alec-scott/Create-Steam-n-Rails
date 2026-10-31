@@ -1,0 +1,36 @@
+{
+  "ingredient": "minecraft:warped_slab",
+  "loops": 1,
+  "result": {
+    "id": "railways:track_warped"
+  },
+  "sequence": [
+    {
+      "ingredient": "minecraft:gold_nugget",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "minecraft:gold_nugget",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "$ingredient",
+      "results": [
+        "$result"
+      ],
+      "type": "create:pressing"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:track_incomplete_warped"
+  },
+  "type": "create:sequenced_assembly"
+}

@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/white/base",
+  "result": {
+    "id": "railways:white_flat_riveted_locometal"
+  },
+  "type": "minecraft:stonecutting"
+}

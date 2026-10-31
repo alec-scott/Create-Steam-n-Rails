@@ -1,0 +1,10 @@
+{
+  "ingredient": "railways:royal_blue_riveted_locometal",
+  "results": [
+    {
+      "id": "railways:royal_blue_locometal_flywheel"
+    }
+  ],
+  "target": "create:flywheel",
+  "type": "create:item_application"
+}

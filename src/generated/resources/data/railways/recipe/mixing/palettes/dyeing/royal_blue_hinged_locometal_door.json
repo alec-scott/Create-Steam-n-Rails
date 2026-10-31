@@ -1,0 +1,21 @@
+{
+  "fluid_ingredients": [
+    {
+      "amount": 10125,
+      "components": {
+        "railways:paint_color": "royal_blue"
+      },
+      "fluid": "railways:paint",
+      "type": "fluid_stack"
+    }
+  ],
+  "ingredients": [
+    "#railways:palettes/dye_groups/hinged_door"
+  ],
+  "results": [
+    {
+      "id": "railways:royal_blue_hinged_locometal_door"
+    }
+  ],
+  "type": "create:mixing"
+}

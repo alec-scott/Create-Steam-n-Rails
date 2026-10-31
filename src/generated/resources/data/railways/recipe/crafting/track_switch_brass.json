@@ -1,0 +1,18 @@
+{
+  "category": "misc",
+  "key": {
+    "C": "create:brass_casing",
+    "L": "minecraft:lever",
+    "P": "create:precision_mechanism"
+  },
+  "pattern": [
+    "L",
+    "C",
+    "P"
+  ],
+  "result": {
+    "id": "railways:track_switch_brass"
+  },
+  "show_notification": true,
+  "type": "minecraft:crafting_shaped"
+}

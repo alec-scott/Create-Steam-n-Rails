@@ -1,0 +1,42 @@
+{
+  "fabric:load_conditions": {
+    "condition": "fabric:all_mods_loaded",
+    "values": [
+      "hexcasting"
+    ]
+  },
+  "ingredient": "hexcasting:edified_slab",
+  "loops": 1,
+  "result": {
+    "id": "railways:track_hexcasting_edified"
+  },
+  "sequence": [
+    {
+      "ingredient": "#railways:internal/nuggets/iron_nuggets",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "#railways:internal/nuggets/iron_nuggets",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "$ingredient",
+      "results": [
+        "$result"
+      ],
+      "type": "create:pressing"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:track_incomplete_hexcasting_edified"
+  },
+  "type": "create:sequenced_assembly"
+}

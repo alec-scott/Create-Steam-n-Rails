@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/cyan/ladders",
+  "result": {
+    "id": "railways:cyan_locometal_end_ladder"
+  },
+  "type": "minecraft:stonecutting"
+}

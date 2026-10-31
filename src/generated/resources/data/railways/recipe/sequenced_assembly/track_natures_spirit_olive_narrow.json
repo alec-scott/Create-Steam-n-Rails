@@ -1,0 +1,42 @@
+{
+  "fabric:load_conditions": {
+    "condition": "fabric:all_mods_loaded",
+    "values": [
+      "natures_spirit"
+    ]
+  },
+  "ingredient": "natures_spirit:olive_slab",
+  "loops": 1,
+  "result": {
+    "id": "railways:track_natures_spirit_olive_narrow"
+  },
+  "sequence": [
+    {
+      "ingredient": "$ingredient",
+      "processing_time": 50,
+      "results": [
+        "$result"
+      ],
+      "type": "create:cutting"
+    },
+    {
+      "ingredient": "#railways:internal/nuggets/iron_nuggets",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "$ingredient",
+      "results": [
+        "$result"
+      ],
+      "type": "create:pressing"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:track_incomplete_natures_spirit_olive_narrow"
+  },
+  "type": "create:sequenced_assembly"
+}

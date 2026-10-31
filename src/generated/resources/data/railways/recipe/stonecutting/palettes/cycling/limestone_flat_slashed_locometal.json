@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/limestone/base",
+  "result": {
+    "id": "railways:limestone_flat_slashed_locometal"
+  },
+  "type": "minecraft:stonecutting"
+}

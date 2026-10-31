@@ -1,0 +1,11 @@
+{
+  "category": "misc",
+  "ingredients": [
+    "#minecraft:wooden_doors",
+    "railways:vermilion_riveted_locometal"
+  ],
+  "result": {
+    "id": "railways:vermilion_hinged_locometal_door"
+  },
+  "type": "minecraft:crafting_shapeless"
+}

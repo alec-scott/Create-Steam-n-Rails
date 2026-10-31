@@ -1,0 +1,8 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/black/base",
+  "result": {
+    "count": 2,
+    "id": "railways:black_locometal_rung_ladder"
+  },
+  "type": "minecraft:stonecutting"
+}

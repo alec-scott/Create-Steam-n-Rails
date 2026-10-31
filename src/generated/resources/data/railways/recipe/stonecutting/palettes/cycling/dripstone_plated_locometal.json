@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/dripstone/base",
+  "result": {
+    "id": "railways:dripstone_plated_locometal"
+  },
+  "type": "minecraft:stonecutting"
+}

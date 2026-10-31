@@ -1,0 +1,23 @@
+{
+  "fluid_ingredients": [
+    {
+      "amount": 81000,
+      "fluid_tag": "#minecraft:water",
+      "type": "fluid_tag"
+    }
+  ],
+  "fluid_results": [
+    {
+      "amount": 81000,
+      "components": {
+        "railways:paint_color": "red"
+      },
+      "id": "railways:paint"
+    }
+  ],
+  "ingredients": [
+    "#railways:internal/dyes/red_dyes",
+    "#railways:binding_agents"
+  ],
+  "type": "create:mixing"
+}

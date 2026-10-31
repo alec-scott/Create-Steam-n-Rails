@@ -1,0 +1,42 @@
+{
+  "fabric:load_conditions": {
+    "condition": "fabric:all_mods_loaded",
+    "values": [
+      "byg"
+    ]
+  },
+  "ingredient": "byg:jacaranda_slab",
+  "loops": 1,
+  "result": {
+    "id": "railways:track_byg_jacaranda_narrow"
+  },
+  "sequence": [
+    {
+      "ingredient": "$ingredient",
+      "processing_time": 50,
+      "results": [
+        "$result"
+      ],
+      "type": "create:cutting"
+    },
+    {
+      "ingredient": "#railways:internal/nuggets/iron_nuggets",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "$ingredient",
+      "results": [
+        "$result"
+      ],
+      "type": "create:pressing"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:track_incomplete_byg_jacaranda_narrow"
+  },
+  "type": "create:sequenced_assembly"
+}

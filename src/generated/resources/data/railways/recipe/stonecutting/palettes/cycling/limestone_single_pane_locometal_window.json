@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/limestone/windows",
+  "result": {
+    "id": "railways:limestone_single_pane_locometal_window"
+  },
+  "type": "minecraft:stonecutting"
+}

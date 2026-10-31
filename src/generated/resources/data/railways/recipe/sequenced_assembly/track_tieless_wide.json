@@ -1,0 +1,36 @@
+{
+  "ingredient": "railways:track_tieless",
+  "loops": 1,
+  "result": {
+    "id": "railways:track_tieless_wide"
+  },
+  "sequence": [
+    {
+      "ingredient": "$ingredient",
+      "processing_time": 50,
+      "results": [
+        "$result"
+      ],
+      "type": "create:cutting"
+    },
+    {
+      "ingredient": "minecraft:glass_pane",
+      "results": [
+        "$result"
+      ],
+      "target": "$ingredient",
+      "type": "create:deploying"
+    },
+    {
+      "ingredient": "$ingredient",
+      "results": [
+        "$result"
+      ],
+      "type": "create:pressing"
+    }
+  ],
+  "transitional_item": {
+    "id": "railways:track_incomplete_tieless_wide"
+  },
+  "type": "create:sequenced_assembly"
+}

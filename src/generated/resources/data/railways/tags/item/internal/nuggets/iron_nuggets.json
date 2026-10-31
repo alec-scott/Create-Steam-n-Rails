@@ -2,11 +2,7 @@
   "replace": false,
   "values": [
     {
-      "id": "#c:iron_nuggets",
-      "required": false
-    },
-    {
-      "id": "#forge:nuggets/iron",
+      "id": "#c:nuggets/iron",
       "required": false
     }
   ]

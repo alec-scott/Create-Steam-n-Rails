@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/netherite/ladders",
+  "result": {
+    "id": "railways:locometal_end_ladder"
+  },
+  "type": "minecraft:stonecutting"
+}

@@ -2,11 +2,7 @@
   "replace": false,
   "values": [
     {
-      "id": "#c:brass_plates",
-      "required": false
-    },
-    {
-      "id": "#forge:plates/brass",
+      "id": "#c:plates/brass",
       "required": false
     }
   ]

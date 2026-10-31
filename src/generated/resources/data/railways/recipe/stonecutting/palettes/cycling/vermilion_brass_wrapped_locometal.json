@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/vermilion/wrapped_brass",
+  "result": {
+    "id": "railways:vermilion_brass_wrapped_locometal"
+  },
+  "type": "minecraft:stonecutting"
+}

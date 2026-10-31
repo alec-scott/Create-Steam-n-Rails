@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/turquoise/base",
+  "result": {
+    "id": "railways:turquoise_locometal_vent"
+  },
+  "type": "minecraft:stonecutting"
+}

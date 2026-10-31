@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/netherite/hazard_stripes_black",
+  "result": {
+    "id": "railways:hazard_stripes_chevron_on_black"
+  },
+  "type": "minecraft:stonecutting"
+}

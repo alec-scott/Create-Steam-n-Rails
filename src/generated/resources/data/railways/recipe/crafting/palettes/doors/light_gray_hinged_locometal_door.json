@@ -1,0 +1,11 @@
+{
+  "category": "misc",
+  "ingredients": [
+    "#minecraft:wooden_doors",
+    "railways:light_gray_riveted_locometal"
+  ],
+  "result": {
+    "id": "railways:light_gray_hinged_locometal_door"
+  },
+  "type": "minecraft:crafting_shapeless"
+}

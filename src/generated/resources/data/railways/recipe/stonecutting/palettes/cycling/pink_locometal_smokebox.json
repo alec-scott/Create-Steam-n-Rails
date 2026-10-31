@@ -1,0 +1,7 @@
+{
+  "ingredient": "#railways:palettes/cycle_groups/pink/base",
+  "result": {
+    "id": "railways:pink_locometal_smokebox"
+  },
+  "type": "minecraft:stonecutting"
+}
