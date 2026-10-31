@@ -39,17 +39,17 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import com.llamalad7.mixinextras.sugar.Local;
 
 // For forge only, it is necessary to call ValueSettingsInputHandler.onBlockActivated at the head of SlidingDoorBlock's stopItQuark method - this is implemented in a forge-specific mixin
 @Mixin(value = SlidingDoorBlock.class, remap = false)
 public abstract class MixinSlidingDoorBlock {
     @Inject(method = "neighborChanged",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;setValue(Lnet/minecraft/world/level/block/state/properties/Property;Ljava/lang/Comparable;)Ljava/lang/Object;", ordinal = 0, remap = true),
-        remap = true, locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
+        remap = true, cancellable = true)
     private void railways$preventManualDoorRedstoneReaction(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock,
                                                        @Nullable Orientation wireOrientation, boolean pIsMoving, CallbackInfo ci,
-                                                       boolean lower, boolean isPowered, SlidingDoorBlockEntity be) {
+                                                       @Local(name = "be") SlidingDoorBlockEntity be) {
         if (be == null)
             return;
         if (!((SlidingDoorMode.IHasDoorMode) be).railways$getSlidingDoorMode().canOpenSpecially()) {

@@ -26,11 +26,11 @@ import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
+import com.llamalad7.mixinextras.sugar.Local;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
  * When a player is viewing a camera, enables sounds near the camera to be played, while sounds near the player entity are
@@ -41,8 +41,10 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(value = PlayerList.class, priority = 1200)
 public class PlayerListMixin {
 	@SuppressWarnings("InvalidInjectorMethodSignature")
-	@Inject(method = "broadcast", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/level/ServerPlayer;getZ()D"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true, require = 0)
-	private void railways$securitycraft$broadcastToCameras(@Nullable Player except, double x, double y, double z, double radius, ResourceKey<Level> dimension, Packet<?> packet, CallbackInfo callback, int iteration, ServerPlayer serverPlayer) {
+	@Inject(method = "broadcast", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/level/ServerPlayer;getZ()D"), require = 0)
+	// PORT-NOTE(26.1): named @Local instead of positional capture. 1.20 cancelled the whole broadcast here, which skipped
+	// every later player in the list; it no longer does, so a player near both the camera and their body gets it twice.
+	private void railways$securitycraft$broadcastToCameras(@Nullable Player except, double x, double y, double z, double radius, ResourceKey<Level> dimension, Packet<?> packet, CallbackInfo callback, @Local(name = "player") ServerPlayer serverPlayer) {
 		if (serverPlayer.getCamera() instanceof ConductorEntity conductor) {
 			double dX = x - conductor.getX();
 			double dY = y - conductor.getY();
@@ -50,8 +52,6 @@ public class PlayerListMixin {
 
 			if (dX * dX + dY * dY + dZ * dZ < radius * radius)
 				serverPlayer.connection.send(packet);
-
-			callback.cancel();
 		}
 	}
 }
