@@ -141,6 +141,7 @@
     "client.MixinSegmentAngles",
     "client.MixinSignalVisual",
     "client.MixinSlidingDoorRenderer",
+    "client.MixinSlidingDoorVisual",
     "client.MixinSpriteContents",
     "client.MixinSpriteContents$MixinAnimatedTexture",
     "client.MixinSpriteContents$MixinAnimationState",

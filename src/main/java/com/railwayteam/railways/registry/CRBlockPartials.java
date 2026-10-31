@@ -537,6 +537,12 @@ public class CRBlockPartials {
         }))
     );
 
+    // PORT-NOTE(26.1): Create Fly draws a sliding door as one two-block partial, keyed here by windowed
+    public static final PalettesColorList<Couple<PartialModel>> SLIDING_DOORS = new PalettesColorList<>(
+        color -> Couple.createWithContext(windowed ->
+            block("palettes/" + color.getSerializedName() + "/sliding_door/block" + (windowed ? "_windowed" : "")))
+    );
+
     public static final PartialModel PAINT_STRIPPER_BLOB = item("palettes/paint_blob/sand");
 
     public static final PalettesColorList<PartialModel> PAINT_BLOBS = new PalettesColorList<>(

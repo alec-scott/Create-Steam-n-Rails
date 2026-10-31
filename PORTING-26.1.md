@@ -193,12 +193,15 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
   - Generated tag folders renamed to 26.1 names (`tags/block`, `tags/item`, `tags/entity_type`); stale access widener
     entries dropped (`validateAccessWidener` runs in `build`).
 
+- **Item model definitions**: `porting-tools/gen_item_definitions.sh` writes `assets/railways/items/<id>.json`
+  (plain `minecraft:model`) for every committed top-level `models/item` file; inventory icons were all missing before.
+- **Locometal sliding/folding doors** converted to Create Fly's layout (`porting-tools/gen_door_models.sh`): blockstates
+  are one particle-only variant (the old ones used 1.20's `visible` property and rendered as missing-model cubes), and
+  sliding doors use one combined two-block partial (`palettes/doors/block` template, `CRBlockPartials.SLIDING_DOORS`).
+  Create Fly draws doors through `SlidingDoorVisual` when Flywheel is active, so `MixinSlidingDoorVisual` swaps the
+  palettes partials in there as well as in `MixinSlidingDoorRenderer`.
+
 ## TODO (not compile errors)
-- **Locometal sliding/folding door blockstates** use 1.20 Create's `visible` property; Create Fly's doors have
-  `powered` and render entirely from the block entity (its own door blockstates are a single particle-only variant).
-  Thousands of "Unknown blockstate property" warnings at load. Convert to particle-only blockstates, and add combined
-  palettes sliding-door partials (`MixinSlidingDoorRenderer` currently falls back to Create's `train_door` partial,
-  so Railways sliding doors render with the wrong texture).
 - Model warnings at load: 103 "Missing texture references" and 15 models rejected for using item-atlas sprites in a
   block model. Not yet triaged.
 - In-game checks still to do: place tracks/bogeys, assemble and drive a train, conductors (incl. possession and the
@@ -218,8 +221,6 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
   picture-in-picture renderer that can draw a `BogeyRenderState` (which only submits to a `SubmitNodeCollector`).
 - `fabric.mixin.client.LevelRendererMixin` (conductor camera entity override) targets `Camera.entity()` ordinal 3 in
   `renderLevel`, unverified against 26.1 (`require = 0`, so it silently no-ops if wrong).
-- **Item model definitions** (`assets/railways/items/*.json`, 1.21.4+): none exist yet, so items will render as
-  missing models. Generate them from the committed `models/item` files.
 - Custom conductor caps by item name (was `MixinItemModelShaper`): a `minecraft:select` on `minecraft:custom_name` in
   the cap item definitions, or a custom `ItemModel`.
 - Buffer / copycat headstock **items** no longer show the stack's material/colour (1.20 wrapped the item baked model);
