@@ -20,11 +20,11 @@ package com.railwayteam.railways.mixin.client;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.railwayteam.railways.content.palettes.PalettesFlywheelBlock;
 import com.railwayteam.railways.registry.CRBlockPartials;
 import com.zurrtum.create.content.kinetics.flywheel.FlywheelBlockEntity;
 import com.zurrtum.create.client.content.kinetics.flywheel.FlywheelVisual;
-import com.zurrtum.create.client.flywheel.api.visualization.VisualizationContext;
 import com.zurrtum.create.client.flywheel.lib.model.baked.PartialModel;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,7 +33,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(FlywheelVisual.class)
 public class MixinFlywheelVisual {
     @WrapOperation(method = "<init>", at = @At(value = "FIELD", target = "Lcom/zurrtum/create/client/AllPartialModels;FLYWHEEL:Lcom/zurrtum/create/client/flywheel/lib/model/baked/PartialModel;", opcode = Opcodes.GETSTATIC))
-    private PartialModel palettesFlywheel(Operation<PartialModel> original, VisualizationContext context, FlywheelBlockEntity blockEntity) {
+    private PartialModel palettesFlywheel(Operation<PartialModel> original, @Local(argsOnly = true) FlywheelBlockEntity blockEntity) {
         if (blockEntity.getBlockState().getBlock() instanceof PalettesFlywheelBlock pfb)
             return CRBlockPartials.FLYWHEELS.get(pfb.getColor());
 

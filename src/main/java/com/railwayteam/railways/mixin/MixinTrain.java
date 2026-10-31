@@ -101,7 +101,8 @@ public abstract class MixinTrain implements IOccupiedCouplers, IIndexedSchedule,
     @Shadow public int fuelTicks;
     @Shadow public Player backwardsDriver;
 
-    @Unique public Set<UUID> railways$occupiedCouplers;
+    // PORT-NOTE(26.1): initialised here so every Train constructor gets it (Create Fly has three)
+    @Unique public Set<UUID> railways$occupiedCouplers = new HashSet<>();
     @Unique protected int railways$index = 0;
     @Unique protected boolean railways$isHandcar = false;
     @Unique protected boolean railways$isStrictSignalTrain = false;
@@ -154,11 +155,6 @@ public abstract class MixinTrain implements IOccupiedCouplers, IIndexedSchedule,
     @Override
     public Set<UUID> railways$getOccupiedCouplers() {
         return railways$occupiedCouplers;
-    }
-
-    @Inject(method = "<init>", at = @At("RETURN"))
-    private void initCouplers(UUID id, UUID owner, TrackGraph graph, List<Carriage> carriages, List<Integer> carriageSpacing, boolean doubleEnded, CallbackInfo ci) {
-        railways$occupiedCouplers = new HashSet<>();
     }
 
     @Inject(method = "earlyTick", at = @At("HEAD"))
