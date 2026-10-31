@@ -131,8 +131,48 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
   Removed: `AllKeysMixin` (uses `AllKeys.ALL`), `MixinParticleEngine`, `CreateCodecsMixin` (Porting Lib),
   `AccessorIngredient$TagValue`, `MixinBasingRecipe` (see TODO).
 - `CRCTTypes` extends Create Fly's class-based `CTType` (bit-mask contexts); `BoilerCTBehaviour` likewise.
+- Removed `DebugRendererExtensions` + `MixinDebugRenderer` (26.1's debug renderer is rewritten around debug
+  subscriptions; nothing in Railways registered a renderer through them).
+- **ConductorEntity**: save/load on `ValueInput`/`ValueOutput` directly (`FrequencyHolder` writes child outputs with
+  `ItemStack.OPTIONAL_CODEC`; `MountedToolbox.read(parent, ValueInput)` overload); `absSnapTo`, `hurtServer`,
+  `dropCustomDeathLoot`/`spawnAtLocation` with `ServerLevel`, `defineSynchedData(Builder)`,
+  `isLocalClientAuthoritative` (replaces `isControlledByLocalInstance`), step height as the `STEP_HEIGHT` attribute,
+  eye height on the entity type (`EntityTypeConfigurator.size(w, h, eyeHeight)`; the same 0.76 × height).
+  Chunk tickets: 1.20's `POST_TELEPORT` is gone, so teleports use `ENDER_PEARL` (40-tick, loading + simulation); the
+  per-tick view-distance tickets were `FORCED` and never removed, now `ENDER_PEARL` too, so they lapse once nobody is
+  viewing through the conductor.
+- **Conductor rendering on render states**: `ConductorRenderState` carries everything the model and layers read.
+  `ConductorRenderer` stays a `MobRenderer` (a `HumanoidMobRenderer` would add head/held-item layers) and calls
+  `HumanoidMobRenderer.extractHumanoidRenderState`. `ConductorEntityModel` is posed from the state; the tilted cap pose
+  that 1.20 kept in the unrendered root `hat` is the empty `cap_anchor` part (26.1's `HumanoidModel` needs `hat` under
+  the head, and models render their whole root). Armor uses `ArmorModelSet.bake(ARMOR_STAND_ARMOR, …)`. Layers submit
+  `SuperByteBuffer`s; the secondary head layer extracts its item into its own `LivingEntityRenderState` and delegates to
+  vanilla `CustomHeadLayer`; the elytra layer is `WingsLayer`.
+- **Conductor cap** (Fabric `ArmorRenderer` now submits): models are posed when drawn, after submission, so the shared
+  `ConductorCapModel` gets its pose in a per-submit `CapState`. Custom caps' `display.head` transform is read from the
+  model JSON via `CuboidModel.fromStream` (26.1 block state models carry no item transforms); cache cleared on reload.
+- **Player disguise**: `MixinPlayerRenderer` extracts a conductor state alongside the `AvatarRenderState`
+  (`MixinAvatarRenderState`/`IConductorDisguiseState`, copying pose, light and name tag);
+  `MixinLivingEntityRenderer.submit` swaps it in. First-person hands use the local player (26.1 passes no player).
+- **Possession**: `ChunkMapMixin` on `ChunkTrackingView` (camera chunks via `ChunkTrackingView.difference`; block
+  updates by treating chunks in the conductor's view as tracked in `isChunkTracked`, replacing the
+  `getLastSectionPos` redirect). `ClientChunkCacheMixin` on `drop(ChunkPos)`, heightmap-map `replaceWithPacketData`,
+  and `Storage.drop` (access widener updated). `MixinGameRenderer.bobView` takes `CameraRenderState`; the conductor
+  tracks its own `walkDist` (entities no longer do). Packets: `PosRot`/`Rot` gain `horizontalCollision`,
+  `ServerboundPlayerInputPacket(Input.EMPTY)`, `PosRot.STREAM_CODEC`, `moveOrInterpolateTo`.
+- Ponder conductor scenes: profile/dye components, `EntitySpawnReason`, per-colour Create Fly toolboxes.
+
+### 2026-10-31
+- **`compileJava` succeeds (0 errors).** Next: `runClient` to validate mixin targets (javac doesn't check them), then
+  the data/asset TODOs below.
 
 ## TODO (not compile errors)
+- **Validate mixins at runtime.** Many were retargeted by reading 26.1 signatures only; new or changed this session:
+  `MixinPlayerRenderer`, `MixinLivingEntityRenderer`, `MixinAvatarRenderState`, `ChunkMapMixin` (`isChunkTracked`,
+  private `markChunkPendingToSend`/`dropChunk` shadows), `ClientChunkCacheMixin`, `MixinGameRenderer.bobView`.
+- **Conductor spy shader**: vanilla's `scan_pincushion` post chain no longer exists, so `useConductorSpyShader` does
+  nothing. Ship a Railways `post_effect` (and set it through `GameRenderer.setPostEffect`) to restore it.
+- Disguised players keep the player's shadow size (1.20 shrank it to 0.2); shadows are extracted before the disguise.
 - **Generated data is still in 1.20 form**: `src/generated/resources/data/railways` uses `recipes`/`loot_tables`/
   `advancements` (26.1: `recipe`/`loot_table`/`advancement`), and the 1,063 recipe files use 1.20 JSON (`fluidTag`,
   NBT strings, Railways' "mangled" `railways:amount` fluid units that `MixinProcessingRecipeSerializer` converted;
