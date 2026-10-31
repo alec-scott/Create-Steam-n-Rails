@@ -163,11 +163,48 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
 - Ponder conductor scenes: profile/dye components, `EntitySpawnReason`, per-colour Create Fly toolboxes.
 
 ### 2026-10-31
-- **`compileJava` succeeds (0 errors).** Next: `runClient` to validate mixin targets (javac doesn't check them), then
-  the data/asset TODOs below.
+- **`compileJava` succeeds (0 errors).**
+- **Runtime: the client joins a world** in the `v26.1-testing` Prism instance (full modpack, Create Fly 6.0.9-4, CBC,
+  Aeronautics). `./gradlew build -x test`, copy `build/libs/Steam_Rails-*.jar` into the instance `mods/`, then
+  `prismlauncher.exe --launch v26.1-testing --world "New World"`. Screen capture from outside shows a white window
+  (GL surface); use an in-game F2 screenshot (`.minecraft/screenshots`) to see the game.
+- Mixin targets checked with `porting-tools/check_mixin_targets.pl` (names, shadows, accessors, invoke targets;
+  `MIXIN_MODULES=. perl porting-tools/check_mixin_targets.pl . <javap> <classpath file>`) and
+  `porting-tools/check_method_descs.pl` (explicit `method = "name(desc)"` strings). Neither checks handler parameters
+  of constructor injections or local captures; those surfaced at launch. Known false positives: nested mixin classes,
+  enum `$VALUES`, wildcard imports, `volatile` shadows, commented-out code, all-caps accessor names.
+- Runtime fixes (all mixin targets compile-invisible):
+  - **Saved data is codec-based in Create Fly.** Trains, carriages, `RailwaySavedData` and edge points save through
+    `encode`/`decode` on `DynamicOps`; their `write`/`read(ValueOutput/ValueInput)` are unused for persistence. Railways'
+    extra fields (couplers, handcar, shadow key, controlling conductors, buffer distances, station limit) are added by
+    wrapping the final `RecordBuilder.build` and read back after `decode` (`DynamicNbtCompat`, `IExtraTrainData`).
+    Shadow trains and empty-train removal hook `RailwaySavedData.save`/`lambda$load$2`.
+  - Retargets: `use` → `useItemOn`/`useWithoutItem`; `ServerLevel.tickChunk` snow → `tickPrecipitation`; client-only
+    Create Fly classes (`TrainRelocatorClient`, `GlobalRailwayManagerClient`, `TrackPlacementClient`); Create Fly lambda
+    numbering; `ChunkMap$TrackedEntity`, `PlayerList`, seat, door and station injections use named `@Local`s instead of
+    positional capture; player size/eye height on `Avatar.getDefaultDimensions`; `PlayerInfo.getSkin` for dev
+    skin/cape (method-level `@DevEnvMixin` is not honoured without the build stripping, so it is checked at runtime);
+    phantom track sprites pin the `SpriteContents.AnimationState` frame; Enderman caps via the
+    `minecraft:gaze_disguise_equipment` tag; train fuel filter on `FuelValues.burnDuration` in `lambda$burnFuel$0`.
+  - Removed: the JSON fluid-amount demanglers (`MixinFluidIngredient`, `FluidHelperMixin`), `AccessorLevelRenderer`
+    (particles via `ParticleEngine.createParticle`), `AccessorMinecraft` (`ChatScreen`), `AccessorWarningScreen`
+    (unused), `conductor_possession.LevelRendererMixin` (26.1 centres the view area on the camera).
+  - `RegistryUtil` registers entity types before items (minecart items take their entity type when built).
+  - Generated tag folders renamed to 26.1 names (`tags/block`, `tags/item`, `tags/entity_type`); stale access widener
+    entries dropped (`validateAccessWidener` runs in `build`).
 
 ## TODO (not compile errors)
-- **Validate mixins at runtime.** Many were retargeted by reading 26.1 signatures only; new or changed this session:
+- **Locometal sliding/folding door blockstates** use 1.20 Create's `visible` property; Create Fly's doors have
+  `powered` and render entirely from the block entity (its own door blockstates are a single particle-only variant).
+  Thousands of "Unknown blockstate property" warnings at load. Convert to particle-only blockstates, and add combined
+  palettes sliding-door partials (`MixinSlidingDoorRenderer` currently falls back to Create's `train_door` partial,
+  so Railways sliding doors render with the wrong texture).
+- Model warnings at load: 103 "Missing texture references" and 15 models rejected for using item-atlas sprites in a
+  block model. Not yet triaged.
+- In-game checks still to do: place tracks/bogeys, assemble and drive a train, conductors (incl. possession and the
+  player disguise), smokestacks, couplers/switches, phantom tracks, save and reload a world with trains (exercises the
+  new codec hooks).
+- **Validate remaining mixins in play.** All apply at startup and world join; some only run during gameplay. Changed this session:
   `MixinPlayerRenderer`, `MixinLivingEntityRenderer`, `MixinAvatarRenderState`, `ChunkMapMixin` (`isChunkTracked`,
   private `markChunkPendingToSend`/`dropChunk` shadows), `ClientChunkCacheMixin`, `MixinGameRenderer.bobView`.
 - **Conductor spy shader**: vanilla's `scan_pincushion` post chain no longer exists, so `useConductorSpyShader` does
