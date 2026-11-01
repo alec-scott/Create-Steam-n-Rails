@@ -26,6 +26,7 @@ import com.railwayteam.railways.content.shadow_realm.ShadowRealm.RestorationTarg
 import com.zurrtum.create.AllHandle;
 import com.zurrtum.create.infrastructure.packet.c2s.TrainRelocationPacket;
 import net.minecraft.core.Position;
+import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.phys.Vec3;
@@ -47,9 +48,12 @@ public class TrainRelocationPacketMixin {
         return original.call(instance, pos, distance);
     }
 
-    @Inject(method = "onTrainRelocation", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V", shift = At.Shift.AFTER), cancellable = true)
+    // PORT-NOTE(26.1): upstream Create Fly 6.0.9-4 has no ensureRunningOnSameThread call here (added after that
+    // release), so inject at HEAD and do the main-thread hop ourselves; Create's own call is then a no-op
+    @Inject(method = "onTrainRelocation", at = @At("HEAD"), cancellable = true)
     private static void relocateShadowTrain(ServerGamePacketListenerImpl listener, TrainRelocationPacket packet, CallbackInfo ci) {
         ServerPlayer sender = listener.player;
+        PacketUtils.ensureRunningOnSameThread(packet, listener, sender.level().getServer().packetProcessor());
         RestorationTarget target = new RestorationTarget(sender.level(), packet.pos(), packet.hoveredBezier(), packet.direction(), packet.lookAngle());
         ShadowRealm.handleTrainRelocationPacket(sender, packet.trainId(), target, ci);
     }
