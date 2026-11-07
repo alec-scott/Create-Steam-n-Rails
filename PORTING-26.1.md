@@ -253,3 +253,6 @@ Create Fly comes from the local checkout's jar (`create_fly_jar` in `gradle.prop
   was dropped: Create Fly's basin matching is restructured and 26.1 recipes have no id. Re-derive.
 - Compat track rail ingredients are a single tag now (iron nuggets / wrought iron rods; was "or zinc"). Datagen only.
 - Creative tab ordering treats block items as "3D" (no baked item model `isGui3d` in 26.1).
+
+## Ponder scenes (2026-11-07)
+Scene files were still in the pre-1.21 block entity format, so Create Fly failed to decode them, and scenes failed to open (`No value present`, or a null `OwnerName` on the deployer). `porting-tools/PonderNbt.java` converts them: positions to int arrays, vectors to lists, item stacks to `count`, enum names to lower case, deployer owner and old inventories removed. `SecondaryTargetTrack` stays as it was because the coupler reads that format.
